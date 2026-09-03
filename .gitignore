@@ -18,3 +18,9 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Generated artifacts (datasets/results) — keep .gitkeep only
+data/*
+!data/.gitkeep
+results/*
+!results/.gitkeep

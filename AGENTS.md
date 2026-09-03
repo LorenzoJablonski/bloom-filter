@@ -27,9 +27,9 @@ Compiler: GCC with `-std=c99 -Wall -Wextra -O3`. Links pthreads (`-lpthread`).
 Git Flow: `main` (stable) → `develop` (integration) → `feature/*` (per component).
 
 Merge order matters — murmurhash is prerequisite for all filters:
-1. `feature/murmurhash`
-2. `feature/sbf`, `feature/baseline`
-3. `feature/datasets`
+1. `feature/murmurhash` — DONE (commit 4628533, merged to develop)
+2. `feature/datasets` — DONE (scripts + protocol partition, merged to develop)
+3. `feature/sbf`, `feature/baseline`
 4. `feature/cbf`, `feature/pbf`, `feature/rdbf`
 5. `feature/benchmark`, `feature/threads`
 6. `feature/hybrid` (depends on all above)
@@ -37,6 +37,7 @@ Merge order matters — murmurhash is prerequisite for all filters:
 
 ## Key Conventions
 - MurmurHash2 (32-bit) is the sole hash function — seed varies per invocation
+- MurmurHash2 is implemented from scratch (appleby-style), validated against the published reference; seed operates via `murmurhash2(key, len, seed)`
 - Bitwise operations for filter manipulation (no abstractions)
 - pthreads with mutexes for mutable variants (CBF, hybrid)
 - Commit messages in English
