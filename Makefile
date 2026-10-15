@@ -1,6 +1,6 @@
 CC = gcc
 CFLAGS = -std=c99 -Wall -Wextra -O3 -Iinclude
-LDFLAGS = -lpthread
+LDFLAGS = -lpthread -lm
 
 SRC_DIR = src
 INC_DIR = include
@@ -8,19 +8,19 @@ TEST_DIR = tests
 BUILD_DIR = build
 TARGET = bloom_app
 
-# Source files
+# Source files — add filters here as they are implemented (cbf, pbf, rdbf, hybrid)
 COMMON_SRC = $(SRC_DIR)/murmurhash2.c
 BASELINE_SRC = $(SRC_DIR)/baseline.c
-FILTER_SRC = $(SRC_DIR)/sbf.c $(SRC_DIR)/cbf.c $(SRC_DIR)/pbf.c $(SRC_DIR)/rdbf.c $(SRC_DIR)/hybrid.c
+FILTER_SRC = $(SRC_DIR)/sbf.c
 MAIN_SRC = $(SRC_DIR)/main.c
 
 # Object files
 COMMON_OBJ = $(BUILD_DIR)/murmurhash2.o
 BASELINE_OBJ = $(BUILD_DIR)/baseline.o
-FILTER_OBJ = $(BUILD_DIR)/sbf.o $(BUILD_DIR)/cbf.o $(BUILD_DIR)/pbf.o $(BUILD_DIR)/rdbf.o $(BUILD_DIR)/hybrid.o
+FILTER_OBJ = $(BUILD_DIR)/sbf.o
 MAIN_OBJ = $(BUILD_DIR)/main.o
 
-.PHONY: all clean sbf cbf pbf rdbf hybrid baseline benchmark test
+.PHONY: all clean sbf cbf pbf rdbf hybrid baseline benchmark demo repl test
 
 all: $(BUILD_DIR) $(TARGET)
 
@@ -80,9 +80,24 @@ baseline: $(BUILD_DIR) $(COMMON_OBJ) $(BUILD_DIR)/baseline.o
 benchmark: $(TARGET)
 	./$(TARGET) --benchmark
 
-# Test
+# Automatic demo — non-interactive, prints comparison table
+demo: $(TARGET)
+	./$(TARGET) --demo
+
+# Interactive session — insert/search by hand
+repl: $(TARGET)
+	./$(TARGET) --repl
+
+# Test — quick invariants (exit code non-zero on failure)
 test: $(TARGET)
 	./$(TARGET) --test
+
+# Compile and run the C unit tests in tests/
+check: $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(TEST_DIR)/test_sbf.c $(COMMON_OBJ) $(BUILD_DIR)/sbf.o -o $(BUILD_DIR)/test_sbf $(LDFLAGS)
+	$(CC) $(CFLAGS) $(TEST_DIR)/test_baseline.c $(COMMON_OBJ) $(BUILD_DIR)/baseline.o -o $(BUILD_DIR)/test_baseline $(LDFLAGS)
+	$(BUILD_DIR)/test_sbf
+	$(BUILD_DIR)/test_baseline
 
 clean:
 	rm -rf $(BUILD_DIR) $(TARGET)
