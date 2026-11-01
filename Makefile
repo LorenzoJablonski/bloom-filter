@@ -11,13 +11,13 @@ TARGET = bloom_app
 # Source files — add filters here as they are implemented (cbf, pbf, rdbf, hybrid)
 COMMON_SRC = $(SRC_DIR)/murmurhash2.c
 BASELINE_SRC = $(SRC_DIR)/baseline.c
-FILTER_SRC = $(SRC_DIR)/sbf.c $(SRC_DIR)/cbf.c
+FILTER_SRC = $(SRC_DIR)/sbf.c $(SRC_DIR)/cbf.c $(SRC_DIR)/pbf.c
 MAIN_SRC = $(SRC_DIR)/main.c
 
 # Object files
 COMMON_OBJ = $(BUILD_DIR)/murmurhash2.o
 BASELINE_OBJ = $(BUILD_DIR)/baseline.o
-FILTER_OBJ = $(BUILD_DIR)/sbf.o $(BUILD_DIR)/cbf.o
+FILTER_OBJ = $(BUILD_DIR)/sbf.o $(BUILD_DIR)/cbf.o $(BUILD_DIR)/pbf.o
 MAIN_OBJ = $(BUILD_DIR)/main.o
 
 .PHONY: all clean sbf cbf pbf rdbf hybrid baseline benchmark demo repl test
@@ -90,9 +90,11 @@ test: $(TARGET)
 check: $(BUILD_DIR)
 	$(CC) $(CFLAGS) $(TEST_DIR)/test_sbf.c $(COMMON_OBJ) $(BUILD_DIR)/sbf.o -o $(BUILD_DIR)/test_sbf $(LDFLAGS)
 	$(CC) $(CFLAGS) $(TEST_DIR)/test_cbf.c $(COMMON_OBJ) $(BUILD_DIR)/cbf.o -o $(BUILD_DIR)/test_cbf $(LDFLAGS)
+	$(CC) $(CFLAGS) $(TEST_DIR)/test_pbf.c $(COMMON_OBJ) $(BUILD_DIR)/pbf.o -o $(BUILD_DIR)/test_pbf $(LDFLAGS)
 	$(CC) $(CFLAGS) $(TEST_DIR)/test_baseline.c $(COMMON_OBJ) $(BUILD_DIR)/baseline.o -o $(BUILD_DIR)/test_baseline $(LDFLAGS)
 	$(BUILD_DIR)/test_sbf
 	$(BUILD_DIR)/test_cbf
+	$(BUILD_DIR)/test_pbf
 	$(BUILD_DIR)/test_baseline
 
 clean:
