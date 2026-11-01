@@ -11,13 +11,13 @@ TARGET = bloom_app
 # Source files — add filters here as they are implemented (cbf, pbf, rdbf, hybrid)
 COMMON_SRC = $(SRC_DIR)/murmurhash2.c
 BASELINE_SRC = $(SRC_DIR)/baseline.c
-FILTER_SRC = $(SRC_DIR)/sbf.c
+FILTER_SRC = $(SRC_DIR)/sbf.c $(SRC_DIR)/cbf.c
 MAIN_SRC = $(SRC_DIR)/main.c
 
 # Object files
 COMMON_OBJ = $(BUILD_DIR)/murmurhash2.o
 BASELINE_OBJ = $(BUILD_DIR)/baseline.o
-FILTER_OBJ = $(BUILD_DIR)/sbf.o
+FILTER_OBJ = $(BUILD_DIR)/sbf.o $(BUILD_DIR)/cbf.o
 MAIN_OBJ = $(BUILD_DIR)/main.o
 
 .PHONY: all clean sbf cbf pbf rdbf hybrid baseline benchmark demo repl test
@@ -57,24 +57,18 @@ $(BUILD_DIR)/main.o: $(SRC_DIR)/main.c
 $(TARGET): $(COMMON_OBJ) $(BASELINE_OBJ) $(FILTER_OBJ) $(MAIN_OBJ)
 	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
 
-# Individual targets
-sbf: $(BUILD_DIR) $(COMMON_OBJ) $(BUILD_DIR)/sbf.o
-	$(CC) $(CFLAGS) $(COMMON_OBJ) $(BUILD_DIR)/sbf.o -o $(BUILD_DIR)/$@ $(LDFLAGS)
+# Individual targets — compile a single filter object (link happens in `all`)
+sbf: $(BUILD_DIR) $(BUILD_DIR)/sbf.o
 
-cbf: $(BUILD_DIR) $(COMMON_OBJ) $(BUILD_DIR)/cbf.o
-	$(CC) $(CFLAGS) $(COMMON_OBJ) $(BUILD_DIR)/cbf.o -o $(BUILD_DIR)/$@ $(LDFLAGS)
+cbf: $(BUILD_DIR) $(BUILD_DIR)/cbf.o
 
-pbf: $(BUILD_DIR) $(COMMON_OBJ) $(BUILD_DIR)/pbf.o
-	$(CC) $(CFLAGS) $(COMMON_OBJ) $(BUILD_DIR)/pbf.o -o $(BUILD_DIR)/$@ $(LDFLAGS)
+pbf: $(BUILD_DIR) $(BUILD_DIR)/pbf.o
 
-rdbf: $(BUILD_DIR) $(COMMON_OBJ) $(BUILD_DIR)/rdbf.o
-	$(CC) $(CFLAGS) $(COMMON_OBJ) $(BUILD_DIR)/rdbf.o -o $(BUILD_DIR)/$@ $(LDFLAGS)
+rdbf: $(BUILD_DIR) $(BUILD_DIR)/rdbf.o
 
-hybrid: $(BUILD_DIR) $(COMMON_OBJ) $(BUILD_DIR)/hybrid.o
-	$(CC) $(CFLAGS) $(COMMON_OBJ) $(BUILD_DIR)/hybrid.o -o $(BUILD_DIR)/$@ $(LDFLAGS)
+hybrid: $(BUILD_DIR) $(BUILD_DIR)/hybrid.o
 
-baseline: $(BUILD_DIR) $(COMMON_OBJ) $(BUILD_DIR)/baseline.o
-	$(CC) $(CFLAGS) $(COMMON_OBJ) $(BUILD_DIR)/baseline.o -o $(BUILD_DIR)/$@ $(LDFLAGS)
+baseline: $(BUILD_DIR) $(BUILD_DIR)/baseline.o
 
 # Benchmark
 benchmark: $(TARGET)
@@ -95,8 +89,10 @@ test: $(TARGET)
 # Compile and run the C unit tests in tests/
 check: $(BUILD_DIR)
 	$(CC) $(CFLAGS) $(TEST_DIR)/test_sbf.c $(COMMON_OBJ) $(BUILD_DIR)/sbf.o -o $(BUILD_DIR)/test_sbf $(LDFLAGS)
+	$(CC) $(CFLAGS) $(TEST_DIR)/test_cbf.c $(COMMON_OBJ) $(BUILD_DIR)/cbf.o -o $(BUILD_DIR)/test_cbf $(LDFLAGS)
 	$(CC) $(CFLAGS) $(TEST_DIR)/test_baseline.c $(COMMON_OBJ) $(BUILD_DIR)/baseline.o -o $(BUILD_DIR)/test_baseline $(LDFLAGS)
 	$(BUILD_DIR)/test_sbf
+	$(BUILD_DIR)/test_cbf
 	$(BUILD_DIR)/test_baseline
 
 clean:

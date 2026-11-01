@@ -1,7 +1,11 @@
 # Build artifacts
+build/
 *.o
 *.out
 bloom_app
+
+# Session notes
+session-ses_*.md
 
 # IDE
 .vscode/
