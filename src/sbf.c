@@ -1,5 +1,6 @@
 #include "sbf.h"
 #include "murmurhash2.h"
+#include <math.h>
 #include <stdlib.h>
 
 struct sbf {
@@ -58,4 +59,29 @@ bf_member_t sbf_lookup(sbf_t *bf, const bf_key_t *key)
         }
     }
     return BF_PRESENT;
+}
+
+size_t sbf_memory_bytes(const sbf_t *bf)
+{
+    return bf ? (bf->m + 7) / 8 : 0;
+}
+
+size_t sbf_cells(const sbf_t *bf)
+{
+    return bf ? bf->m : 0;
+}
+
+/* classic approximation: (1 - e^{-kn/m})^k */
+double sbf_fpr_theory(const sbf_t *bf, size_t n)
+{
+    if (!bf || bf->m == 0) return 0.0;
+    return pow(1.0 - exp(-(double)bf->k * (double)n / (double)bf->m), (double)bf->k);
+}
+
+double sbf_fill_ratio(const sbf_t *bf)
+{
+    if (!bf || bf->m == 0) return 0.0;
+    size_t ones = 0, bytes = (bf->m + 7) / 8;
+    for (size_t i = 0; i < bytes; i++) ones += (size_t)__builtin_popcount(bf->bits[i]);
+    return (double)ones / (double)bf->m;
 }

@@ -1,5 +1,7 @@
 #include "murmurhash2.h"
 
+uint64_t *murmurhash2_counter = NULL;
+
 uint32_t murmurhash2(const void *key, size_t len, uint32_t seed)
 {
     const uint32_t m = 0x5bd1e995;
@@ -8,6 +10,8 @@ uint32_t murmurhash2(const void *key, size_t len, uint32_t seed)
     const uint8_t *end = data + (len & ~((size_t)3));
 
     uint32_t h = seed ^ (uint32_t)len;
+
+    if (murmurhash2_counter) (*murmurhash2_counter)++;
 
     while (data != end) {
         uint32_t k = ((uint32_t)data[0]) |

@@ -11,5 +11,9 @@ sbf_t *sbf_create(size_t m, unsigned k);
 void sbf_destroy(sbf_t *bf);
 void sbf_insert(sbf_t *bf, const bf_key_t *key);
 bf_member_t sbf_lookup(sbf_t *bf, const bf_key_t *key);
+size_t sbf_memory_bytes(const sbf_t *bf);
+size_t sbf_cells(const sbf_t *bf); /* effective m */
+double sbf_fpr_theory(const sbf_t *bf, size_t n); /* expected FPR after n inserts */
+double sbf_fill_ratio(const sbf_t *bf); /* fraction of non-zero cells */
 
 #endif /* SBF_H */

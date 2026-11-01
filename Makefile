@@ -1,78 +1,58 @@
 CC = gcc
-CFLAGS = -std=c99 -Wall -Wextra -O3 -Iinclude
+CFLAGS = -std=c99 -Wall -Wextra -O3 -Iinclude -MMD -MP
 LDFLAGS = -lpthread -lm
 
 SRC_DIR = src
-INC_DIR = include
 TEST_DIR = tests
 BUILD_DIR = build
 TARGET = bloom_app
 
-# Source files — add filters here as they are implemented (cbf, pbf, rdbf, hybrid)
-COMMON_SRC = $(SRC_DIR)/murmurhash2.c
-BASELINE_SRC = $(SRC_DIR)/baseline.c
-FILTER_SRC = $(SRC_DIR)/sbf.c $(SRC_DIR)/cbf.c $(SRC_DIR)/pbf.c $(SRC_DIR)/rdbf.c
-MAIN_SRC = $(SRC_DIR)/main.c
+# Filters — add hybrid here once src/hybrid.c exists
+FILTERS = sbf cbf pbf rdbf
+MODULES = murmurhash2 bf baseline benchmark $(FILTERS) main
+OBJS = $(MODULES:%=$(BUILD_DIR)/%.o)
+TESTS = $(FILTERS) baseline
 
-# Object files
-COMMON_OBJ = $(BUILD_DIR)/murmurhash2.o
-BASELINE_OBJ = $(BUILD_DIR)/baseline.o
-FILTER_OBJ = $(BUILD_DIR)/sbf.o $(BUILD_DIR)/cbf.o $(BUILD_DIR)/pbf.o $(BUILD_DIR)/rdbf.o
-MAIN_OBJ = $(BUILD_DIR)/main.o
+# Dataset generation (make data N=1000000 TYPES="uuid cpf")
+N ?= 2000
+TYPES ?= uuid cpf cnpj url
+SEED ?= 42
+PYTHON ?= python3
 
-.PHONY: all clean sbf cbf pbf rdbf hybrid baseline benchmark demo repl test
+# Benchmark (make benchmark REPS=10 P=0.01)
+REPS ?= 5
+P ?= 0.01
 
-all: $(BUILD_DIR) $(TARGET)
+.PHONY: all clean $(FILTERS) baseline data benchmark demo repl test check
+
+all: $(TARGET)
 
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
 
-# Compile common
-$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c | $(BUILD_DIR)
 	$(CC) $(CFLAGS) -c $< -o $@
 
-# Compile filters
-$(BUILD_DIR)/sbf.o: $(SRC_DIR)/sbf.c
-	$(CC) $(CFLAGS) -c $< -o $@
-
-$(BUILD_DIR)/cbf.o: $(SRC_DIR)/cbf.c
-	$(CC) $(CFLAGS) -c $< -o $@
-
-$(BUILD_DIR)/pbf.o: $(SRC_DIR)/pbf.c
-	$(CC) $(CFLAGS) -c $< -o $@
-
-$(BUILD_DIR)/rdbf.o: $(SRC_DIR)/rdbf.c
-	$(CC) $(CFLAGS) -c $< -o $@
-
-$(BUILD_DIR)/hybrid.o: $(SRC_DIR)/hybrid.c
-	$(CC) $(CFLAGS) -c $< -o $@
-
-$(BUILD_DIR)/baseline.o: $(SRC_DIR)/baseline.c
-	$(CC) $(CFLAGS) -c $< -o $@
-
-$(BUILD_DIR)/main.o: $(SRC_DIR)/main.c
-	$(CC) $(CFLAGS) -c $< -o $@
-
-# Link
-$(TARGET): $(COMMON_OBJ) $(BASELINE_OBJ) $(FILTER_OBJ) $(MAIN_OBJ)
+$(TARGET): $(OBJS)
 	$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
 
-# Individual targets — compile a single filter object (link happens in `all`)
-sbf: $(BUILD_DIR) $(BUILD_DIR)/sbf.o
+# Individual targets — compile a single module object
+$(FILTERS) baseline: %: $(BUILD_DIR)/%.o
 
-cbf: $(BUILD_DIR) $(BUILD_DIR)/cbf.o
+# Synthetic datasets + protocol partition (Dins / Dexist / Dinexist)
+data:
+	@for t in $(TYPES); do \
+		$(PYTHON) scripts/gen_datasets.py --type $$t --count $(N) --seed $(SEED) && \
+		$(PYTHON) scripts/partition.py --type $$t --seed $(SEED) || exit 1; \
+	done
 
-pbf: $(BUILD_DIR) $(BUILD_DIR)/pbf.o
-
-rdbf: $(BUILD_DIR) $(BUILD_DIR)/rdbf.o
-
-hybrid: $(BUILD_DIR) $(BUILD_DIR)/hybrid.o
-
-baseline: $(BUILD_DIR) $(BUILD_DIR)/baseline.o
-
-# Benchmark
+# Benchmark — one CSV per dataset type in results/ (long format, one row per rep)
 benchmark: $(TARGET)
-	./$(TARGET) --benchmark
+	@mkdir -p results
+	@for t in $(TYPES); do \
+		./$(TARGET) --benchmark --type $$t --p $(P) --reps $(REPS) --out results/benchmark_$$t.csv || exit 1; \
+	done
+	@echo "CSVs escritos em results/"
 
 # Automatic demo — non-interactive, prints comparison table
 demo: $(TARGET)
@@ -82,22 +62,18 @@ demo: $(TARGET)
 repl: $(TARGET)
 	./$(TARGET) --repl
 
-# Test — quick invariants (exit code non-zero on failure)
+# Quick invariants through the generic interface (exit code non-zero on failure)
 test: $(TARGET)
 	./$(TARGET) --test
 
-# Compile and run the C unit tests in tests/
-check: $(BUILD_DIR)
-	$(CC) $(CFLAGS) $(TEST_DIR)/test_sbf.c $(COMMON_OBJ) $(BUILD_DIR)/sbf.o -o $(BUILD_DIR)/test_sbf $(LDFLAGS)
-	$(CC) $(CFLAGS) $(TEST_DIR)/test_cbf.c $(COMMON_OBJ) $(BUILD_DIR)/cbf.o -o $(BUILD_DIR)/test_cbf $(LDFLAGS)
-	$(CC) $(CFLAGS) $(TEST_DIR)/test_pbf.c $(COMMON_OBJ) $(BUILD_DIR)/pbf.o -o $(BUILD_DIR)/test_pbf $(LDFLAGS)
-	$(CC) $(CFLAGS) $(TEST_DIR)/test_rdbf.c $(COMMON_OBJ) $(BUILD_DIR)/rdbf.o -o $(BUILD_DIR)/test_rdbf $(LDFLAGS)
-	$(CC) $(CFLAGS) $(TEST_DIR)/test_baseline.c $(COMMON_OBJ) $(BUILD_DIR)/baseline.o -o $(BUILD_DIR)/test_baseline $(LDFLAGS)
-	$(BUILD_DIR)/test_sbf
-	$(BUILD_DIR)/test_cbf
-	$(BUILD_DIR)/test_pbf
-	$(BUILD_DIR)/test_rdbf
-	$(BUILD_DIR)/test_baseline
+# C unit tests in tests/
+check: $(OBJS)
+	@for t in $(TESTS); do \
+		$(CC) $(CFLAGS) $(TEST_DIR)/test_$$t.c $(BUILD_DIR)/murmurhash2.o $(BUILD_DIR)/$$t.o \
+			-o $(BUILD_DIR)/test_$$t $(LDFLAGS) && $(BUILD_DIR)/test_$$t || exit 1; \
+	done
 
 clean:
 	rm -rf $(BUILD_DIR) $(TARGET)
+
+-include $(OBJS:.o=.d)

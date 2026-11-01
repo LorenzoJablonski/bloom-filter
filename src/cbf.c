@@ -1,5 +1,6 @@
 #include "cbf.h"
 #include "murmurhash2.h"
+#include <math.h>
 #include <stdlib.h>
 
 /*
@@ -96,4 +97,37 @@ bf_member_t cbf_lookup(cbf_t *bf, const bf_key_t *key)
         }
     }
     return BF_PRESENT;
+}
+
+size_t cbf_memory_bytes(const cbf_t *bf)
+{
+    return bf ? (bf->m + 1) / 2 : 0;
+}
+
+size_t cbf_cells(const cbf_t *bf)
+{
+    return bf ? bf->m : 0;
+}
+
+/* same as SBF (counter saturation is negligible at 4 bits for typical loads) */
+double cbf_fpr_theory(const cbf_t *bf, size_t n)
+{
+    if (!bf || bf->m == 0) return 0.0;
+    return pow(1.0 - exp(-(double)bf->k * (double)n / (double)bf->m), (double)bf->k);
+}
+
+double cbf_fill_ratio(const cbf_t *bf)
+{
+    if (!bf || bf->m == 0) return 0.0;
+    size_t nz = 0;
+    for (size_t i = 0; i < bf->m; i++) nz += cbf_get(bf, i) != 0;
+    return (double)nz / (double)bf->m;
+}
+
+size_t cbf_saturated(const cbf_t *bf)
+{
+    if (!bf) return 0;
+    size_t s = 0;
+    for (size_t i = 0; i < bf->m; i++) s += cbf_get(bf, i) == CBF_COUNTER_MAX;
+    return s;
 }

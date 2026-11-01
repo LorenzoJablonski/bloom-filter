@@ -1,0 +1,34 @@
+#ifndef BF_H
+#define BF_H
+
+#include <stddef.h>
+#include "common.h"
+
+/*
+ * Generic interface over every probabilistic filter and the deterministic
+ * baseline. Lets demo, REPL and benchmark iterate over all structures without
+ * a per-filter switch.
+ */
+typedef struct bf_ops {
+    const char *name;
+    int exact;               /* 1 = no false positives (deterministic) */
+    int supports_delete;
+    void *(*create)(size_t m, unsigned k);
+    void (*destroy)(void *bf);
+    void (*insert)(void *bf, const bf_key_t *key);
+    bf_member_t (*lookup)(void *bf, const bf_key_t *key);
+    void (*remove)(void *bf, const bf_key_t *key); /* NULL when unsupported */
+    size_t (*memory_bytes)(const void *bf);
+    /* Metrics below are NULL for the exact baseline. */
+    size_t (*cells)(const void *bf);                 /* effective m after rounding */
+    double (*fpr_theory)(const void *bf, size_t n);  /* expected FPR after n inserts */
+    double (*fill_ratio)(const void *bf);            /* fraction of non-zero cells */
+} bf_ops_t;
+
+/* Lookup by name; returns NULL when unknown. */
+const bf_ops_t *bf_ops_by_name(const char *name);
+
+/* All registered structures, in canonical order. Sets *count. */
+const bf_ops_t *bf_ops_all(size_t *count);
+
+#endif /* BF_H */

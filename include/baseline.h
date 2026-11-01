@@ -9,5 +9,7 @@ baseline_t *baseline_create(void);
 void baseline_destroy(baseline_t *bl);
 void baseline_insert(baseline_t *bl, const bf_key_t *key);
 bf_member_t baseline_lookup(baseline_t *bl, const bf_key_t *key);
+size_t baseline_count(const baseline_t *bl);
+size_t baseline_memory_bytes(const baseline_t *bl);
 
 #endif /* BASELINE_H */

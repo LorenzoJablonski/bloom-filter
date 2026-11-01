@@ -1,5 +1,6 @@
 #include "pbf.h"
 #include "murmurhash2.h"
+#include <math.h>
 #include <stdlib.h>
 
 /*
@@ -75,4 +76,31 @@ bf_member_t pbf_lookup(pbf_t *bf, const bf_key_t *key)
         }
     }
     return BF_PRESENT;
+}
+
+size_t pbf_memory_bytes(const pbf_t *bf)
+{
+    return bf ? (bf->m + 7) / 8 : 0;
+}
+
+size_t pbf_cells(const pbf_t *bf)
+{
+    return bf ? bf->m : 0;
+}
+
+/* k independent partitions of s = m/k bits: (1 - (1 - 1/s)^n)^k */
+double pbf_fpr_theory(const pbf_t *bf, size_t n)
+{
+    if (!bf || bf->partition_size == 0) return 0.0;
+    double s = (double)bf->partition_size;
+    double p_one = 1.0 - pow(1.0 - 1.0 / s, (double)n);
+    return pow(p_one, (double)bf->k);
+}
+
+double pbf_fill_ratio(const pbf_t *bf)
+{
+    if (!bf || bf->m == 0) return 0.0;
+    size_t ones = 0, bytes = (bf->m + 7) / 8;
+    for (size_t i = 0; i < bytes; i++) ones += (size_t)__builtin_popcount(bf->bits[i]);
+    return (double)ones / (double)bf->m;
 }
