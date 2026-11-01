@@ -10,6 +10,7 @@
 #include "sbf.h"
 #include "cbf.h"
 #include "pbf.h"
+#include "rdbf.h"
 #include "baseline.h"
 
 /* ------------------------------------------------------------------ */
@@ -142,6 +143,29 @@ static int demo(void)
     }
     double mem_pbf = (double)((m + 7) / 8);
 
+    /* -------- rDBF (matriz 2D de dimensões primas) -------- */
+    rdbf_t *rdbf = rdbf_create(m);
+    if (!rdbf) { fprintf(stderr, "rdbf_create failed\n"); return 1; }
+
+    t0 = now_ms();
+    for (size_t i = 0; i < n; i++) {
+        bf_key_t kk = { keys[i], strlen(keys[i]) };
+        rdbf_insert(rdbf, &kk);
+    }
+    double t_insert_rdbf = now_ms() - t0;
+
+    size_t fn_rdbf = 0;
+    for (size_t i = 0; i < n; i++) {
+        bf_key_t kk = { keys[i], strlen(keys[i]) };
+        if (rdbf_lookup(rdbf, &kk) != BF_PRESENT) fn_rdbf++;
+    }
+    size_t fp_rdbf = 0;
+    for (size_t i = n; i < n + n_probe; i++) {
+        bf_key_t kk = { keys[i], strlen(keys[i]) };
+        if (rdbf_lookup(rdbf, &kk) == BF_PRESENT) fp_rdbf++;
+    }
+    double mem_rdbf = (double)rdbf_memory_bytes(rdbf);
+
     /* -------- baseline (uthash, determinística) -------- */
     baseline_t *bl = baseline_create();
     if (!bl) { fprintf(stderr, "baseline_create failed\n"); return 1; }
@@ -179,18 +203,24 @@ static int demo(void)
            "cbf", n, n, fn_cbf, n_probe, fp_cbf, 100.0 * fp_cbf / n_probe, mem_cbf / 1024.0);
     printf("%-9s %8zu %8zu %6zu %14zu %6zu %7.3f%% %8.1fKiB\n",
            "pbf", n, n, fn_pbf, n_probe, fp_pbf, 100.0 * fp_pbf / n_probe, mem_pbf / 1024.0);
+    printf("%-9s %8zu %8zu %6zu %14zu %6zu %7.3f%% %8.1fKiB\n",
+           "rdbf", n, n, fn_rdbf, n_probe, fp_rdbf, 100.0 * fp_rdbf / n_probe, mem_rdbf / 1024.0);
     printf("%-9s %8zu %8zu %6zu %14zu %6zu %7.3f%% %8.1fKiB (est)\n",
            "baseline", n, n, fn_bl, n_probe, fp_bl, 100.0 * fp_bl / n_probe, mem_bl / 1024.0);
     printf("\nFPR teorica (sbf/cbf/pbf): %.3f%%   |   sbf obs: %.3f%%   cbf obs: %.3f%%   pbf obs: %.3f%%\n",
            100.0 * fpr_theory, 100.0 * fp_sbf / n_probe, 100.0 * fp_cbf / n_probe,
            100.0 * fp_pbf / n_probe);
+    printf("rdbf: matriz %lu x %lu (primos), 1 hash por chave, 1 bit por chave -> FPR obs: %.3f%%\n",
+           rdbf_dim_x(rdbf), rdbf_dim_y(rdbf), 100.0 * fp_rdbf / n_probe);
     printf("FN = falsos negativos (deve ser 0 em todos)\n");
-    printf("mem sbf/pbf: m bits. mem cbf: 4-bit packed counters (4x sbf). mem baseline: estimativa\n");
+    printf("mem sbf/pbf: m bits. mem cbf: 4-bit packed counters (4x sbf). mem rdbf: matriz de unsigned long. mem baseline: estimativa\n");
 
-    printf("\ntempos (ms): sbf insert=%.1f lookup_exist=%.1f lookup_inexist=%.1f | cbf insert=%.1f | pbf insert=%.1f | baseline insert=%.1f\n",
-           t_insert, t_lookup_exist, t_lookup_inexist, t_insert_cbf, t_insert_pbf, t_insert_bl);
+    printf("\ntempos (ms): sbf insert=%.1f lookup_exist=%.1f lookup_inexist=%.1f | cbf insert=%.1f | pbf insert=%.1f | rdbf insert=%.1f | baseline insert=%.1f\n",
+           t_insert, t_lookup_exist, t_lookup_inexist, t_insert_cbf, t_insert_pbf,
+           t_insert_rdbf, t_insert_bl);
 
-    int ok = (fn_sbf == 0) && (fn_cbf == 0) && (fn_pbf == 0) && (fn_bl == 0) && (fp_bl == 0);
+    int ok = (fn_sbf == 0) && (fn_cbf == 0) && (fn_pbf == 0) && (fn_rdbf == 0) &&
+             (fn_bl == 0) && (fp_bl == 0);
     printf("resultado: %s\n\n", ok ? "OK" : "FALHOU");
 
     for (size_t i = 0; i < n + n_probe; i++) free(keys[i]);
@@ -198,6 +228,7 @@ static int demo(void)
     sbf_destroy(bf);
     cbf_destroy(cbf);
     pbf_destroy(pbf);
+    rdbf_destroy(rdbf);
     baseline_destroy(bl);
     return ok ? 0 : 1;
 }
@@ -288,13 +319,32 @@ static int run_test(void)
         if (pbf_lookup(pbf, &kk) != BF_PRESENT) fn_pbf++;
     }
 
-    int ok = (fn == 0) && (fn_bl == 0) && (fp_bl == 0) && (fn_cbf == 0) && (fn_pbf == 0);
-    printf("test: sbf FN=%d | cbf FN=%d | pbf FN=%d | baseline FN=%d FP=%d -> %s\n",
-           fn, fn_cbf, fn_pbf, fn_bl, fp_bl, ok ? "PASS" : "FAIL");
+    /* rDBF: FN=0 */
+    rdbf_t *rdbf = rdbf_create(16384);
+    if (!rdbf) { sbf_destroy(bf); cbf_destroy(cbf); pbf_destroy(pbf); baseline_destroy(bl); return 1; }
+    for (int i = 0; i < 500; i++) {
+        char buf[32];
+        int len = snprintf(buf, sizeof(buf), "t-%d", i);
+        bf_key_t kk = { buf, (size_t)len };
+        rdbf_insert(rdbf, &kk);
+    }
+    int fn_rdbf = 0;
+    for (int i = 0; i < 500; i++) {
+        char buf[32];
+        int len = snprintf(buf, sizeof(buf), "t-%d", i);
+        bf_key_t kk = { buf, (size_t)len };
+        if (rdbf_lookup(rdbf, &kk) != BF_PRESENT) fn_rdbf++;
+    }
+
+    int ok = (fn == 0) && (fn_bl == 0) && (fp_bl == 0) && (fn_cbf == 0) &&
+             (fn_pbf == 0) && (fn_rdbf == 0);
+    printf("test: sbf FN=%d | cbf FN=%d | pbf FN=%d | rdbf FN=%d | baseline FN=%d FP=%d -> %s\n",
+           fn, fn_cbf, fn_pbf, fn_rdbf, fn_bl, fp_bl, ok ? "PASS" : "FAIL");
 
     sbf_destroy(bf);
     cbf_destroy(cbf);
     pbf_destroy(pbf);
+    rdbf_destroy(rdbf);
     baseline_destroy(bl);
     return ok ? 0 : 1;
 }
@@ -307,10 +357,12 @@ typedef struct {
     sbf_t *bf;
     cbf_t *cbf;
     pbf_t *pbf;
+    rdbf_t *rdbf;
     baseline_t *bl;
     int use_baseline;
     int use_cbf;
     int use_pbf;
+    int use_rdbf;
     size_t m, k;
     size_t n_insert;
     size_t n_lookups, n_present, n_absent;
@@ -327,6 +379,9 @@ static void repl_recreate(repl_state_t *st)
     } else if (st->use_pbf) {
         if (st->pbf) pbf_destroy(st->pbf);
         st->pbf = pbf_create(st->m, st->k);
+    } else if (st->use_rdbf) {
+        if (st->rdbf) rdbf_destroy(st->rdbf);
+        st->rdbf = rdbf_create(st->m);
     } else {
         if (st->bf) sbf_destroy(st->bf);
         st->bf = sbf_create(st->m, st->k);
@@ -341,6 +396,7 @@ static void repl_insert(repl_state_t *st, const char *key, size_t len)
     if (st->use_baseline) baseline_insert(st->bl, &kk);
     else if (st->use_cbf) cbf_insert(st->cbf, &kk);
     else if (st->use_pbf) pbf_insert(st->pbf, &kk);
+    else if (st->use_rdbf) rdbf_insert(st->rdbf, &kk);
     else sbf_insert(st->bf, &kk);
     st->n_insert++;
 }
@@ -360,6 +416,7 @@ static bf_member_t repl_lookup(repl_state_t *st, const char *key, size_t len)
     if (st->use_baseline) r = baseline_lookup(st->bl, &kk);
     else if (st->use_cbf) r = cbf_lookup(st->cbf, &kk);
     else if (st->use_pbf) r = pbf_lookup(st->pbf, &kk);
+    else if (st->use_rdbf) r = rdbf_lookup(st->rdbf, &kk);
     else r = sbf_lookup(st->bf, &kk);
     st->n_lookups++;
     if (r == BF_PRESENT) st->n_present++;
@@ -396,11 +453,17 @@ static void repl_stats(repl_state_t *st)
     const char *name = st->use_baseline ? "baseline (uthash, exata)"
                      : st->use_cbf      ? "cbf (contadores 4-bit)"
                      : st->use_pbf      ? "pbf (particionado)"
+                     : st->use_rdbf     ? "rdbf (matriz 2D de primos)"
                                         : "sbf";
     printf("estrutura : %s\n", name);
     if (st->use_cbf)
         printf("m=%zu contadores (%.1f KiB, 4-bit packed)  k=%zu\n",
                st->m, (double)((st->m + 1) / 2) / 1024.0, st->k);
+    else if (st->use_rdbf)
+        printf("matriz %lu x %lu (primos, %zu bits, %.1f KiB)\n",
+               rdbf_dim_x(st->rdbf), rdbf_dim_y(st->rdbf),
+               (size_t)rdbf_dim_x(st->rdbf) * (size_t)rdbf_dim_y(st->rdbf),
+               (double)rdbf_memory_bytes(st->rdbf) / 1024.0);
     else if (!st->use_baseline)
         printf("m=%zu bits (%.1f KiB)  k=%zu\n", st->m, (double)((st->m + 7) / 8) / 1024.0, st->k);
     printf("inseridas : %zu\n", st->n_insert);
@@ -435,20 +498,29 @@ static int repl(const char *filter)
     st.use_baseline = (strcmp(filter, "baseline") == 0);
     st.use_cbf = (strcmp(filter, "cbf") == 0);
     st.use_pbf = (strcmp(filter, "pbf") == 0);
+    st.use_rdbf = (strcmp(filter, "rdbf") == 0);
 
-    if (st.use_baseline) st.bl = baseline_create();
-    else if (st.use_cbf) st.cbf = cbf_create(st.m, st.k);
-    else if (st.use_pbf) st.pbf = pbf_create(st.m, st.k);
-    else st.bf = sbf_create(st.m, st.k);
-    if (st.use_baseline ? !st.bl : st.use_cbf ? !st.cbf : st.use_pbf ? !st.pbf : !st.bf) {
+    int created;
+    if (st.use_baseline) { st.bl = baseline_create(); created = (st.bl != NULL); }
+    else if (st.use_cbf) { st.cbf = cbf_create(st.m, st.k); created = (st.cbf != NULL); }
+    else if (st.use_pbf) { st.pbf = pbf_create(st.m, st.k); created = (st.pbf != NULL); }
+    else if (st.use_rdbf) { st.rdbf = rdbf_create(st.m); created = (st.rdbf != NULL); }
+    else { st.bf = sbf_create(st.m, st.k); created = (st.bf != NULL); }
+    if (!created) {
         fprintf(stderr, "falha ao criar estrutura\n");
         return 1;
     }
 
-    printf("===== Bloom REPL (%s) =====\n",
-           st.use_baseline ? "baseline" : st.use_cbf ? "cbf" : st.use_pbf ? "pbf" : "sbf");
+    const char *fname = st.use_baseline ? "baseline"
+                      : st.use_cbf      ? "cbf"
+                      : st.use_pbf      ? "pbf"
+                      : st.use_rdbf     ? "rdbf"
+                                        : "sbf";
+    printf("===== Bloom REPL (%s) =====\n", fname);
     if (st.use_cbf)
         printf("m=%zu contadores (4-bit packed)  k=%zu\n", st.m, st.k);
+    else if (st.use_rdbf)
+        printf("matriz %lu x %lu (primos)\n", rdbf_dim_x(st.rdbf), rdbf_dim_y(st.rdbf));
     else if (!st.use_baseline)
         printf("m=%zu bits  k=%zu\n", st.m, st.k);
     repl_help();
@@ -505,6 +577,7 @@ static int repl(const char *filter)
     if (st.use_baseline) baseline_destroy(st.bl);
     else if (st.use_cbf) cbf_destroy(st.cbf);
     else if (st.use_pbf) pbf_destroy(st.pbf);
+    else if (st.use_rdbf) rdbf_destroy(st.rdbf);
     else sbf_destroy(st.bf);
     return 0;
 }
@@ -523,7 +596,7 @@ int main(int argc, char **argv)
         else if (strcmp(argv[i], "--benchmark") == 0) mode = "benchmark";
         else if (strcmp(argv[i], "--filter") == 0 && i + 1 < argc) filter = argv[++i];
         else if (strcmp(argv[i], "--help") == 0) {
-            printf("uso: bloom_app [--demo|--test|--repl [--filter sbf|cbf|pbf|baseline]|--benchmark]\n");
+            printf("uso: bloom_app [--demo|--test|--repl [--filter sbf|cbf|pbf|rdbf|baseline]|--benchmark]\n");
             return 0;
         }
     }
