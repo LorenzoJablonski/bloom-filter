@@ -117,3 +117,23 @@ size_t rdbf_memory_bytes(const rdbf_t *bf)
 {
     return bf ? bf->nwords * sizeof(unsigned long) : 0;
 }
+
+size_t rdbf_cells(const rdbf_t *bf)
+{
+    return bf ? bf->nbits : 0;
+}
+
+/* one bit per key over p1*p2 cells: 1 - (1 - 1/(p1 p2))^n */
+double rdbf_fpr_theory(const rdbf_t *bf, size_t n)
+{
+    if (!bf || bf->nbits == 0) return 0.0;
+    return 1.0 - pow(1.0 - 1.0 / (double)bf->nbits, (double)n);
+}
+
+double rdbf_fill_ratio(const rdbf_t *bf)
+{
+    if (!bf || bf->nbits == 0) return 0.0;
+    size_t ones = 0;
+    for (size_t i = 0; i < bf->nwords; i++) ones += (size_t)__builtin_popcountl(bf->words[i]);
+    return (double)ones / (double)bf->nbits;
+}
