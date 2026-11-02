@@ -13,6 +13,7 @@ typedef struct bf_ops {
     const char *name;
     int exact;               /* 1 = no false positives (deterministic) */
     int supports_delete;
+    unsigned fixed_k;        /* != 0 when the model ignores k (rDBF: 1) */
     void *(*create)(size_t m, unsigned k);
     void (*destroy)(void *bf);
     void (*insert)(void *bf, const bf_key_t *key);
@@ -23,6 +24,7 @@ typedef struct bf_ops {
     size_t (*cells)(const void *bf);                 /* effective m after rounding */
     double (*fpr_theory)(const void *bf, size_t n);  /* expected FPR after n inserts */
     double (*fill_ratio)(const void *bf);            /* fraction of non-zero cells */
+    int (*params)(size_t n, double p, bf_sizing_t *out); /* sizing for target FPR p */
 } bf_ops_t;
 
 /* Lookup by name; returns NULL when unknown. */

@@ -18,5 +18,6 @@ size_t rdbf_memory_bytes(const rdbf_t *bf);
 size_t rdbf_cells(const rdbf_t *bf); /* effective m */
 double rdbf_fpr_theory(const rdbf_t *bf, size_t n); /* expected FPR after n inserts */
 double rdbf_fill_ratio(const rdbf_t *bf); /* fraction of non-zero cells */
+int rdbf_params(size_t n, double p, bf_sizing_t *out); /* sizing for target FPR p */
 
 #endif /* RDBF_H */

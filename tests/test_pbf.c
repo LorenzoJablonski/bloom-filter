@@ -66,8 +66,49 @@ static void test_degenerate(void)
     pbf_destroy(bf);
 }
 
+/* every partition starts on its own 64-byte cache line; padding is counted */
+static void test_alignment(void)
+{
+    const size_t ms[] = { 7, 100, 19171, 100000, 958506 };
+    const unsigned ks[] = { 1, 3, 7, 10 };
+    for (size_t a = 0; a < sizeof(ms) / sizeof(ms[0]); a++) {
+        for (size_t b = 0; b < sizeof(ks) / sizeof(ks[0]); b++) {
+            pbf_t *bf = pbf_create(ms[a], ks[b]);
+            assert(bf != NULL);
+            size_t stride = pbf_partition_stride(bf);
+            size_t part_bytes = (pbf_cells(bf) / ks[b] + 7) / 8;
+            assert(stride % 64 == 0);
+            assert(stride >= part_bytes && stride - part_bytes < 64);
+            assert(pbf_memory_bytes(bf) == stride * ks[b]);
+            pbf_destroy(bf);
+        }
+    }
+}
+
+/* pbf_params reaches the target and is minimal (one bit less per partition misses it) */
+static void test_params(void)
+{
+    const size_t ns[] = { 1000, 100000, 10000000 };
+    const double ps[] = { 0.1, 0.01, 0.001 };
+    for (size_t a = 0; a < 3; a++) {
+        for (size_t b = 0; b < 3; b++) {
+            bf_sizing_t sz;
+            assert(pbf_params(ns[a], ps[b], &sz));
+            pbf_t *bf = pbf_create(sz.m, sz.k);
+            assert(bf != NULL);
+            assert(pbf_fpr_theory(bf, ns[a]) <= ps[b]);
+            pbf_destroy(bf);
+            bf = pbf_create(sz.m - sz.k, sz.k);
+            assert(pbf_fpr_theory(bf, ns[a]) > ps[b]);
+            pbf_destroy(bf);
+        }
+    }
+}
+
 int main(void)
 {
+    test_alignment();
+    test_params();
     test_no_false_negatives();
     test_false_positive_rate();
     test_degenerate();

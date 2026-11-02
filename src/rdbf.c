@@ -137,3 +137,16 @@ double rdbf_fill_ratio(const rdbf_t *bf)
     for (size_t i = 0; i < bf->nwords; i++) ones += (size_t)__builtin_popcountl(bf->words[i]);
     return (double)ones / (double)bf->nbits;
 }
+
+/*
+ * Sizing for a target FPR p. k is fixed at 1 (one bit per key), so invert
+ * 1 - (1 - 1/m)^n = p  ->  m = 1 / (1 - (1 - p)^{1/n})  (~ n/p).
+ * rdbf_create then rounds m up to a product of two primes.
+ */
+int rdbf_params(size_t n, double p, bf_sizing_t *out)
+{
+    if (!out || n == 0 || !(p > 0.0 && p < 1.0)) return 0;
+    out->m = (size_t)ceil(1.0 / -expm1(log1p(-p) / (double)n));
+    out->k = 1;
+    return 1;
+}

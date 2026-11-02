@@ -11,7 +11,12 @@
  * when NULL), one row per repetition (plus an unreported warm-up run).
  * Returns 0 on success.
  */
+/* sizing regimes (bit flags) */
+#define SIZING_SAME_M   1u  /* all filters get the SBF's (m, k) for p */
+#define SIZING_SAME_FPR 2u  /* each filter sized by its own <model>_params */
+#define SIZING_BOTH     (SIZING_SAME_M | SIZING_SAME_FPR)
+
 int benchmark_run(const char *type, size_t n_override, double p_target,
-                  unsigned reps, const char *out_path);
+                  unsigned reps, unsigned sizing, const char *out_path);
 
 #endif /* BENCHMARK_H */

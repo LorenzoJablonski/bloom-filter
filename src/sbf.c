@@ -85,3 +85,25 @@ double sbf_fill_ratio(const sbf_t *bf)
     for (size_t i = 0; i < bytes; i++) ones += (size_t)__builtin_popcount(bf->bits[i]);
     return (double)ones / (double)bf->m;
 }
+
+/*
+ * Sizing for a target FPR p: for each k, invert (1 - e^{-kn/m})^k = p to
+ *     m = -k n / ln(1 - p^{1/k})
+ * and keep the k that minimises m. Equivalent to the classic closed form
+ * m = -n ln p / (ln 2)^2, k = (m/n) ln 2, but without rounding k afterwards
+ * (rounding k would make the achieved FPR drift away from p).
+ */
+int sbf_params(size_t n, double p, bf_sizing_t *out)
+{
+    if (!out || n == 0 || !(p > 0.0 && p < 1.0)) return 0;
+    size_t best_m = 0;
+    unsigned best_k = 0;
+    for (unsigned k = 1; k <= BF_MAX_K; k++) {
+        double q = pow(p, 1.0 / (double)k);
+        size_t m = (size_t)ceil(-(double)k * (double)n / log1p(-q));
+        if (best_k == 0 || m < best_m) { best_m = m; best_k = k; }
+    }
+    out->m = best_m;
+    out->k = best_k;
+    return 1;
+}
