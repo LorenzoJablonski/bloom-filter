@@ -7,11 +7,11 @@ TEST_DIR = tests
 BUILD_DIR = build
 TARGET = bloom_app
 
-# Filters — add hybrid here once src/hybrid.c exists
-FILTERS = sbf cbf pbf rdbf
+# Filters
+FILTERS = sbf cbf pbf rdbf hybrid
 MODULES = murmurhash2 bf baseline benchmark $(FILTERS) main
 OBJS = $(MODULES:%=$(BUILD_DIR)/%.o)
-TESTS = $(FILTERS) baseline
+TESTS = murmurhash2 $(FILTERS) baseline
 
 # Dataset generation (make data N=1000000 TYPES="uuid cpf")
 N ?= 2000
@@ -69,7 +69,8 @@ test: $(TARGET)
 # C unit tests in tests/
 check: $(OBJS)
 	@for t in $(TESTS); do \
-		$(CC) $(CFLAGS) $(TEST_DIR)/test_$$t.c $(BUILD_DIR)/murmurhash2.o $(BUILD_DIR)/$$t.o \
+		obj=$(BUILD_DIR)/$$t.o; [ $$t = murmurhash2 ] && obj=; \
+		$(CC) $(CFLAGS) $(TEST_DIR)/test_$$t.c $(BUILD_DIR)/murmurhash2.o $$obj \
 			-o $(BUILD_DIR)/test_$$t $(LDFLAGS) && $(BUILD_DIR)/test_$$t || exit 1; \
 	done
 
