@@ -57,11 +57,11 @@ static bf_member_t baseline_ad_lookup(void *bf, const bf_key_t *k) { return base
 static size_t baseline_ad_memory(const void *bf) { return baseline_memory_bytes((const baseline_t *)bf); }
 
 static const bf_ops_t ops_table[] = {
-    { "sbf",      0, 0, sbf_ad_create,      sbf_ad_destroy,      sbf_ad_insert,      sbf_ad_lookup,      NULL,            sbf_ad_memory, sbf_ad_cells, sbf_ad_fpr, sbf_ad_fill },
-    { "cbf",      0, 1, cbf_ad_create,      cbf_ad_destroy,      cbf_ad_insert,      cbf_ad_lookup,      cbf_ad_remove,   cbf_ad_memory, cbf_ad_cells, cbf_ad_fpr, cbf_ad_fill },
-    { "pbf",      0, 0, pbf_ad_create,      pbf_ad_destroy,      pbf_ad_insert,      pbf_ad_lookup,      NULL,            pbf_ad_memory, pbf_ad_cells, pbf_ad_fpr, pbf_ad_fill },
-    { "rdbf",     0, 0, rdbf_ad_create,     rdbf_ad_destroy,     rdbf_ad_insert,     rdbf_ad_lookup,     NULL,            rdbf_ad_memory, rdbf_ad_cells, rdbf_ad_fpr, rdbf_ad_fill },
-    { "baseline", 1, 0, baseline_ad_create, baseline_ad_destroy, baseline_ad_insert, baseline_ad_lookup, NULL,            baseline_ad_memory, NULL, NULL, NULL },
+    { "sbf",      0, 0, 0, sbf_ad_create,      sbf_ad_destroy,      sbf_ad_insert,      sbf_ad_lookup,      NULL,            sbf_ad_memory, sbf_ad_cells, sbf_ad_fpr, sbf_ad_fill, sbf_params },
+    { "cbf",      0, 1, 0, cbf_ad_create,      cbf_ad_destroy,      cbf_ad_insert,      cbf_ad_lookup,      cbf_ad_remove,   cbf_ad_memory, cbf_ad_cells, cbf_ad_fpr, cbf_ad_fill, cbf_params },
+    { "pbf",      0, 0, 0, pbf_ad_create,      pbf_ad_destroy,      pbf_ad_insert,      pbf_ad_lookup,      NULL,            pbf_ad_memory, pbf_ad_cells, pbf_ad_fpr, pbf_ad_fill, pbf_params },
+    { "rdbf",     0, 0, 1, rdbf_ad_create,     rdbf_ad_destroy,     rdbf_ad_insert,     rdbf_ad_lookup,     NULL,            rdbf_ad_memory, rdbf_ad_cells, rdbf_ad_fpr, rdbf_ad_fill, rdbf_params },
+    { "baseline", 1, 0, 0, baseline_ad_create, baseline_ad_destroy, baseline_ad_insert, baseline_ad_lookup, NULL,            baseline_ad_memory, NULL, NULL, NULL, NULL },
 };
 
 #define OPS_COUNT (sizeof(ops_table) / sizeof(ops_table[0]))

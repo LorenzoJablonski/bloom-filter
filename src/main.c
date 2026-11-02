@@ -228,6 +228,29 @@ static int run_test(void)
         }
     }
 
+    /* sizing: each model's params(n, p) must reach p by its own formula */
+    {
+        const size_t ns[] = { 1000, 1000000 };
+        const double ps[] = { 0.05, 0.01, 0.001 };
+        for (size_t i = 0; i < nops; i++) {
+            if (!ops[i].params) continue;
+            int good = 1;
+            for (size_t a = 0; a < 2; a++) {
+                for (size_t b = 0; b < 3; b++) {
+                    bf_sizing_t sz;
+                    if (!ops[i].params(ns[a], ps[b], &sz)) { good = 0; continue; }
+                    void *bf = ops[i].create(sz.m, sz.k);
+                    if (!bf) { good = 0; continue; }
+                    double f = ops[i].fpr_theory(bf, ns[a]);
+                    if (f > ps[b] * (1.0 + 1e-9) || f < ps[b] * 0.9) good = 0;
+                    ops[i].destroy(bf);
+                }
+            }
+            printf("test: %s params %s\n", ops[i].name, good ? "OK" : "FALHOU");
+            if (!good) ok = 0;
+        }
+    }
+
     printf("test: %s\n", ok ? "PASS" : "FAIL");
     return ok ? 0 : 1;
 }
@@ -416,6 +439,7 @@ int main(int argc, char **argv)
     size_t n_override = 0;
     double p_target = 0.01;
     unsigned reps = 5;
+    unsigned sizing = SIZING_BOTH;
     const char *out_path = NULL;
 
     for (int i = 1; i < argc; i++) {
@@ -428,9 +452,16 @@ int main(int argc, char **argv)
         else if (strcmp(argv[i], "--n") == 0 && i + 1 < argc) n_override = (size_t)atol(argv[++i]);
         else if (strcmp(argv[i], "--p") == 0 && i + 1 < argc) p_target = atof(argv[++i]);
         else if (strcmp(argv[i], "--reps") == 0 && i + 1 < argc) reps = (unsigned)atoi(argv[++i]);
+        else if (strcmp(argv[i], "--sizing") == 0 && i + 1 < argc) {
+            const char *v = argv[++i];
+            if (strcmp(v, "same_m") == 0) sizing = SIZING_SAME_M;
+            else if (strcmp(v, "same_fpr") == 0) sizing = SIZING_SAME_FPR;
+            else if (strcmp(v, "both") == 0) sizing = SIZING_BOTH;
+            else { fprintf(stderr, "--sizing: use same_m, same_fpr ou both\n"); return 2; }
+        }
         else if (strcmp(argv[i], "--out") == 0 && i + 1 < argc) out_path = argv[++i];
         else if (strcmp(argv[i], "--help") == 0) {
-            printf("uso: bloom_app [--demo|--test|--repl [--filter NAME]|--benchmark [--type T] [--n N] [--p P] [--reps R] [--out FILE]]\n");
+            printf("uso: bloom_app [--demo|--test|--repl [--filter NAME]|--benchmark [--type T] [--n N] [--p P] [--reps R] [--sizing same_m|same_fpr|both] [--out FILE]]\n");
             printf("filtros: sbf cbf pbf rdbf baseline\n");
             printf("tipos  : uuid cpf cnpj url\n");
             return 0;
@@ -440,7 +471,7 @@ int main(int argc, char **argv)
     if (strcmp(mode, "repl") == 0) return repl(filter);
     if (strcmp(mode, "test") == 0) return run_test();
     if (strcmp(mode, "benchmark") == 0) {
-        return benchmark_run(type, n_override, p_target, reps, out_path);
+        return benchmark_run(type, n_override, p_target, reps, sizing, out_path);
     }
     return demo();
 }

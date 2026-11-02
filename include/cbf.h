@@ -15,6 +15,7 @@ size_t cbf_memory_bytes(const cbf_t *bf);
 size_t cbf_cells(const cbf_t *bf); /* effective m */
 double cbf_fpr_theory(const cbf_t *bf, size_t n); /* expected FPR after n inserts */
 double cbf_fill_ratio(const cbf_t *bf); /* fraction of non-zero cells */
+int cbf_params(size_t n, double p, bf_sizing_t *out); /* sizing for target FPR p */
 size_t cbf_saturated(const cbf_t *bf); /* counters stuck at max */
 
 #endif /* CBF_H */

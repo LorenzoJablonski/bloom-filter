@@ -6,6 +6,7 @@ bloom_app
 
 # Session notes
 session-ses_*.md
+/20??-??-??-*.txt
 
 # IDE
 .vscode/
