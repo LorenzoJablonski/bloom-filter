@@ -81,11 +81,14 @@ def main() -> int:
 
     inext = args.inexist if args.inexist is not None else n
     gen = GENERATORS[args.type]
-    dinexist = set()
+    # list in generation order: writing a set would make the file order depend on
+    # Python's per-process string hash randomization (PYTHONHASHSEED)
+    dinexist, seen = [], set()
     while len(dinexist) < inext:
         key = gen(rng)
-        if key not in insert_set:
-            dinexist.add(key)
+        if key not in insert_set and key not in seen:
+            seen.add(key)
+            dinexist.append(key)
 
     _verify(dins, dexist, dinexist)
 

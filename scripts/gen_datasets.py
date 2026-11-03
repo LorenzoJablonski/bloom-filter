@@ -64,7 +64,8 @@ def gen_url(rng: random.Random) -> str:
 
 
 GENERATORS = {
-    "uuid": lambda rng: str(uuidlib.uuid4()),
+    # version-4 UUID from the seeded RNG (uuid4() would use os.urandom and ignore --seed)
+    "uuid": lambda rng: str(uuidlib.UUID(int=rng.getrandbits(128), version=4)),
     "cpf": gen_cpf,
     "cnpj": gen_cnpj,
     "url": gen_url,
