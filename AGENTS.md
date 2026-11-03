@@ -33,7 +33,7 @@ Merge order matters — murmurhash is prerequisite for all filters:
 1. `feature/murmurhash` — DONE (commit 4628533, merged to develop)
 2. `feature/datasets` — DONE (scripts + protocol partition, merged to develop)
 3. `feature/sbf`, `feature/baseline` — DONE
-4. `feature/cbf`, `feature/pbf`, `feature/rdbf` — DONE (rDBF has no delete: 1 bit/key, no counters)
+4. `feature/cbf`, `feature/pbf`, `feature/rdbf` — DONE (rDBF follows robustBF Eq. 1: X x Y 64-bit cells, beta=61, X != Y primes; no delete: 1 bit/key, no counters)
 5. `feature/benchmark`, `feature/threads`
 6. `feature/hybrid` — key-sharded prime-matrix filter, 1 MurmurHash64A call, double hashing inside the shard;
    variants hybrid_512 / hybrid_4096 (bits) and hybrid_c_512 / hybrid_c_4096 (4-bit counters, delete)

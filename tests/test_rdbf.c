@@ -14,16 +14,39 @@ static int is_prime(unsigned long n)
     return 1;
 }
 
+/* X, Y, beta pairwise distinct primes; capacity and memory consistent */
 static void test_dimensions_prime(void)
 {
-    rdbf_t *bf = rdbf_create(100000);
+    const size_t ms[] = { 1, 61, 62, 1000, 100000, 958506, 100000000 };
+    for (size_t a = 0; a < sizeof(ms) / sizeof(ms[0]); a++) {
+        rdbf_t *bf = rdbf_create(ms[a]);
+        assert(bf != NULL);
+        unsigned long x = rdbf_dim_x(bf), y = rdbf_dim_y(bf);
+        unsigned long beta = rdbf_beta();
+        assert(is_prime(x) && is_prime(y) && is_prime(beta));
+        assert(x != y && x != beta && y != beta);
+        assert(rdbf_cells(bf) == (size_t)x * y * beta);
+        assert(rdbf_cells(bf) >= ms[a]);
+        assert(rdbf_memory_bytes(bf) == (size_t)x * y * sizeof(unsigned long));
+        if (ms[a] == 100000)
+            printf("rdbf: m=100000 -> %lu x %lu celulas de 64 bits, beta=%lu, %zu bits uteis\n",
+                   x, y, beta, rdbf_cells(bf));
+        rdbf_destroy(bf);
+    }
+}
+
+/* every cell and every one of the 61 bit positions is reachable (CRT) */
+static void test_full_coverage(void)
+{
+    rdbf_t *bf = rdbf_create(61 * 35);   /* tiny: 5 x 7 cells */
     assert(bf != NULL);
-    unsigned long p1 = rdbf_dim_x(bf), p2 = rdbf_dim_y(bf);
-    printf("rdbf: dims = %lu x %lu\n", p1, p2);
-    assert(is_prime(p1));
-    assert(is_prime(p2));
-    assert((size_t)p1 * (size_t)p2 >= 100000);
-    assert(rdbf_memory_bytes(bf) * 8 >= (size_t)p1 * (size_t)p2);
+    char buf[32];
+    for (int i = 0; i < 200000; i++) {
+        int len = snprintf(buf, sizeof(buf), "cov-%d", i);
+        bf_key_t k = { buf, (size_t)len };
+        rdbf_insert(bf, &k);
+    }
+    assert(rdbf_fill_ratio(bf) == 1.0);   /* would be ~1/x if x == y (diagonal only) */
     rdbf_destroy(bf);
 }
 
@@ -70,13 +93,16 @@ static void test_false_positive_rate(void)
     }
     double fpr = 100.0 * (double)fp / (double)probes;
     printf("rdbf: FPR observada = %.3f%% (%zu/%zu)\n", fpr, fp, probes);
-    assert(fpr < 20.0);
+    double th = 100.0 * rdbf_fpr_theory(bf, n);
+    printf("rdbf: FPR teorica  = %.3f%%\n", th);
+    assert(fpr > 0.8 * th && fpr < 1.2 * th);
     rdbf_destroy(bf);
 }
 
 int main(void)
 {
     test_dimensions_prime();
+    test_full_coverage();
     test_no_false_negatives();
     test_false_positive_rate();
     printf("rdbf: all tests passed\n");
