@@ -27,6 +27,14 @@ typedef struct {
 
 #define BF_MAX_K 32u /* upper bound of the k search in the sizing functions */
 
+/*
+ * Experimental protocol version. Bump it whenever a change affects whether
+ * results are comparable with earlier runs (sizing formulas, hashing, warm-up,
+ * timing method, CSV columns, store layout...). scripts/run.py records it per
+ * run and the analysis only groups runs with the same version.
+ */
+#define BF_PROTOCOL_VERSION 1
+
 typedef enum {
     BF_ABSENT  = 0,
     BF_PRESENT = 1

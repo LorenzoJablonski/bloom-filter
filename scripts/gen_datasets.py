@@ -7,6 +7,7 @@ Usage: python3 scripts/gen_datasets.py --type <uuid|cpf|cnpj|url> --count N [--o
 """
 
 import argparse
+import json
 import random
 import sys
 import uuid as uuidlib
@@ -95,6 +96,10 @@ def main() -> int:
             seen.add(key)
             fh.write(key + "\n")
             written += 1
+
+    # provenance for scripts/run.py (partition.py adds its own fields)
+    meta = {"type": args.type, "pool_count": written, "pool_seed": args.seed}
+    (outdir / "meta.json").write_text(json.dumps(meta, indent=2) + "\n")
 
     print(f"wrote {written} unique {args.type} keys -> {outfile}")
     return 0

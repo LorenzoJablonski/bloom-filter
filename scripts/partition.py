@@ -16,6 +16,7 @@ Defaults: n = all pool keys, exist = 10% of Dins, inexist = n (matching insertio
 """
 
 import argparse
+import json
 import random
 import sys
 from pathlib import Path
@@ -91,6 +92,13 @@ def main() -> int:
     write_keys(datdir / "insert.txt", dins)
     write_keys(datdir / "exist.txt", dexist)
     write_keys(datdir / "inexist.txt", dinexist)
+
+    # provenance for scripts/run.py; keeps the fields written by gen_datasets.py
+    meta_path = datdir / "meta.json"
+    meta = json.loads(meta_path.read_text()) if meta_path.exists() else {"type": args.type}
+    meta.update({"partition_seed": args.seed, "n_ins": len(dins), "n_exist": len(dexist),
+                 "n_inexist": len(dinexist), "exist_ratio": args.exist})
+    meta_path.write_text(json.dumps(meta, indent=2) + "\n")
 
     print(f"type={args.type} pool={len(pool)}")
     print(f"  Dins={len(dins)} ({datdir / 'insert.txt'})")
