@@ -16,6 +16,8 @@ make data         # generates datasets: N=2000 TYPES="uuid cpf cnpj url" SEED=42
 make benchmark    # via scripts/run.py -> results/bloom.db: REPS=5 P=0.01 REPEAT=1 LABEL= [ALLOW_DIRTY=1]
 make iobench      # I/O gatekeeper experiment, same flags + TABLES="1 8" NEG="0.5 0.9" QUERIES=10000 STORE_DIR=data/store [CACHED=1]
 python3 scripts/analyze.py runs|bench|io|freeze   # tables (terminal/--csv/--latex) from results/bloom.db
+make venv         # .venv with matplotlib (requirements.txt; uses uv when available)
+make plots        # figures in results/plots: FORMAT="pdf png" PLOT_ARGS="--label ..." DB=
 make test         # quick invariants via the generic interface (--test)
 make check        # C unit tests in tests/
 make clean        # removes build/ and bloom_app
@@ -41,7 +43,7 @@ Merge order matters — murmurhash is prerequisite for all filters:
 5. `feature/benchmark` — DONE; `feature/threads` — later (after scale runs)
 6. `feature/hybrid` — key-sharded prime-matrix filter, 1 MurmurHash64A call, double hashing inside the shard;
    variants hybrid_512 / hybrid_4096 (bits) and hybrid_c_512 / hybrid_c_4096 (4-bit counters, delete)
-7. `feature/io` — DONE (store + iobench); `feature/analysis` — DONE (SQLite results, tables; plots pending); `feature/docs`
+7. `feature/io` — DONE (store + iobench); `feature/analysis` — DONE (SQLite results, tables); `feature/plots` — figures (`analyze.py --plot`); `feature/docs`
 
 ## Key Conventions
 - MurmurHash2 family only: MurmurHash2 (32-bit, seed varies per invocation) for SBF/CBF/PBF/rDBF; MurmurHash64A (64-bit, one call) for the hybrid. Both checked against smhasher verification values in tests/test_murmurhash2.c
@@ -54,5 +56,5 @@ Merge order matters — murmurhash is prerequisite for all filters:
 - I/O experiment (src/iobench.c, src/store.c): SSTable-like sorted tables on disk, one 4 KB block read per probe, O_DIRECT by default; tables are built once in STORE_DIR and reused (fingerprint in header). On btrfs with compression, O_DIRECT silently falls back to the page cache — iobench sets NOCOMP on its table dir and warns when proc read_bytes << reads*4096
 - Dataset loading is shared via include/keyset.h (dataset_load)
 - Benchmark: rep 0 is an unreported warm-up; hash-call counts come from an untimed pass (`murmurhash2_counter`), never enable it in timed code
-- Results: scripts/run.py records each bloom_app run in results/bloom.db (runs + filter_results/io_results, schema in scripts/resultsdb.py) and keeps the raw CSV in results/raw/. Runs are pooled only with equal config_key (protocol, dataset hash, parameters) and env_key (machine, device). Bump `BF_PROTOCOL_VERSION` (include/common.h) when a change breaks comparability; update resultsdb column lists when CSV columns change. Python scripts use the standard library only
+- Results: scripts/run.py records each bloom_app run in results/bloom.db (runs + filter_results/io_results, schema in scripts/resultsdb.py) and keeps the raw CSV in results/raw/. Runs are pooled only with equal config_key (protocol, dataset hash, parameters) and env_key (machine, device). Bump `BF_PROTOCOL_VERSION` (include/common.h) when a change breaks comparability; update resultsdb column lists when CSV columns change. Python scripts use the standard library only; matplotlib is optional and confined to scripts/plots.py (imported only with --plot)
 - Commit messages in English
