@@ -14,6 +14,7 @@
 #include "baseline.h"
 #include "bf.h"
 #include "benchmark.h"
+#include "iobench.h"
 
 /* ------------------------------------------------------------------ */
 /* helpers                                                            */
@@ -441,6 +442,7 @@ int main(int argc, char **argv)
     double p_target = 0.01;
     unsigned reps = 5;
     unsigned sizing = SIZING_BOTH;
+    iobench_cfg_t io = { NULL, 0, 0.01, 1, 0.5, 10000, 5, 1, 100, "data/store", NULL };
     const char *out_path = NULL;
 
     for (int i = 1; i < argc; i++) {
@@ -448,6 +450,13 @@ int main(int argc, char **argv)
         else if (strcmp(argv[i], "--test") == 0) mode = "test";
         else if (strcmp(argv[i], "--demo") == 0) mode = "demo";
         else if (strcmp(argv[i], "--benchmark") == 0) mode = "benchmark";
+        else if (strcmp(argv[i], "--iobench") == 0) mode = "iobench";
+        else if (strcmp(argv[i], "--tables") == 0 && i + 1 < argc) io.tables = (unsigned)atoi(argv[++i]);
+        else if (strcmp(argv[i], "--neg") == 0 && i + 1 < argc) io.neg_ratio = atof(argv[++i]);
+        else if (strcmp(argv[i], "--queries") == 0 && i + 1 < argc) io.queries = (size_t)atol(argv[++i]);
+        else if (strcmp(argv[i], "--value-size") == 0 && i + 1 < argc) io.value_size = (size_t)atol(argv[++i]);
+        else if (strcmp(argv[i], "--store-dir") == 0 && i + 1 < argc) io.store_dir = argv[++i];
+        else if (strcmp(argv[i], "--cached") == 0) io.direct = 0;
         else if (strcmp(argv[i], "--filter") == 0 && i + 1 < argc) filter = argv[++i];
         else if (strcmp(argv[i], "--type") == 0 && i + 1 < argc) type = argv[++i];
         else if (strcmp(argv[i], "--n") == 0 && i + 1 < argc) n_override = (size_t)atol(argv[++i]);
@@ -463,6 +472,8 @@ int main(int argc, char **argv)
         else if (strcmp(argv[i], "--out") == 0 && i + 1 < argc) out_path = argv[++i];
         else if (strcmp(argv[i], "--help") == 0) {
             printf("uso: bloom_app [--demo|--test|--repl [--filter NAME]|--benchmark [--type T] [--n N] [--p P] [--reps R] [--sizing same_m|same_fpr|both] [--out FILE]]\n");
+            printf("         bloom_app --iobench [--type T] [--n N] [--p P] [--reps R] [--tables T] [--neg 0..1]\n"
+                   "                     [--queries Q] [--value-size B] [--store-dir DIR] [--cached] [--out FILE]\n");
             printf("filtros: sbf cbf pbf rdbf hybrid_512 hybrid_4096 hybrid_c_512 hybrid_c_4096 baseline\n");
             printf("tipos  : uuid cpf cnpj url\n");
             return 0;
@@ -473,6 +484,15 @@ int main(int argc, char **argv)
     if (strcmp(mode, "test") == 0) return run_test();
     if (strcmp(mode, "benchmark") == 0) {
         return benchmark_run(type, n_override, p_target, reps, sizing, out_path);
+    }
+    if (strcmp(mode, "iobench") == 0) {
+        io.type = type;
+        io.n_override = n_override;
+        io.p_target = p_target;
+        io.reps = reps;
+        io.out_path = out_path;
+        if (io.neg_ratio < 0.0 || io.neg_ratio > 1.0) { fprintf(stderr, "--neg: use 0..1\n"); return 2; }
+        return iobench_run(&io);
     }
     return demo();
 }
