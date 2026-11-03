@@ -19,6 +19,11 @@ Examples
   python3 scripts/analyze.py runs
   python3 scripts/analyze.py bench --type uuid --sizing same_fpr --latex results/tables/bench_uuid.tex
   python3 scripts/analyze.py io --label hd-T8 --csv results/tables/io.csv
+  .venv/bin/python scripts/analyze.py bench --plot results/plots
+
+--plot DIR writes one figure per group of comparable runs (PDF for LaTeX,
+--format png for a quick look). It needs matplotlib (make venv); everything
+else stays standard-library only.
 """
 
 import argparse
@@ -267,6 +272,7 @@ def cmd_bench(con, args):
                              FILTER_ORDER.get(r["filter"], 99)))
     print(f"protocolo {args.protocol}, {nrows} amostras\n", file=sys.stderr)
     emit(recs, group, ["tipo", "regime", "filtro"], metrics, args)
+    plot(args, "bench", recs, metrics)
 
 
 def cmd_io(con, args):
@@ -282,6 +288,15 @@ def cmd_io(con, args):
                              r["neg_ratio"], FILTER_ORDER.get(r["gatekeeper"], 99)))
     print(f"protocolo {args.protocol}, {nrows} amostras\n", file=sys.stderr)
     emit(recs, group, ["tipo", "disco", "direct", "T", "neg", "gatekeeper"], metrics, args)
+    plot(args, "io", recs, metrics)
+
+
+def plot(args, kind, recs, metrics):
+    if not args.plot:
+        return
+    import plots  # matplotlib only when figures are requested
+    for path in getattr(plots, kind)(recs, metrics, args.plot, args.format):
+        print(f"figura: {path}", file=sys.stderr)
 
 
 def cmd_freeze(con, args):
@@ -320,6 +335,9 @@ def main():
     sel.add_argument("--no-ci", action="store_true", help="only means, no ± CI")
     sel.add_argument("--csv", help="write mean/sd/ci95 per group")
     sel.add_argument("--latex", help="write a booktabs tabular")
+    sel.add_argument("--plot", metavar="DIR", help="write figures to DIR (needs matplotlib)")
+    sel.add_argument("--format", nargs="+", default=["pdf"], choices=["pdf", "png", "svg"],
+                     help="figure formats (default: pdf)")
 
     b = sub.add_parser("bench", parents=[sel], help="benchmark table")
     b.add_argument("--sizing", nargs="+", choices=["same_m", "same_fpr", "none"])

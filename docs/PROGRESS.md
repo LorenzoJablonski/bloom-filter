@@ -3,7 +3,7 @@
 Documento de passagem entre sessões/máquinas. Quem retomar o trabalho (pessoa
 ou agente) deve ler isto e o `AGENTS.md` antes de mexer no código.
 
-Última atualização: 2026-11-03 (branch `develop`, após merge de `feature/analysis`).
+Última atualização: 2026-11-03 (branch `feature/plots`, sobre `develop`).
 
 ## Como retomar em outra máquina
 
@@ -16,7 +16,9 @@ make data                     # datasets NÃO estão no git (N=2000, SEED=42; re
 ```
 
 Requisitos: GCC (C99), make, Python 3.10+ (só biblioteca padrão), util-linux
-(`findmnt`, `lsblk`). Gráficos ainda não existem (precisarão de matplotlib).
+(`findmnt`, `lsblk`). Gráficos: `make venv` uma vez (cria `.venv` com o
+matplotlib; usa o `uv` se existir, útil onde falta o `python3-venv`), depois
+`make plots`.
 
 Os artefatos gerados (`data/*`, `results/*`, incluindo `results/bloom.db`) são
 ignorados pelo git e recriados pelos comandos acima. Os arquivos de sessão
@@ -51,8 +53,8 @@ este arquivo ao começar.
 5. Threads (só depois do resto).
 6. Texto (depois).
 
-Pendências menores: gráficos (`.venv` + `requirements.txt` com matplotlib
-opcional, integrado ao `analyze.py`).
+Gráficos — **feito** (`feature/plots`, aguardando revisão): `analyze.py
+bench|io --plot DIR [--format pdf png]`, `make plots`.
 
 ## O que existe
 
@@ -70,6 +72,7 @@ opcional, integrado ao `analyze.py`).
 | benchmark | `src/benchmark.c` | regimes `same_m` (m e k do SBF para todos) e `same_fpr` (cada um com seus parâmetros); rep 0 é aquecimento; contagem de hashes em passada não cronometrada |
 | I/O | `src/store.c`, `src/iobench.c` | tabelas tipo SSTable em blocos de 4 KB, 1 `pread` por consulta, O_DIRECT; T tabelas consultadas da mais nova para a mais antiga |
 | resultados | `scripts/run.py`, `resultsdb.py`, `analyze.py` | cada execução no `results/bloom.db` com commit, binário, máquina, disco e dataset |
+| gráficos | `scripts/plots.py` | `--plot` no `analyze.py`: mesmos agregados das tabelas (média, IC 95%); bench por tipo × regime (baseline como referência) + memória × FPR; I/O por tipo × disco × T com as razões de negativas lado a lado |
 
 ## Decisões técnicas e porquês
 
@@ -98,6 +101,13 @@ opcional, integrado ao `analyze.py`).
   mesmo `config_key` (protocolo, hash do dataset, parâmetros) e `env_key`
   (máquina, limite de RAM, disco). `binary_sha256` distingue o mesmo commit
   compilado com outro compilador/flags.
+- **Gráficos saem dos mesmos agregados das tabelas** (`aggregate()` do
+  `analyze.py`), para figura e tabela nunca divergirem. O matplotlib fica só
+  em `scripts/plots.py`, importado apenas com `--plot`: o resto continua só
+  com a biblioteca padrão. Figuras de máquinas/discos diferentes (`env_key`)
+  nunca se misturam; configurações diferentes só dividem uma figura quando não
+  se sobrepõem (ex.: neg 0,5 e 0,9 lado a lado). Eixo log automático quando os
+  valores variam mais de 30× (ex.: bits/chave com o baseline).
 - **Datasets reprodutíveis.** `make data` com a mesma seed gera arquivos
   idênticos byte a byte (corrigido em 2026-11-03: UUID ignorava a seed e a
   ordem do Dinexist dependia do hash randomizado do Python).

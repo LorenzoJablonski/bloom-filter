@@ -1,0 +1,3 @@
+# Optional: only for figures (analyze.py --plot / make plots).
+# Datasets, runs and tables use the Python standard library only.
+matplotlib>=3.8

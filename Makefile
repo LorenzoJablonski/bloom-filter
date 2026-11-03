@@ -23,7 +23,7 @@ PYTHON ?= python3
 REPS ?= 5
 P ?= 0.01
 
-.PHONY: all clean $(FILTERS) baseline data benchmark iobench demo repl test check
+.PHONY: all clean $(FILTERS) baseline data benchmark iobench plots venv demo repl test check
 
 all: $(TARGET)
 
@@ -73,6 +73,29 @@ iobench: $(TARGET)
 	$(PYTHON) scripts/run.py iobench $(RUN_FLAGS) --tables $(TABLES) --neg $(NEG) \
 		--queries $(QUERIES) --value-size $(VALUE_SIZE) --store-dir $(STORE_DIR) \
 		$(if $(CACHED),--cached,)
+
+# Figures from results/bloom.db (make plots FORMAT="pdf png" PLOT_ARGS="--label hd-T8")
+# Needs matplotlib in $(VENV): run `make venv` once. A missing experiment is skipped.
+VENV ?= .venv
+PLOT_DIR ?= results/plots
+FORMAT ?= pdf
+PLOT_ARGS ?=
+DB ?= results/bloom.db
+
+venv: $(VENV)/.installed
+
+# stamp file: .venv/bin/python is a symlink to the system interpreter
+$(VENV)/.installed: requirements.txt
+	@if command -v uv >/dev/null 2>&1; then \
+		uv venv --allow-existing $(VENV) && VIRTUAL_ENV=$(VENV) uv pip install -r requirements.txt; \
+	else \
+		$(PYTHON) -m venv $(VENV) && $(VENV)/bin/pip install -r requirements.txt; \
+	fi
+	@touch $@
+
+plots: $(VENV)/.installed
+	-$(VENV)/bin/python scripts/analyze.py --db $(DB) bench --plot $(PLOT_DIR) --format $(FORMAT) $(PLOT_ARGS)
+	-$(VENV)/bin/python scripts/analyze.py --db $(DB) io --plot $(PLOT_DIR) --format $(FORMAT) $(PLOT_ARGS)
 
 # Automatic demo — non-interactive, prints comparison table
 demo: $(TARGET)
