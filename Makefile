@@ -19,7 +19,7 @@ TYPES ?= uuid cpf cnpj url
 SEED ?= 42
 PYTHON ?= python3
 
-# Benchmark (make benchmark REPS=10 P=0.01)
+# Benchmark / I/O parameters
 REPS ?= 5
 P ?= 0.01
 
@@ -46,13 +46,19 @@ data:
 		$(PYTHON) scripts/partition.py --type $$t --seed $(SEED) || exit 1; \
 	done
 
-# Benchmark — one CSV per dataset type in results/ (long format, one row per rep)
+# Experiments run through scripts/run.py: every bloom_app invocation is recorded in
+# results/bloom.db (code, machine, device, dataset, parameters) and its raw CSV kept
+# in results/raw/. REPEAT runs the whole grid again; LABEL names the campaign;
+# ALLOW_DIRTY=1 permits uncommitted tracked changes (those runs are flagged).
+REPEAT ?= 1
+LABEL ?=
+ALLOW_DIRTY ?=
+RUN_FLAGS = --types $(TYPES) --p $(P) --reps $(REPS) --repeat $(REPEAT) \
+	$(if $(LABEL),--label $(LABEL),) $(if $(ALLOW_DIRTY),--allow-dirty,)
+
+# In-memory benchmark (make benchmark REPS=10 REPEAT=3 LABEL=ssd-100k)
 benchmark: $(TARGET)
-	@mkdir -p results
-	@for t in $(TYPES); do \
-		./$(TARGET) --benchmark --type $$t --p $(P) --reps $(REPS) --out results/benchmark_$$t.csv || exit 1; \
-	done
-	@echo "CSVs escritos em results/"
+	$(PYTHON) scripts/run.py benchmark $(RUN_FLAGS)
 
 # I/O experiment (make iobench TABLES="1 8" NEG="0.5 0.9" QUERIES=10000 STORE_DIR=/mnt/hd/store)
 # Tables are built once in STORE_DIR and reused; CACHED=1 uses the page cache instead of O_DIRECT
@@ -64,13 +70,9 @@ STORE_DIR ?= data/store
 CACHED ?=
 
 iobench: $(TARGET)
-	@mkdir -p results
-	@for t in $(TYPES); do for T in $(TABLES); do for r in $(NEG); do \
-		./$(TARGET) --iobench --type $$t --tables $$T --neg $$r --queries $(QUERIES) \
-			--reps $(REPS) --p $(P) --value-size $(VALUE_SIZE) --store-dir $(STORE_DIR) \
-			$(if $(CACHED),--cached,) --out results/io_$${t}_T$${T}_neg$${r}.csv || exit 1; \
-	done; done; done
-	@echo "CSVs escritos em results/io_*.csv"
+	$(PYTHON) scripts/run.py iobench $(RUN_FLAGS) --tables $(TABLES) --neg $(NEG) \
+		--queries $(QUERIES) --value-size $(VALUE_SIZE) --store-dir $(STORE_DIR) \
+		$(if $(CACHED),--cached,)
 
 # Automatic demo — non-interactive, prints comparison table
 demo: $(TARGET)

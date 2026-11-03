@@ -16,6 +16,7 @@ Defaults: n = all pool keys, exist = 10% of Dins, inexist = n (matching insertio
 """
 
 import argparse
+import json
 import random
 import sys
 from pathlib import Path
@@ -80,17 +81,27 @@ def main() -> int:
 
     inext = args.inexist if args.inexist is not None else n
     gen = GENERATORS[args.type]
-    dinexist = set()
+    # list in generation order: writing a set would make the file order depend on
+    # Python's per-process string hash randomization (PYTHONHASHSEED)
+    dinexist, seen = [], set()
     while len(dinexist) < inext:
         key = gen(rng)
-        if key not in insert_set:
-            dinexist.add(key)
+        if key not in insert_set and key not in seen:
+            seen.add(key)
+            dinexist.append(key)
 
     _verify(dins, dexist, dinexist)
 
     write_keys(datdir / "insert.txt", dins)
     write_keys(datdir / "exist.txt", dexist)
     write_keys(datdir / "inexist.txt", dinexist)
+
+    # provenance for scripts/run.py; keeps the fields written by gen_datasets.py
+    meta_path = datdir / "meta.json"
+    meta = json.loads(meta_path.read_text()) if meta_path.exists() else {"type": args.type}
+    meta.update({"partition_seed": args.seed, "n_ins": len(dins), "n_exist": len(dexist),
+                 "n_inexist": len(dinexist), "exist_ratio": args.exist})
+    meta_path.write_text(json.dumps(meta, indent=2) + "\n")
 
     print(f"type={args.type} pool={len(pool)}")
     print(f"  Dins={len(dins)} ({datdir / 'insert.txt'})")

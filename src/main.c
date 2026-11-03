@@ -433,6 +433,23 @@ static int repl(const char *filter)
 
 /* ------------------------------------------------------------------ */
 
+/* --info : machine-readable build facts for scripts/run.py (key=value lines) */
+static int print_info(void)
+{
+    size_t count = 0;
+    const bf_ops_t *all = bf_ops_all(&count);
+    printf("protocol=%d\n", BF_PROTOCOL_VERSION);
+#ifdef __VERSION__
+    printf("cc=%s\n", __VERSION__);
+#endif
+    /* filter=name,exact,supports_delete,fixed_k */
+    for (size_t i = 0; i < count; i++) {
+        printf("filter=%s,%d,%d,%u\n", all[i].name, all[i].exact, all[i].supports_delete,
+               all[i].fixed_k);
+    }
+    return 0;
+}
+
 int main(int argc, char **argv)
 {
     const char *mode = "demo";
@@ -447,6 +464,7 @@ int main(int argc, char **argv)
 
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "--repl") == 0) mode = "repl";
+        else if (strcmp(argv[i], "--info") == 0) mode = "info";
         else if (strcmp(argv[i], "--test") == 0) mode = "test";
         else if (strcmp(argv[i], "--demo") == 0) mode = "demo";
         else if (strcmp(argv[i], "--benchmark") == 0) mode = "benchmark";
@@ -474,12 +492,14 @@ int main(int argc, char **argv)
             printf("uso: bloom_app [--demo|--test|--repl [--filter NAME]|--benchmark [--type T] [--n N] [--p P] [--reps R] [--sizing same_m|same_fpr|both] [--out FILE]]\n");
             printf("         bloom_app --iobench [--type T] [--n N] [--p P] [--reps R] [--tables T] [--neg 0..1]\n"
                    "                     [--queries Q] [--value-size B] [--store-dir DIR] [--cached] [--out FILE]\n");
+            printf("         bloom_app --info   (protocol version, compiler, registered filters)\n");
             printf("filtros: sbf cbf pbf rdbf hybrid_512 hybrid_4096 hybrid_c_512 hybrid_c_4096 baseline\n");
             printf("tipos  : uuid cpf cnpj url\n");
             return 0;
         }
     }
 
+    if (strcmp(mode, "info") == 0) return print_info();
     if (strcmp(mode, "repl") == 0) return repl(filter);
     if (strcmp(mode, "test") == 0) return run_test();
     if (strcmp(mode, "benchmark") == 0) {
