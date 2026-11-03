@@ -11,6 +11,7 @@ make all          # builds bloom_app (all filters + baseline + main)
 make sbf          # individual module object (also: cbf, pbf, rdbf, hybrid, baseline)
 make data         # generates datasets: N=2000 TYPES="uuid cpf cnpj url" SEED=42
 make benchmark    # results/benchmark_<type>.csv, long format: REPS=5 P=0.01, sizing same_m + same_fpr
+make iobench      # I/O gatekeeper experiment: TABLES="1 8" NEG="0.5 0.9" QUERIES=10000 STORE_DIR=data/store [CACHED=1]
 make test         # quick invariants via the generic interface (--test)
 make check        # C unit tests in tests/
 make clean        # removes build/ and bloom_app
@@ -46,5 +47,7 @@ Merge order matters — murmurhash is prerequisite for all filters:
 - Every structure is exposed through `bf_ops_t` (include/bf.h, src/bf.c); demo, REPL and benchmark iterate the registry — register new filters there
 - Baseline owns copies of its keys; filters never keep key pointers
 - Each filter has `<model>_params(n, p)` (sizing for target FPR by its own formula), registered in `bf_ops_t.params`
+- I/O experiment (src/iobench.c, src/store.c): SSTable-like sorted tables on disk, one 4 KB block read per probe, O_DIRECT by default; tables are built once in STORE_DIR and reused (fingerprint in header). On btrfs with compression, O_DIRECT silently falls back to the page cache — iobench sets NOCOMP on its table dir and warns when proc read_bytes << reads*4096
+- Dataset loading is shared via include/keyset.h (dataset_load)
 - Benchmark: rep 0 is an unreported warm-up; hash-call counts come from an untimed pass (`murmurhash2_counter`), never enable it in timed code
 - Commit messages in English

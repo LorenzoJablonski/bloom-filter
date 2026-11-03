@@ -8,7 +8,7 @@
 #include <string.h>
 #include <time.h>
 
-#include "baseline.h"
+#include "keyset.h"
 #include "murmurhash2.h"
 
 /*
@@ -24,74 +24,11 @@
  * counter enabled; timed passes run with the counter disabled.
  */
 
-typedef struct {
-    char *arena;      /* whole file contents; keys point into it */
-    bf_key_t *keys;
-    size_t count;
-} keyset_t;
-
 static double now_ms(void)
 {
     struct timespec ts;
     clock_gettime(CLOCK_MONOTONIC, &ts);
     return (double)ts.tv_sec * 1000.0 + (double)ts.tv_nsec / 1e6;
-}
-
-static int keyset_load(const char *path, keyset_t *ks)
-{
-    memset(ks, 0, sizeof(*ks));
-    FILE *f = fopen(path, "rb");
-    if (!f) return 0;
-    if (fseek(f, 0, SEEK_END) != 0) { fclose(f); return 0; }
-    long size = ftell(f);
-    if (size < 0) { fclose(f); return 0; }
-    rewind(f);
-
-    ks->arena = (char *)malloc((size_t)size + 1);
-    if (!ks->arena) { fclose(f); return 0; }
-    size_t got = fread(ks->arena, 1, (size_t)size, f);
-    fclose(f);
-    ks->arena[got] = '\n';
-
-    size_t lines = 0;
-    for (size_t i = 0; i <= got; i++) lines += ks->arena[i] == '\n';
-    ks->keys = (bf_key_t *)malloc((lines + 1) * sizeof(bf_key_t));
-    if (!ks->keys) { free(ks->arena); return 0; }
-
-    char *p = ks->arena, *end = ks->arena + got;
-    while (p < end) {
-        char *nl = memchr(p, '\n', (size_t)(end - p) + 1);
-        size_t len = (size_t)(nl - p);
-        if (len > 0 && p[len - 1] == '\r') len--;
-        if (len > 0) {
-            ks->keys[ks->count].data = p;
-            ks->keys[ks->count].len = len;
-            ks->count++;
-        }
-        p = nl + 1;
-    }
-    return 1;
-}
-
-static void keyset_free(keyset_t *ks)
-{
-    free(ks->keys);
-    free(ks->arena);
-    memset(ks, 0, sizeof(*ks));
-}
-
-/* Keep only keys that are members of the first n inserted keys. */
-static void keyset_restrict(keyset_t *ks, const bf_key_t *inserted, size_t n)
-{
-    baseline_t *bl = baseline_create();
-    if (!bl) return;
-    for (size_t i = 0; i < n; i++) baseline_insert(bl, &inserted[i]);
-    size_t w = 0;
-    for (size_t i = 0; i < ks->count; i++) {
-        if (baseline_lookup(bl, &ks->keys[i]) == BF_PRESENT) ks->keys[w++] = ks->keys[i];
-    }
-    ks->count = w;
-    baseline_destroy(bl);
 }
 
 typedef struct {
@@ -135,24 +72,10 @@ typedef struct {
 int benchmark_run(const char *type, size_t n_override, double p_target,
                   unsigned reps, unsigned sizing, const char *out_path)
 {
-    char path[512];
-    keyset_t ins, ex, inex;
-
-    snprintf(path, sizeof(path), "data/%s/insert.txt", type);
-    if (!keyset_load(path, &ins)) { fprintf(stderr, "benchmark: cannot open %s\n", path); return 1; }
-    snprintf(path, sizeof(path), "data/%s/exist.txt", type);
-    if (!keyset_load(path, &ex)) { fprintf(stderr, "benchmark: cannot open %s\n", path); keyset_free(&ins); return 1; }
-    snprintf(path, sizeof(path), "data/%s/inexist.txt", type);
-    if (!keyset_load(path, &inex)) { fprintf(stderr, "benchmark: cannot open %s\n", path); keyset_free(&ins); keyset_free(&ex); return 1; }
-
-    size_t n = ins.count;
-    if (n_override > 0 && n_override < n) {
-        n = n_override;
-        /* Dexist must be a subset of what was actually inserted (protocol 4.3.2) */
-        keyset_restrict(&ex, ins.keys, n);
-        fprintf(stderr, "benchmark: n truncated to %zu, Dexist restricted to %zu keys\n", n, ex.count);
-    }
-    if (n == 0) { fprintf(stderr, "benchmark: empty insert set\n"); return 1; }
+    dataset_t ds;
+    if (!dataset_load(type, n_override, "benchmark", &ds)) return 1;
+    keyset_t ins = ds.ins, ex = ds.ex, inex = ds.inex;
+    size_t n = ds.n;
     if (reps == 0) reps = 1;
 
     FILE *out = stdout;
@@ -247,8 +170,6 @@ int benchmark_run(const char *type, size_t n_override, double p_target,
 
     free(runs);
     if (out != stdout) fclose(out);
-    keyset_free(&ins);
-    keyset_free(&ex);
-    keyset_free(&inex);
+    dataset_free(&ds);
     return 0;
 }
