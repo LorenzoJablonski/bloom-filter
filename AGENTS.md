@@ -1,5 +1,8 @@
 # Bloom Filter TCC
 
+Status, priorities, working agreements and decision log: **docs/PROGRESS.md** (read it first).
+Never commit, merge or push before the author reviews and approves the diff.
+
 ## Project
 - TCC: "Filtros de Bloom para Otimização de I/O em Big Data" — UCS
 - 5 Bloom Filter variants (SBF, CBF, PBF, rDBF, Hybrid) + deterministic baseline (uthash)
@@ -35,10 +38,10 @@ Merge order matters — murmurhash is prerequisite for all filters:
 2. `feature/datasets` — DONE (scripts + protocol partition, merged to develop)
 3. `feature/sbf`, `feature/baseline` — DONE
 4. `feature/cbf`, `feature/pbf`, `feature/rdbf` — DONE (rDBF follows robustBF Eq. 1: X x Y 64-bit cells, beta=61, X != Y primes; no delete: 1 bit/key, no counters)
-5. `feature/benchmark`, `feature/threads`
+5. `feature/benchmark` — DONE; `feature/threads` — later (after scale runs)
 6. `feature/hybrid` — key-sharded prime-matrix filter, 1 MurmurHash64A call, double hashing inside the shard;
    variants hybrid_512 / hybrid_4096 (bits) and hybrid_c_512 / hybrid_c_4096 (4-bit counters, delete)
-7. `feature/analysis`, `feature/docs`
+7. `feature/io` — DONE (store + iobench); `feature/analysis` — DONE (SQLite results, tables; plots pending); `feature/docs`
 
 ## Key Conventions
 - MurmurHash2 family only: MurmurHash2 (32-bit, seed varies per invocation) for SBF/CBF/PBF/rDBF; MurmurHash64A (64-bit, one call) for the hybrid. Both checked against smhasher verification values in tests/test_murmurhash2.c
