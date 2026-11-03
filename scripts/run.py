@@ -101,6 +101,54 @@ def cgroup_memory_limit():
     return None
 
 
+def swap_info():
+    """Kind and size of the active swap: zram (compressed RAM) and disk swap
+    behave very differently once a structure no longer fits in memory."""
+    kinds, total = set(), 0
+    try:
+        for line in Path("/proc/swaps").read_text().splitlines()[1:]:
+            parts = line.split()
+            if len(parts) >= 3:
+                kinds.add("zram" if "/zram" in parts[0] else "disk")
+                total += int(parts[2])
+    except (OSError, ValueError):
+        return {"swap_kind": None, "swap_total_kb": None}
+    kind = "none" if not kinds else kinds.pop() if len(kinds) == 1 else "mixed"
+    return {"swap_kind": kind, "swap_total_kb": total}
+
+
+def vmstat_swap():
+    """System-wide pages swapped in/out so far (/proc/vmstat), or None."""
+    vals = {}
+    try:
+        for line in Path("/proc/vmstat").read_text().splitlines():
+            key, _, value = line.partition(" ")
+            if key in ("pswpin", "pswpout"):
+                vals[key] = int(value)
+    except (OSError, ValueError):
+        return None
+    return vals if len(vals) == 2 else None
+
+
+def run_measured(cmd):
+    """Run cmd and return (exit code, resource fields for the runs table)."""
+    sw0 = vmstat_swap()
+    proc = subprocess.Popen(cmd, cwd=ROOT)
+    _, status, ru = os.wait4(proc.pid, 0)
+    proc.returncode = os.waitstatus_to_exitcode(status)
+    sw1 = vmstat_swap()
+    res = {
+        "maxrss_kb": ru.ru_maxrss,  # Linux: KiB
+        "majflt": ru.ru_majflt, "minflt": ru.ru_minflt,
+        "utime_s": round(ru.ru_utime, 3), "stime_s": round(ru.ru_stime, 3),
+        "nvcsw": ru.ru_nvcsw, "nivcsw": ru.ru_nivcsw,
+    }
+    if sw0 and sw1:  # whole system: other processes count too
+        res["swap_in_pages"] = sw1["pswpin"] - sw0["pswpin"]
+        res["swap_out_pages"] = sw1["pswpout"] - sw0["pswpout"]
+    return proc.returncode, res
+
+
 def machine_info():
     cpu_model, mem_kb = None, None
     try:
@@ -123,6 +171,7 @@ def machine_info():
         "mem_limit_bytes": cgroup_memory_limit(),
         "kernel": platform.release(),
         "virt": virt or "none",
+        **swap_info(),
     }
 
 
@@ -282,7 +331,8 @@ def main():
 
             run["started_at"] = now_iso()
             t0 = time.monotonic()
-            rc = subprocess.run(cmd, cwd=ROOT).returncode
+            rc, resources = run_measured(cmd)
+            run.update(resources)
             run["duration_s"] = round(time.monotonic() - t0, 3)
             run["finished_at"] = now_iso()
             run["exit_code"] = rc
@@ -302,7 +352,8 @@ def main():
             if run["status"] != "ok":
                 failures += 1
             print(f"  run_id={run_id} status={run['status']} rows={rows} "
-                  f"({run['duration_s']} s)", file=sys.stderr)
+                  f"({run['duration_s']} s, rss {run['maxrss_kb'] // 1024} MiB, "
+                  f"{run['majflt']} major faults)", file=sys.stderr)
 
     con.close()
     print(f"database: {args.db}", file=sys.stderr)

@@ -18,6 +18,7 @@
 #include "bf.h"
 #include "keyset.h"
 #include "store.h"
+#include "procstat.h"
 
 /*
  * I/O experiment: filters as gatekeepers in front of on-disk tables.
@@ -38,6 +39,10 @@
  * 0 is a warm-up and is not written. Gatekeepers run one after the other
  * (filters of one gatekeeper are freed before the next is built) so that a
  * RAM-limited machine never holds every structure at once.
+ *
+ * rss_kb/majflt/minflt: process resident set after the query loop and the
+ * page faults during it. O_DIRECT and pread do not fault, so major faults
+ * there are the gatekeeper (or the index) being paged in from swap.
  */
 
 typedef struct {
@@ -212,7 +217,7 @@ int iobench_run(const iobench_cfg_t *cfg)
     if (!fail) {
         fprintf(out, "type,gatekeeper,rep,n,tables,neg_ratio,queries,direct,value_size,blocks,"
                      "gk_mem_bytes,index_mem_bytes,k,disk_reads,wasted_reads,reads_per_query,"
-                     "proc_read_bytes,total_ms,mean_us,p50_us,p99_us,errors\n");
+                     "proc_read_bytes,total_ms,mean_us,p50_us,p99_us,errors,rss_kb,majflt,minflt\n");
 
         size_t nops = 0;
         const bf_ops_t *ops = bf_ops_all(&nops);
@@ -239,6 +244,7 @@ int iobench_run(const iobench_cfg_t *cfg)
                 for (unsigned t = 0; t < T; t++) store_reset_stats(tb[t].st);
                 size_t errors = 0, wasted = 0;
                 long long rb0 = proc_read_bytes();
+                proc_faults_t f0 = proc_faults();
                 double t_all = now_ns();
 
                 for (size_t i = 0; i < Q; i++) {
@@ -257,6 +263,7 @@ int iobench_run(const iobench_cfg_t *cfg)
 
                 double total_ms = (now_ns() - t_all) / 1e6;
                 long long rb1 = proc_read_bytes();
+                proc_faults_t f1 = proc_faults();
                 if (rep == 0) continue;
 
                 uint64_t reads = 0;
@@ -273,8 +280,10 @@ int iobench_run(const iobench_cfg_t *cfg)
                 fprintf(out, "%llu,%zu,%.4f,", (unsigned long long)reads, wasted,
                         Q ? (double)reads / (double)Q : 0.0);
                 if (rb0 >= 0 && rb1 >= 0) fprintf(out, "%lld,", rb1 - rb0); else fprintf(out, ",");
-                fprintf(out, "%.3f,%.3f,%.3f,%.3f,%zu\n", total_ms, mean / 1e3,
+                fprintf(out, "%.3f,%.3f,%.3f,%.3f,%zu,", total_ms, mean / 1e3,
                         percentile(lat, Q, 0.50) / 1e3, percentile(lat, Q, 0.99) / 1e3, errors);
+                fprintf(out, "%ld,%ld,%ld\n", proc_rss_kb(), f1.majflt - f0.majflt,
+                        f1.minflt - f0.minflt);
                 fflush(out);
                 if (cfg->direct && rb0 >= 0 && rb1 >= 0 && reads > 0 && !warned &&
                     (unsigned long long)(rb1 - rb0) < reads * (uint64_t)STORE_BLOCK / 2) {
