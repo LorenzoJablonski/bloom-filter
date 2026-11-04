@@ -33,7 +33,7 @@ typedef struct {
  * timing method, CSV columns, store layout...). scripts/run.py records it per
  * run and the analysis only groups runs with the same version.
  */
-#define BF_PROTOCOL_VERSION 2 /* 2: rss_kb/majflt/minflt CSV columns */
+#define BF_PROTOCOL_VERSION 3 /* 2: rss_kb/majflt/minflt; 3: one structure per process, keys streamed in batches */
 
 typedef enum {
     BF_ABSENT  = 0,

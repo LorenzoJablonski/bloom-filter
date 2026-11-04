@@ -79,11 +79,20 @@ static void *aligned_zalloc(size_t len)
     return p;
 }
 
-uint64_t store_fingerprint(const bf_key_t *keys, size_t n)
+uint64_t store_fingerprint_init(size_t n)
 {
-    uint64_t sum = 0x9E3779B97F4A7C15ULL * (uint64_t)n;
+    return 0x9E3779B97F4A7C15ULL * (uint64_t)n;
+}
+
+uint64_t store_fingerprint_add(uint64_t sum, const bf_key_t *keys, size_t n)
+{
     for (size_t i = 0; i < n; i++) sum += murmurhash64a(keys[i].data, keys[i].len, 0x51ED270BULL);
     return sum;
+}
+
+uint64_t store_fingerprint(const bf_key_t *keys, size_t n)
+{
+    return store_fingerprint_add(store_fingerprint_init(n), keys, n);
 }
 
 /* ---- build ---- */

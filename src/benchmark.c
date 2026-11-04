@@ -18,8 +18,13 @@
  * Output is "long format": one CSV row per (filter, repetition), so the
  * analysis scripts can compute median / dispersion / confidence intervals.
  * Repetition 0 is a warm-up (page faults, caches, CPU frequency) and is not
- * written. Repetitions are interleaved across filters (rep -> filter) so that
- * slow drifts of the machine affect every filter equally.
+ * written.
+ *
+ * Experiments run one structure per process (--filter, driven by run.py): if a
+ * big structure shared a process with others, what it pushed to swap would be
+ * paid by whoever ran next. Keys are streamed in batches (keyset.h) and only
+ * the operations are timed, so the file reads do not count and the dataset
+ * does not compete with the structure for RAM.
  *
  * Hash-call counts come from a separate, untimed pass with the MurmurHash2
  * counter enabled; timed passes run with the counter disabled.
@@ -40,9 +45,35 @@ typedef struct {
     double insert, exist, inexist; /* average MurmurHash2 calls per operation */
 } hash_avg_t;
 
-static hash_avg_t count_hashes(const bf_ops_t *ops, size_t m, unsigned k,
-                               const keyset_t *ins, size_t n,
-                               const keyset_t *ex, const keyset_t *inex)
+/* Insert one pass of the stream; only the operations are timed, not the file reads. */
+static double timed_insert(const bf_ops_t *op, void *bf, keystream_t *ks)
+{
+    double total = 0.0;
+    size_t c;
+    keystream_rewind(ks);
+    while ((c = keystream_next(ks)) > 0) {
+        double t0 = now_ms();
+        for (size_t j = 0; j < c; j++) op->insert(bf, &ks->keys[j]);
+        total += now_ms() - t0;
+    }
+    return total;
+}
+
+static double timed_lookup(const bf_ops_t *op, void *bf, keystream_t *ks, size_t *present)
+{
+    double total = 0.0;
+    size_t c, hits = 0;
+    keystream_rewind(ks);
+    while ((c = keystream_next(ks)) > 0) {
+        double t0 = now_ms();
+        for (size_t j = 0; j < c; j++) hits += op->lookup(bf, &ks->keys[j]) == BF_PRESENT;
+        total += now_ms() - t0;
+    }
+    *present = hits;
+    return total;
+}
+
+static hash_avg_t count_hashes(const bf_ops_t *ops, size_t m, unsigned k, dataset_t *ds)
 {
     hash_avg_t r = { 0.0, 0.0, 0.0 };
     void *bf = ops->create(m, k);
@@ -50,16 +81,17 @@ static hash_avg_t count_hashes(const bf_ops_t *ops, size_t m, unsigned k,
     uint64_t c = 0;
     murmurhash2_counter = &c;
 
-    for (size_t j = 0; j < n; j++) ops->insert(bf, &ins->keys[j]);
-    r.insert = n ? (double)c / (double)n : 0.0;
+    size_t present;
+    (void)timed_insert(ops, bf, &ds->ins);
+    r.insert = ds->n ? (double)c / (double)ds->n : 0.0;
 
     c = 0;
-    for (size_t j = 0; j < ex->count; j++) ops->lookup(bf, &ex->keys[j]);
-    r.exist = ex->count ? (double)c / (double)ex->count : 0.0;
+    (void)timed_lookup(ops, bf, &ds->ex, &present);
+    r.exist = ds->n_exist ? (double)c / (double)ds->n_exist : 0.0;
 
     c = 0;
-    for (size_t j = 0; j < inex->count; j++) ops->lookup(bf, &inex->keys[j]);
-    r.inexist = inex->count ? (double)c / (double)inex->count : 0.0;
+    (void)timed_lookup(ops, bf, &ds->inex, &present);
+    r.inexist = ds->n_inexist ? (double)c / (double)ds->n_inexist : 0.0;
 
     murmurhash2_counter = NULL;
     ops->destroy(bf);
@@ -75,11 +107,14 @@ typedef struct {
 } run_t;
 
 int benchmark_run(const char *type, size_t n_override, double p_target,
-                  unsigned reps, unsigned sizing, const char *out_path)
+                  unsigned reps, unsigned sizing, const char *filter, const char *out_path)
 {
+    if (filter && !bf_ops_by_name(filter)) {
+        fprintf(stderr, "benchmark: unknown filter %s\n", filter);
+        return 2;
+    }
     dataset_t ds;
-    if (!dataset_load(type, n_override, "benchmark", &ds)) return 1;
-    keyset_t ins = ds.ins, ex = ds.ex, inex = ds.inex;
+    if (!dataset_open(type, n_override, "benchmark", &ds)) return 1;
     size_t n = ds.n;
     if (reps == 0) reps = 1;
 
@@ -110,6 +145,7 @@ int benchmark_run(const char *type, size_t n_override, double p_target,
     run_t *runs = (run_t *)calloc(2 * nops, sizeof(run_t));
     if (!runs) return 1;
     for (size_t i = 0; i < nops; i++) {
+        if (filter && strcmp(ops[i].name, filter) != 0) continue;
         if (ops[i].exact) {
             runs[nruns++] = (run_t){ &ops[i], "none", 0, 0, { 0, 0, 0 } };
             continue;
@@ -124,7 +160,7 @@ int benchmark_run(const char *type, size_t n_override, double p_target,
     }
     for (size_t r = 0; r < nruns; r++) {
         if (!runs[r].ops->exact)
-            runs[r].hashes = count_hashes(runs[r].ops, runs[r].m, runs[r].k, &ins, n, &ex, &inex);
+            runs[r].hashes = count_hashes(runs[r].ops, runs[r].m, runs[r].k, &ds);
     }
 
     fprintf(out, "type,filter,sizing,rep,n,n_exist,n_inexist,p_target,m,cells,k,mem_bytes,bits_per_key,"
@@ -139,27 +175,22 @@ int benchmark_run(const char *type, size_t n_override, double p_target,
             void *bf = op->create(runs[r].m, runs[r].k);
             if (!bf) { fprintf(stderr, "benchmark: %s create failed\n", op->name); continue; }
 
-            double t0 = now_ms();
-            for (size_t j = 0; j < n; j++) op->insert(bf, &ins.keys[j]);
-            double t_ins = now_ms() - t0;
+            double t_ins = timed_insert(op, bf, &ds.ins);
             long rss = proc_rss_kb();
 
-            size_t fn = 0;
-            t0 = now_ms();
-            for (size_t j = 0; j < ex.count; j++) fn += op->lookup(bf, &ex.keys[j]) != BF_PRESENT;
-            double t_ex = now_ms() - t0;
+            size_t present;
+            double t_ex = timed_lookup(op, bf, &ds.ex, &present);
+            size_t fn = ds.n_exist - present;
 
-            size_t fp = 0;
-            t0 = now_ms();
-            for (size_t j = 0; j < inex.count; j++) fp += op->lookup(bf, &inex.keys[j]) == BF_PRESENT;
-            double t_inex = now_ms() - t0;
+            size_t fp;
+            double t_inex = timed_lookup(op, bf, &ds.inex, &fp);
             proc_faults_t f1 = proc_faults();
 
             if (rep > 0) {
                 size_t mem = op->memory_bytes(bf);
-                double fpr = inex.count ? (double)fp / (double)inex.count : 0.0;
+                double fpr = ds.n_inexist ? (double)fp / (double)ds.n_inexist : 0.0;
                 fprintf(out, "%s,%s,%s,%u,%zu,%zu,%zu,%g,", type, op->name, runs[r].sizing, rep,
-                        n, ex.count, inex.count, p_target);
+                        n, ds.n_exist, ds.n_inexist, p_target);
                 if (op->exact) fprintf(out, ",,,");
                 else fprintf(out, "%zu,%zu,%u,", runs[r].m, op->cells(bf),
                              op->fixed_k ? op->fixed_k : runs[r].k);
@@ -179,6 +210,6 @@ int benchmark_run(const char *type, size_t n_override, double p_target,
 
     free(runs);
     if (out != stdout) fclose(out);
-    dataset_free(&ds);
+    dataset_close(&ds);
     return 0;
 }

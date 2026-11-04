@@ -13,7 +13,7 @@ Never commit, merge or push before the author reviews and approves the diff.
 make all          # builds bloom_app (all filters + baseline + main)
 make sbf          # individual module object (also: cbf, pbf, rdbf, hybrid, baseline)
 make data         # generates datasets: N=2000 TYPES="uuid cpf cnpj url" SEED=42
-make benchmark    # via scripts/run.py -> results/bloom.db: REPS=5 P=0.01 REPEAT=1 LABEL= [ALLOW_DIRTY=1]
+make benchmark    # via scripts/run.py -> results/bloom.db, one process per structure x regime: REPS=5 P=0.01 REPEAT=1 LABEL= [ALLOW_DIRTY=1]
 make iobench      # I/O gatekeeper experiment, same flags + TABLES="1 8" NEG="0.5 0.9" QUERIES=10000 STORE_DIR=data/store [CACHED=1]
 python3 scripts/analyze.py runs|bench|io|freeze   # tables (terminal/--csv/--latex) from results/bloom.db
 make venv         # .venv with matplotlib (requirements.txt; uses uv when available)
@@ -53,8 +53,9 @@ Merge order matters — murmurhash is prerequisite for all filters:
 - Every structure is exposed through `bf_ops_t` (include/bf.h, src/bf.c); demo, REPL and benchmark iterate the registry — register new filters there
 - Baseline owns copies of its keys; filters never keep key pointers
 - Each filter has `<model>_params(n, p)` (sizing for target FPR by its own formula), registered in `bf_ops_t.params`
-- I/O experiment (src/iobench.c, src/store.c): SSTable-like sorted tables on disk, one 4 KB block read per probe, O_DIRECT by default; tables are built once in STORE_DIR and reused (fingerprint in header). On btrfs with compression, O_DIRECT silently falls back to the page cache — iobench sets NOCOMP on its table dir and warns when proc read_bytes << reads*4096
-- Dataset loading is shared via include/keyset.h (dataset_load)
+- I/O experiment (src/iobench.c, src/store.c): SSTable-like sorted tables on disk, one 4 KB block read per probe, O_DIRECT by default; tables are built once in STORE_DIR (--build-store) and reused (fingerprint in header). On btrfs with compression, O_DIRECT silently falls back to the page cache — iobench sets NOCOMP on its table dir and warns when proc read_bytes << reads*4096
+- Datasets are streamed in batches through a fixed 1 MiB buffer (include/keyset.h: dataset_open, keystream_next), and only the operations are timed: a measured process holds the structure under test, not the dataset. Whole-file loading (keyset_load) is only for the unmeasured table build. Generate one dataset per N (`make data N=...`); `--n` keeps keys in RAM and is for quick tests only
+- One structure per process: run.py launches bloom_app with `--filter NAME` per structure x sizing regime (benchmark) or per structure x T x neg (iobench, `none` is the control), so paging is attributed to the structure that caused it. Disk tables are built first by `--iobench --build-store`, unmeasured; a measured run fails if they are missing
 - Benchmark: rep 0 is an unreported warm-up; hash-call counts come from an untimed pass (`murmurhash2_counter`), never enable it in timed code
-- Results: scripts/run.py records each bloom_app run in results/bloom.db (runs + filter_results/io_results, schema in scripts/resultsdb.py) and keeps the raw CSV in results/raw/. Runs are pooled only with equal config_key (protocol, dataset hash, parameters) and env_key (machine, device). Bump `BF_PROTOCOL_VERSION` (include/common.h) when a change breaks comparability; update resultsdb column lists when CSV columns change. Python scripts use the standard library only; matplotlib is optional and confined to scripts/plots.py (imported only with --plot)
+- Results: scripts/run.py records each bloom_app run in results/bloom.db (runs + filter_results/io_results, schema in scripts/resultsdb.py) and keeps the raw CSV in results/raw/. Runs are pooled only with equal config_key (protocol, dataset hash, parameters; not the structure or its sizing regime, which are result columns) and env_key (machine, device, swap). Bump `BF_PROTOCOL_VERSION` (include/common.h) when a change breaks comparability; update resultsdb column lists when CSV columns change. Python scripts use the standard library only; matplotlib is optional and confined to scripts/plots.py (imported only with --plot)
 - Commit messages in English

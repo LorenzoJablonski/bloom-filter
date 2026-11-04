@@ -3,8 +3,8 @@
 Documento de passagem entre sessões/máquinas. Quem retomar o trabalho (pessoa
 ou agente) deve ler isto e o `AGENTS.md` antes de mexer no código.
 
-Última atualização: 2026-11-03, desktop Pop!_OS (branch `feature/rusage`, sobre `develop`;
-`feature/plots` já mergeada em `develop`).
+Última atualização: 2026-11-04, desktop Pop!_OS (branch `feature/isolation`, sobre
+`feature/rusage`; `feature/plots` já mergeada em `develop`).
 
 ## Como retomar em outra máquina
 
@@ -12,7 +12,7 @@ ou agente) deve ler isto e o `AGENTS.md` antes de mexer no código.
 git clone git@github.com:LorenzoJablonski/bloom-filter.git bloom
 cd bloom
 git checkout develop          # main só tem o commit inicial; o trabalho está em develop
-git checkout feature/rusage   # trabalho em andamento (ver "Em andamento" abaixo)
+git checkout feature/isolation   # trabalho em andamento (ver "Em andamento" abaixo)
 make all && make check && make test
 make data                     # datasets NÃO estão no git (N=2000, SEED=42; reprodutível)
 ```
@@ -46,27 +46,13 @@ este arquivo ao começar.
 
 ## Em andamento (retomar aqui)
 
-Branch `feature/rusage` (commitada, **não mergeada**): medição de memória e
-paginação.
-- CSV do benchmark e do iobench ganhou `rss_kb, majflt, minflt` por linha
-  (filtro × repetição), via `include/procstat.h`; `BF_PROTOCOL_VERSION` = 2.
-- `run.py` grava por execução (`os.wait4`): `maxrss_kb`, `majflt`, `minflt`,
-  `utime_s`, `stime_s`, `nvcsw`, `nivcsw` (trocas involuntárias = disputa de
-  CPU) e `swap_in_pages`/`swap_out_pages` do sistema. `swap_kind`
-  (none/disk/zram/mixed) e `swap_total_kb` entram no `env_key`.
-- `resultsdb` schema v2 com migração automática da v1 (bancos antigos mantêm
-  as execuções; colunas novas ficam NULL).
-
-**Problema aberto, a discutir antes de seguir:** com pouca RAM, quem pagina
-não é só quem estourou. Teste com 1M UUIDs num cgroup de 150 MB
-(`systemd-run --user --scope -p MemoryMax=150M ...`): o baseline ficou ~3,5×
-mais lento (38 794 faults maiores), mas o SBF, que roda logo depois no mesmo
-processo, também paginou (26 854) porque as *chaves do dataset* foram para o
-swap enquanto o baseline ocupava a RAM; o CBF ainda pagou um pouco; os demais,
-zero. Proposta: uma estrutura por processo (`--benchmark`/`--iobench` aceitam
-`--filter NAME`, que já existe para o REPL; `run.py` itera os filtros). Custo:
-perde-se a intercalação rep → filtro dentro do processo (o `REPEAT` externo
-cobre a deriva). Pode entrar no protocolo 2, que ainda não tem rodadas oficiais.
+Branches ainda não mergeadas em `develop`, nesta ordem:
+- `feature/rusage`: medição de memória e paginação. CSV ganhou `rss_kb, majflt,
+  minflt` por linha (`include/procstat.h`); `run.py` grava por execução
+  `maxrss_kb`, faults, tempo de CPU, trocas de contexto (`nivcsw` = disputa de
+  CPU) e swap in/out; `swap_kind` e `swap_total_kb` entram no `env_key`.
+- `feature/isolation`: um processo por estrutura e chaves em lotes
+  (`BF_PROTOCOL_VERSION` 3, schema v3 com migração). Ver a decisão abaixo.
 
 Depois disso: a VM (abaixo) e as rodadas oficiais variando N.
 
@@ -81,8 +67,8 @@ Depois disso: a VM (abaixo) e as rodadas oficiais variando N.
 5. Threads (só depois do resto).
 6. Texto (depois).
 
-Gráficos — **feito** (`feature/plots`, aguardando revisão): `analyze.py
-bench|io --plot DIR [--format pdf png]`, `make plots`.
+Gráficos — **feito** (já em `develop`): `analyze.py bench|io --plot DIR
+[--format pdf png]`, `make plots`.
 
 ## O que existe
 
@@ -97,8 +83,8 @@ bench|io --plot DIR [--format pdf png]`, `make plots`.
 | baseline | `src/baseline.c` | tabela hash exata (uthash), guarda cópia das chaves |
 | interface | `include/bf.h`, `src/bf.c` | `bf_ops_t`: todos os modelos passam pelo registro |
 | dimensionamento | `<modelo>_params(n, p)` | cada modelo pela sua própria fórmula de FPR |
-| benchmark | `src/benchmark.c` | regimes `same_m` (m e k do SBF para todos) e `same_fpr` (cada um com seus parâmetros); rep 0 é aquecimento; contagem de hashes em passada não cronometrada |
-| I/O | `src/store.c`, `src/iobench.c` | tabelas tipo SSTable em blocos de 4 KB, 1 `pread` por consulta, O_DIRECT; T tabelas consultadas da mais nova para a mais antiga |
+| benchmark | `src/benchmark.c` | regimes `same_m` (m e k do SBF para todos) e `same_fpr` (cada um com seus parâmetros); rep 0 é aquecimento; contagem de hashes em passada não cronometrada; uma estrutura por processo, chaves em lotes (`keyset.h`) |
+| I/O | `src/store.c`, `src/iobench.c` | tabelas tipo SSTable em blocos de 4 KB, 1 `pread` por consulta, O_DIRECT; T tabelas consultadas da mais nova para a mais antiga; construção separada (`--build-store`) |
 | resultados | `scripts/run.py`, `resultsdb.py`, `analyze.py` | cada execução no `results/bloom.db` com commit, binário, máquina, disco e dataset |
 | gráficos | `scripts/plots.py` | `--plot` no `analyze.py`: mesmos agregados das tabelas (média, IC 95%); bench por tipo × regime (baseline como referência) + memória × FPR; I/O por tipo × disco × T com as razões de negativas lado a lado |
 
@@ -129,6 +115,18 @@ bench|io --plot DIR [--format pdf png]`, `make plots`.
   mesmo `config_key` (protocolo, hash do dataset, parâmetros) e `env_key`
   (máquina, limite de RAM, disco). `binary_sha256` distingue o mesmo commit
   compilado com outro compilador/flags.
+- **Cada teste é um ambiente individual: um processo por estrutura, e o dataset
+  fora da RAM.** Antes todos os filtros rodavam no mesmo processo, com as chaves
+  na memória. Num cgroup de 150 MB, o baseline empurrava as chaves para o swap e
+  o SBF, que vinha depois, pagava: 5× mais lento com só 1,2 MB, puro artefato da
+  ordem de execução. Agora o `run.py` abre um processo por estrutura × regime
+  (benchmark) ou por estrutura × T × neg (I/O), e as chaves são lidas em lotes por
+  um buffer de 1 MiB (a leitura fica fora do cronômetro e sai do page cache com
+  `posix_fadvise`). Ter todas as chaves na RAM nunca foi necessário; num sistema
+  real elas também chegam aos poucos. Consequências: as tabelas em disco são
+  construídas antes, numa etapa não medida; o `--n` mantém chaves na RAM e fica só
+  para testes rápidos (um dataset por N, via `make data N=...`). Conferido com
+  1M UUIDs: FPR, leituras e leituras inúteis idênticas às do protocolo 1.
 - **Gráficos saem dos mesmos agregados das tabelas** (`aggregate()` do
   `analyze.py`), para figura e tabela nunca divergirem. O matplotlib fica só
   em `scripts/plots.py`, importado apenas com `--plot`: o resto continua só
@@ -168,7 +166,18 @@ O_DIRECT mede o disco de verdade), sondagem com 1M UUIDs, 1 rodada:
   T = 8, 90% negativas: sem filtro 7,66 leituras · 366 µs; SBF 0,17 · 8,8 µs
   (≈42×); baseline 0,10 · 7,0 µs com 90× mais memória.
 - Estimativa para 10M: ~3,8 GB de disco por tipo (≤ 15 GB os 4 tipos);
-  benchmark ~3 min por rodada.
+  benchmark ~3 min por rodada (estimativa anterior ao isolamento).
+
+Depois do isolamento (protocolo 3, mesmo desktop, 2 repetições, 1 rodada):
+- RSS: SBF ~8 MB (antes ~230 MB, processo com dataset e baseline); baseline ~124 MB.
+- Cgroup de 60 MB (zram + swap; em disco deve ser pior): baseline inserção
+  277 → 11 875 ns/op, busca negativa 247 → 28 990 ns/op, 1,5 milhão de faults
+  maiores; todos os filtros com 0 faults e tempos iguais aos sem limite.
+- ns/op sem limite não mudaram de forma relevante em relação ao protocolo 1.
+- Ruído do desktop: a latência do NVMe subiu de ~50 µs (03/11) para ~86 µs por
+  leitura (04/11), igual nos binários antigo e novo alternados, com navegador e
+  outros programas abertos e governor `powersave`. Causa não identificada; as
+  rodadas oficiais precisam de ambiente controlado.
 
 ## Ressalvas para o texto (anotar, não escrever agora)
 
@@ -198,8 +207,12 @@ chaves) crescendo até o baseline passar da RAM da VM.
   (padrão no Fedora/Pop!_OS): a paginação custa µs em vez de ms e a RAM
   "cresce" ~1,5–2×, o que não representa servidor de big data (swap em disco
   ou nenhum). zram pode ser variante opcional; `swap_kind` separa as duas.
-- Na VM de 2 GB nem a geração do dataset de 10M cabe (pico ~3,6 GB): gerar no
-  host e copiar.
+- RAM: com o dataset fora da memória, a estrutura define o limite. Numa VM de
+  1 GB a projeção é baseline ~540 MB em 5M e ~1,1 GB em 10M (estoura), SBF
+  ~12 MB e rDBF `same_fpr` ~130 MB em 10M. A curva do baseline deve quebrar entre
+  5M e 10M, então N = 1, 5, 10 e 20M basta.
+- Gerar datasets e construir as tabelas no host e copiar para a VM: precisam de
+  mais RAM do que ela tem (geração de 10M: pico ~3,6 GB) e não são medidos.
 
 - Disco virtual com cache do host desligado (`cache=none` / passthrough do HD),
   senão o O_DIRECT dentro da VM ainda passa pelo page cache do host.

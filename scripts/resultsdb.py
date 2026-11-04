@@ -1,16 +1,18 @@
 """SQLite results database shared by run.py and analyze.py.
 
 Layout
-  runs            one row per bloom_app invocation: what ran, on which code,
-                  machine, device and dataset (the context needed to decide
-                  whether two runs are comparable)
+  runs            one row per bloom_app invocation (one structure per process):
+                  what ran, on which code, machine, device and dataset (the
+                  context needed to decide whether two runs are comparable)
   filter_results  rows of the --benchmark CSV, linked to runs.run_id
   io_results      rows of the --iobench CSV, linked to runs.run_id
   filters         fixed characteristics of each registered structure
 
 Comparability
   runs.config_key hashes everything that defines *what* was measured
-  (protocol, experiment, dataset content, parameters); runs.env_key hashes
+  (protocol, experiment, dataset content, parameters), except the structure and
+  its sizing regime: those are columns of the results, so all the structures of
+  one campaign share a config_key and can be compared; runs.env_key hashes
   *where* it was measured (host, CPU, RAM limit, storage device). Runs are only
   grouped together when both keys match. runs.git_dirty marks runs made with
   uncommitted changes to tracked files, kept apart from official results.
@@ -25,7 +27,7 @@ import json
 import sqlite3
 from pathlib import Path
 
-SCHEMA_VERSION = 2  # 2: memory/paging columns (see MIGRATIONS)
+SCHEMA_VERSION = 3  # 2: memory/paging columns; 3: runs.filter (see MIGRATIONS)
 
 # CSV columns exactly as written by src/benchmark.c and src/iobench.c.
 # If the C side changes them, update here and bump BF_PROTOCOL_VERSION.
@@ -59,7 +61,7 @@ RESULT_TABLES = {
 # Parameters that define what a run measured (part of config_key).
 CONFIG_FIELDS = [
     "protocol", "experiment", "dataset_type", "dataset_sha256", "n_override", "p_target",
-    "reps", "sizing", "tables", "neg_ratio", "queries", "value_size", "direct",
+    "reps", "tables", "neg_ratio", "queries", "value_size", "direct",
 ]
 # Where it was measured (env_key). store_* only matter for iobench but are
 # harmless for the in-memory benchmark (they are NULL there).
@@ -109,6 +111,7 @@ RUN_COLUMNS = [
     ("dataset_type", "TEXT"), ("dataset_sha256", "TEXT"), ("dataset_meta", "TEXT"),
     ("dataset_n_ins", "INTEGER"), ("dataset_n_exist", "INTEGER"), ("dataset_n_inexist", "INTEGER"),
     # parameters (NULL when not applicable to the experiment)
+    ("filter", "TEXT"),                 # structure of this process ("none": no gatekeeper)
     ("n_override", "INTEGER"), ("p_target", "REAL"), ("reps", "INTEGER"), ("sizing", "TEXT"),
     ("tables", "INTEGER"), ("neg_ratio", "REAL"), ("queries", "INTEGER"),
     ("value_size", "INTEGER"), ("direct", "INTEGER"),
@@ -132,6 +135,7 @@ MIGRATIONS = [
     (1, "filter_results", "minflt", "INTEGER"),
     (1, "io_results", "rss_kb", "INTEGER"), (1, "io_results", "majflt", "INTEGER"),
     (1, "io_results", "minflt", "INTEGER"),
+    (2, "runs", "filter", "TEXT"),
 ]
 
 

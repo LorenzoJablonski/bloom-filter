@@ -150,7 +150,7 @@ def _hbars(ax, labels, series, title, dec):
 # ------------------------------------------------------------------ bench
 
 def bench(records, metrics, outdir, formats):
-    """One figure per (type, sizing): a panel per metric, filters on the y axis;
+    """One figure per (type, N, sizing): a panel per metric, filters on the y axis;
     plus the memory x FPR trade-off when both metrics are available."""
     plt.rcParams.update(STYLE)
     outdir = Path(outdir)
@@ -160,10 +160,10 @@ def bench(records, metrics, outdir, formats):
     # every sizing figure of the same runs instead of in a figure of its own
     refs = [r for r in records if r["sizing"] == "none"]
     sized = [r for r in records if r["sizing"] != "none"] or refs
-    for (typ, sizing), tag, recs in _figures(sized, ["type", "sizing"], ["filter"]):
+    for (typ, n, sizing), tag, recs in _figures(sized, ["type", "n", "sizing"], ["filter"]):
         if sizing != "none":
             keys = {(r["config_key"], r["env_key"]) for r in recs}
-            recs = recs + [r for r in refs if r["type"] == typ
+            recs = recs + [r for r in refs if r["type"] == typ and r["n"] == n
                            and (r["config_key"], r["env_key"]) in keys]
         labels = [r["filter"] for r in recs]
         panels = [m for m in metrics if m[0] != "fpr_theory"]
@@ -182,14 +182,15 @@ def bench(records, metrics, outdir, formats):
             _hbars(ax, labels, [(header, SERIES[0], means, cis)], title, dec)
         for ax in list(axes.flat)[len(panels):]:
             ax.set_visible(False)
-        fig.suptitle(f"{typ} · {sizing} · média e IC 95%", x=0.01, ha="left", color=INK)
+        fig.suptitle(f"{typ} · N = {n:,} · {sizing} · média e IC 95%".replace(",", "."),
+                     x=0.01, ha="left", color=INK)
         fig.tight_layout()
-        paths += _save(fig, outdir, _slug("bench", typ, sizing, tag), formats)
+        paths += _save(fig, outdir, _slug("bench", typ, f"n{n}", sizing, tag), formats)
 
         if {"bits_per_key", "fpr"} <= set(cols) and sizing != "none":
             approx = [r for r in recs if r["sizing"] != "none"]  # exact baseline: FPR 0
-            paths += _tradeoff(approx, outdir, _slug("tradeoff", typ, sizing, tag),
-                               f"{typ} · {sizing}", formats)
+            paths += _tradeoff(approx, outdir, _slug("tradeoff", typ, f"n{n}", sizing, tag),
+                               f"{typ} · N = {n:,} · {sizing}".replace(",", "."), formats)
     return paths
 
 
@@ -216,14 +217,14 @@ def _tradeoff(recs, outdir, name, title, formats):
 # ------------------------------------------------------------------ io
 
 def io(records, metrics, outdir, formats):
-    """One figure per (type, device, direct, T): a panel per metric, gatekeepers
+    """One figure per (type, N, device, direct, T): a panel per metric, gatekeepers
     on the y axis, one bar per negative-query ratio."""
     plt.rcParams.update(STYLE)
     outdir = Path(outdir)
     paths = []
-    ident_cols = ["type", "store_model", "direct", "tables"]
-    for (typ, model, direct, tables), tag, recs in _figures(records, ident_cols,
-                                                            ["gatekeeper", "neg_ratio"]):
+    ident_cols = ["type", "n", "store_model", "direct", "tables"]
+    for (typ, n, model, direct, tables), tag, recs in _figures(records, ident_cols,
+                                                               ["gatekeeper", "neg_ratio"]):
         gks = list(dict.fromkeys(r["gatekeeper"] for r in recs))
         negs = sorted({r["neg_ratio"] for r in recs})
         by = {(r["gatekeeper"], r["neg_ratio"]): r for r in recs}
@@ -246,9 +247,10 @@ def io(records, metrics, outdir, formats):
         if len(negs) > 1:
             fig.legend(handles, labels, loc="upper right", ncol=len(negs), fontsize=8)
         mode = "O_DIRECT" if direct else "page cache"
-        fig.suptitle(f"{typ} · {model or 'disco ?'} · {mode} · T = {tables} · média e IC 95%",
+        title = f"{typ} · N = {n:,}".replace(",", ".")
+        fig.suptitle(f"{title} · {model or 'disco ?'} · {mode} · T = {tables} · média e IC 95%",
                      x=0.01, ha="left", color=INK)
         fig.tight_layout(rect=(0, 0, 1, 0.97))
-        paths += _save(fig, outdir, _slug("io", typ, model, "direct" if direct else "cached",
+        paths += _save(fig, outdir, _slug("io", typ, f"n{n}", model, "direct" if direct else "cached",
                                           f"T{tables}", tag), formats)
     return paths

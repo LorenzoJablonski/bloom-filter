@@ -59,5 +59,8 @@ size_t store_blocks(const store_t *st);
 
 /* Order-independent fingerprint of a key set (MurmurHash64A based). */
 uint64_t store_fingerprint(const bf_key_t *keys, size_t n);
+/* The same value computed over batches: init, then add every key once (any order). */
+uint64_t store_fingerprint_init(size_t n);
+uint64_t store_fingerprint_add(uint64_t sum, const bf_key_t *keys, size_t n);
 
 #endif /* STORE_H */

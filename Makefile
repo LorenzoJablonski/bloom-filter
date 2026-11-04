@@ -11,7 +11,7 @@ TARGET = bloom_app
 FILTERS = sbf cbf pbf rdbf hybrid
 MODULES = murmurhash2 bf baseline keyset store benchmark iobench $(FILTERS) main
 OBJS = $(MODULES:%=$(BUILD_DIR)/%.o)
-TESTS = murmurhash2 $(FILTERS) baseline store
+TESTS = murmurhash2 $(FILTERS) baseline store keyset
 
 # Dataset generation (make data N=1000000 TYPES="uuid cpf")
 N ?= 2000
@@ -113,6 +113,7 @@ test: $(TARGET)
 check: $(OBJS)
 	@for t in $(TESTS); do \
 		obj=$(BUILD_DIR)/$$t.o; [ $$t = murmurhash2 ] && obj=; \
+		[ $$t = keyset ] && obj="$$obj $(BUILD_DIR)/baseline.o"; \
 		$(CC) $(CFLAGS) $(TEST_DIR)/test_$$t.c $(BUILD_DIR)/murmurhash2.o $$obj \
 			-o $(BUILD_DIR)/test_$$t $(LDFLAGS) && $(BUILD_DIR)/test_$$t || exit 1; \
 	done

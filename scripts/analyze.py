@@ -3,8 +3,8 @@
 
 Subcommands
   runs     list recorded runs (to pick labels/batches)
-  bench    in-memory benchmark, grouped by type, sizing and filter
-  io       I/O experiment, grouped by type, tables, neg_ratio and gatekeeper
+  bench    in-memory benchmark, grouped by type, N, sizing and filter
+  io       I/O experiment, grouped by type, N, tables, neg_ratio and gatekeeper
   freeze   copy the database to results/frozen/ (snapshot for the document)
 
 Grouping rules: rows are only pooled when the runs share config_key (same
@@ -251,16 +251,16 @@ def pick_metrics(table, names, default):
 
 def cmd_runs(con, args):
     rows = con.execute(
-        "SELECT run_id, batch_id, label, experiment, dataset_type, status, protocol, "
+        "SELECT run_id, batch_id, label, experiment, dataset_type, filter, status, protocol, "
         "substr(git_commit, 1, 8) AS commit_, git_dirty, host, store_model, swap_kind, "
         "config_key, env_key, duration_s, maxrss_kb / 1024, majflt "
         "FROM runs ORDER BY run_id DESC LIMIT ?",
         (args.limit,)).fetchall()
-    headers = ["id", "batch", "label", "exp", "type", "status", "proto", "commit", "dirty",
+    headers = ["id", "batch", "label", "exp", "type", "filter", "status", "proto", "commit", "dirty",
                "host", "device", "swap", "config", "env", "s", "rss MiB", "majflt"]
     table = [[("-" if v is None else str(v)) for v in r] for r in rows]
     for line in table:
-        line[12], line[13] = line[12][:8], line[13][:8]
+        line[13], line[14] = line[13][:8], line[14][:8]
     widths = [max([len(h)] + [len(t[i]) for t in table]) for i, h in enumerate(headers)]
     print("  ".join(h.ljust(w) for h, w in zip(headers, widths)))
     for t in table:
@@ -269,32 +269,32 @@ def cmd_runs(con, args):
 
 def cmd_bench(con, args):
     metrics = pick_metrics(BENCH_METRICS, args.metrics, BENCH_DEFAULT)
-    group = ["type", "sizing", "filter"]
+    group = ["type", "n", "sizing", "filter"]
     recs, nrows = aggregate(con, "v_bench", group, metrics, args,
                             extra=[("sizing", args.sizing), ("filter", args.filter)])
     if not recs:
         raise SystemExit("nenhuma linha selecionada (use `analyze.py runs`; runs sujos "
                          "precisam de --include-dirty)")
-    recs.sort(key=lambda r: (r["type"], r["sizing"] != "none", r["sizing"],
+    recs.sort(key=lambda r: (r["type"], r["n"], r["sizing"] != "none", r["sizing"],
                              FILTER_ORDER.get(r["filter"], 99)))
     print(f"protocolo {args.protocol}, {nrows} amostras\n", file=sys.stderr)
-    emit(recs, group, ["tipo", "regime", "filtro"], metrics, args)
+    emit(recs, group, ["tipo", "N", "regime", "filtro"], metrics, args)
     plot(args, "bench", recs, metrics)
 
 
 def cmd_io(con, args):
     metrics = pick_metrics(IO_METRICS, args.metrics, IO_DEFAULT)
-    group = ["type", "store_model", "direct", "tables", "neg_ratio", "gatekeeper"]
+    group = ["type", "n", "store_model", "direct", "tables", "neg_ratio", "gatekeeper"]
     recs, nrows = aggregate(con, "v_io", group, metrics, args,
                             extra=[("gatekeeper", args.filter),
                                    ("tables", args.tables), ("neg_ratio", args.neg)])
     if not recs:
         raise SystemExit("nenhuma linha selecionada (use `analyze.py runs`; runs sujos "
                          "precisam de --include-dirty)")
-    recs.sort(key=lambda r: (r["type"], str(r["store_model"]), r["direct"], r["tables"],
+    recs.sort(key=lambda r: (r["type"], r["n"], str(r["store_model"]), r["direct"], r["tables"],
                              r["neg_ratio"], FILTER_ORDER.get(r["gatekeeper"], 99)))
     print(f"protocolo {args.protocol}, {nrows} amostras\n", file=sys.stderr)
-    emit(recs, group, ["tipo", "disco", "direct", "T", "neg", "gatekeeper"], metrics, args)
+    emit(recs, group, ["tipo", "N", "disco", "direct", "T", "neg", "gatekeeper"], metrics, args)
     plot(args, "io", recs, metrics)
 
 
