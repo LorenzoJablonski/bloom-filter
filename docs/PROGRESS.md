@@ -3,8 +3,8 @@
 Documento de passagem entre sessões/máquinas. Quem retomar o trabalho (pessoa
 ou agente) deve ler isto e o `AGENTS.md` antes de mexer no código.
 
-Última atualização: 2026-11-04, desktop Pop!_OS (branch `feature/isolation`, sobre
-`feature/rusage`; `feature/plots` já mergeada em `develop`).
+Última atualização: 2026-11-05, desktop Pop!_OS (branch `feature/vm`, sobre
+`feature/isolation` e `feature/rusage`; `feature/plots` já mergeada em `develop`).
 
 ## Como retomar em outra máquina
 
@@ -12,7 +12,7 @@ ou agente) deve ler isto e o `AGENTS.md` antes de mexer no código.
 git clone git@github.com:LorenzoJablonski/bloom-filter.git bloom
 cd bloom
 git checkout develop          # main só tem o commit inicial; o trabalho está em develop
-git checkout feature/isolation   # trabalho em andamento (ver "Em andamento" abaixo)
+git checkout feature/vm       # trabalho em andamento (ver "Em andamento" abaixo)
 make all && make check && make test
 make data                     # datasets NÃO estão no git (N=2000, SEED=42; reprodutível)
 ```
@@ -57,7 +57,30 @@ Branches ainda não mergeadas em `develop`, nesta ordem:
 - `feature/vm`: scripts da VM, disco do swap no `env_key` (schema v4) e consultas
   novas a cada repetição no I/O (`BF_PROTOCOL_VERSION` 4).
 
-Depois disso: as rodadas oficiais variando N (ver "Plano da VM").
+Depois disso: as rodadas oficiais variando N (ver "Plano da VM" e "Campanha
+oficial"). Nada longo foi iniciado; rodar só com a liberação do autor.
+
+Pendências:
+- Capítulo de materiais e métodos: a base feita no notebook não está no GitHub.
+  Quando chegar, revisar e atualizar conforme o código atual.
+- HD: ver o alerta "HD Seagate do autor" antes de qualquer uso.
+
+## HD Seagate do autor: tem arquivos que não podem ser perdidos
+
+Seagate Portable de 2 TB, USB, partição NTFS única, conectado em 2026-11-05.
+**Nenhum agente pode formatar, particionar, criar arquivos nele nem passá-lo à VM
+sem pedido explícito do autor.** O `guest-setup.sh` roda `mkfs` e `mkswap` nos
+discos da VM, então um passthrough deste HD poderia apagá-lo. Os scripts atuais
+só usam arquivos de imagem, mas `DISK_DIR` apontado para ele gravaria lá dentro.
+
+Montar com escrita já grava: ao abri-lo pelo gerenciador de arquivos, o driver
+`ntfs3` escreveu ~64 MB (131 096 setores; o tamanho combina com o `$LogFile`, sem
+confirmação). Para só ler: `sudo blockdev --setro /dev/sdX /dev/sdX1` e
+`udisksctl mount -b /dev/sdX1 -o ro`; o bloqueio se perde ao reconectar.
+
+Decisão do experimento em HD ainda em aberto. Recomendado: usar um disco vazio, ou
+este somente depois de existir outra cópia dos arquivos. Além do risco, ele não
+serve bem: USB, sem FUA, e esse modelo costuma ser SMR (não confirmado).
 
 ## Lista de prioridades
 
@@ -226,7 +249,32 @@ Piloto na VM (1 GB, swap no NVMe, commit 0afd600, ns/op em 2 repetições):
 Cada fault custa ~80 µs. O baseline de 10M levou 28 min (~9 min por repetição,
 aquecimento incluído) e o de 20M ainda não foi rodado; a estimativa é de ~35 min por
 repetição. Num HD (~10 ms por fault) o de 10M passaria de ~19 h por repetição: lá o baseline precisa de um N
-logo acima da RAM ou de um limite de operações. Decidir quando o HD chegar.
+logo acima da RAM ou de um limite de operações. Ver também o alerta "HD Seagate do autor".
+
+### Campanha oficial (decidida em 2026-11-05, no NVMe; ainda não executada)
+
+| tipo | N | o que roda | repetições × rodadas |
+|---|---|---|---|
+| UUID | 1, 5, 10 e 20M | filtros: benchmark e I/O | 5 × 3 |
+| UUID | 1 e 5M | baseline: benchmark e I/O | 5 × 3 |
+| UUID | 10 e 20M | baseline: benchmark e I/O | 3 × 1 |
+| CPF, CNPJ, URL | 1 e 5M | tudo, com baseline e I/O | 5 × 3 |
+| CPF, CNPJ, URL | 10 e 20M | só filtros, só benchmark | 2 × 1 |
+
+Estimativa total: ~7 h (o baseline de 20M, ~35 min por repetição, ainda não foi
+medido). A VM já tem os dados de 5M e 10M; faltam 1M, 20M e os outros tipos.
+Basta chamar `vm.sh campaign` separadamente com `FILTERS`, `REPS` e `REPEAT`.
+
+Por que 3 × 1 no baseline que pagina: é ele que levaria o total a ~18 h só em UUID
+(50× a 120× mais lento por operação). Um efeito desse tamanho aparece mesmo com
+intervalo largo. Não usar 2 repetições: o IC multiplica o desvio por t = 12,7, e com
+3 por 4,3. Declarar no texto que essas 3 repetições são do mesmo processo e não
+captam variação entre rodadas.
+
+Por que os tipos de chave variam assim: o cap. 4.3.1 os usa para testar a dispersão
+do hash, o que não depende de paginação. A FPR não varia entre repetições, por isso
+2 × 1 basta em 10M e 20M, e sem I/O não são precisas as tabelas (~8 GB por tipo em
+20M). Declarar no texto que o baseline paginando e o I/O nesses N só existem para UUID.
 
 Por que o I/O sorteia consultas novas por repetição (protocolo 4): repetir as mesmas
 10 mil deixava na RAM, depois do aquecimento, as páginas que elas usam, e a paginação
@@ -255,8 +303,9 @@ As mesmas consultas continuam valendo para todas as estruturas.
 - Gerar datasets e construir as tabelas no host e copiar para a VM: precisam de
   mais RAM do que ela tem (geração de 10M: pico ~3,6 GB) e não são medidos.
 
-- Disco virtual com cache do host desligado (`cache=none` / passthrough do HD),
-  senão o O_DIRECT dentro da VM ainda passa pelo page cache do host.
+- Disco virtual com cache do host desligado (`cache=none`), senão o O_DIRECT
+  dentro da VM ainda passa pelo page cache do host. Passthrough só de um disco
+  vazio, nunca do HD com arquivos do autor.
 - Sistema de arquivos ext4 ou xfs no disco dos testes (evita o problema do
   btrfs).
 - RAM limitada (ex.: 1–2 GB) para que o page cache não esconda o disco nos
