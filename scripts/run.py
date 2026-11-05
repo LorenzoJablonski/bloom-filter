@@ -107,20 +107,38 @@ def cgroup_memory_limit():
     return None
 
 
+def disk_info(source):
+    """(rotational, model) of the physical disk behind a device or partition."""
+    tree = sh(["lsblk", "-s", "-n", "-l", "-o", "TYPE,ROTA,MODEL", source])
+    for line in (tree or "").splitlines():  # through partitions, LUKS, LVM
+        parts = line.split(None, 2)
+        if parts and parts[0] == "disk":
+            return (int(parts[1]) if len(parts) > 1 else None,
+                    parts[2].strip() if len(parts) > 2 else None)
+    return None, None
+
+
 def swap_info():
-    """Kind and size of the active swap: zram (compressed RAM) and disk swap
+    """Kind, size and disk of the active swap: zram (compressed RAM), SSD and HD
     behave very differently once a structure no longer fits in memory."""
-    kinds, total = set(), 0
+    kinds, total, models, rotas = set(), 0, set(), set()
     try:
         for line in Path("/proc/swaps").read_text().splitlines()[1:]:
             parts = line.split()
             if len(parts) >= 3:
-                kinds.add("zram" if "/zram" in parts[0] else "disk")
+                zram = "/zram" in parts[0]
+                kinds.add("zram" if zram else "disk")
                 total += int(parts[2])
+                if not zram and parts[1] == "partition":  # swap files: disk unknown here
+                    rota, model = disk_info(parts[0])
+                    rotas.add(rota)
+                    models.add(model)
     except (OSError, ValueError):
         return {"swap_kind": None, "swap_total_kb": None}
     kind = "none" if not kinds else kinds.pop() if len(kinds) == 1 else "mixed"
-    return {"swap_kind": kind, "swap_total_kb": total}
+    return {"swap_kind": kind, "swap_total_kb": total,
+            "swap_model": "+".join(sorted(m for m in models if m)) or None,
+            "swap_rotational": max((r for r in rotas if r is not None), default=None)}
 
 
 def vmstat_swap():
@@ -192,14 +210,7 @@ def storage_info(store_dir):
     source, fstype, opts = (mnt.split() + [None, None, None])[:3]
     source = source.split("[", 1)[0]  # btrfs: /dev/nvme0n1p3[/home]
     out.update(store_fstype=fstype, store_fsopts=opts, store_device=source)
-    # walk to the underlying disk (through partitions, LUKS, LVM)
-    tree = sh(["lsblk", "-s", "-n", "-l", "-o", "TYPE,ROTA,MODEL", source])
-    for line in (tree or "").splitlines():
-        parts = line.split(None, 2)
-        if parts and parts[0] == "disk":
-            out["store_rotational"] = int(parts[1]) if len(parts) > 1 else None
-            out["store_model"] = parts[2].strip() if len(parts) > 2 else None
-            break
+    out["store_rotational"], out["store_model"] = disk_info(source)
     return out
 
 

@@ -21,6 +21,7 @@ make plots        # figures in results/plots: FORMAT="pdf png" PLOT_ARGS="--labe
 make test         # quick invariants via the generic interface (--test)
 make check        # C unit tests in tests/
 make clean        # removes build/ and bloom_app
+scripts/vm/vm.sh  # controlled environment for official runs: create|push-code|data|campaign|pull (see its header)
 ```
 
 Compiler: GCC with `-std=c99 -Wall -Wextra -O3`. Links pthreads (`-lpthread`).
@@ -53,7 +54,7 @@ Merge order matters — murmurhash is prerequisite for all filters:
 - Every structure is exposed through `bf_ops_t` (include/bf.h, src/bf.c); demo, REPL and benchmark iterate the registry — register new filters there
 - Baseline owns copies of its keys; filters never keep key pointers
 - Each filter has `<model>_params(n, p)` (sizing for target FPR by its own formula), registered in `bf_ops_t.params`
-- I/O experiment (src/iobench.c, src/store.c): SSTable-like sorted tables on disk, one 4 KB block read per probe, O_DIRECT by default; tables are built once in STORE_DIR (--build-store) and reused (fingerprint in header). On btrfs with compression, O_DIRECT silently falls back to the page cache — iobench sets NOCOMP on its table dir and warns when proc read_bytes << reads*4096
+- I/O experiment (src/iobench.c, src/store.c): SSTable-like sorted tables on disk, one 4 KB block read per probe, O_DIRECT by default; tables are built once in STORE_DIR (--build-store) and reused (fingerprint in header). Each repetition draws its own query sample, the same for every gatekeeper: repeating one sample would keep its pages in RAM and hide paging. On btrfs with compression, O_DIRECT silently falls back to the page cache — iobench sets NOCOMP on its table dir and warns when proc read_bytes << reads*4096
 - Datasets are streamed in batches through a fixed 1 MiB buffer (include/keyset.h: dataset_open, keystream_next), and only the operations are timed: a measured process holds the structure under test, not the dataset. Whole-file loading (keyset_load) is only for the unmeasured table build. Generate one dataset per N (`make data N=...`); `--n` keeps keys in RAM and is for quick tests only
 - One structure per process: run.py launches bloom_app with `--filter NAME` per structure x sizing regime (benchmark) or per structure x T x neg (iobench, `none` is the control), so paging is attributed to the structure that caused it. Disk tables are built first by `--iobench --build-store`, unmeasured; a measured run fails if they are missing
 - Benchmark: rep 0 is an unreported warm-up; hash-call counts come from an untimed pass (`murmurhash2_counter`), never enable it in timed code

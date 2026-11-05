@@ -54,7 +54,10 @@ Branches ainda não mergeadas em `develop`, nesta ordem:
 - `feature/isolation`: um processo por estrutura e chaves em lotes
   (`BF_PROTOCOL_VERSION` 3, schema v3 com migração). Ver a decisão abaixo.
 
-Depois disso: a VM (abaixo) e as rodadas oficiais variando N.
+- `feature/vm`: scripts da VM, disco do swap no `env_key` (schema v4) e consultas
+  novas a cada repetição no I/O (`BF_PROTOCOL_VERSION` 4).
+
+Depois disso: as rodadas oficiais variando N (ver "Plano da VM").
 
 ## Lista de prioridades
 
@@ -198,10 +201,48 @@ probabilísticos, ficam pequenos (1M UUIDs: SBF 1,2 MB contra 108 MB do
 baseline; 10M: ~12 MB contra ~1,1 GB). O eixo principal é N (quantidade de
 chaves) crescendo até o baseline passar da RAM da VM.
 
+Implementado em `scripts/vm/` (`vm.sh create|push-code|data|campaign|pull|...`;
+ver o cabeçalho do script). O `create` baixa e confere a imagem sozinho. Armadilhas
+já resolvidas no XML: sem placa de vídeo esta imagem reinicia antes do kernel; o
+modo sessão não aceita `memtune`, e `-overcommit mem-lock=on` estoura o limite de
+memlock, então a RAM da VM **não** fica travada (conferir `VmSwap` do qemu no host).
+Os discos de teste são SCSI com modelo e `rotation_rate` declarados, senão o
+convidado diria "rotacional" e sem modelo, e o `env_key` não separaria SSD de HD.
+
+Custos medidos (UUID, host): geração e partição crescem linearmente, ~305 B/chave no
+`partition.py` (20M: ~6 GB, roda com swap sob `HOST_MEM_CAP`, 95 s); construção da
+T=1 em 20M usa 1,3 GB, por isso é feita no host. Disco por N: 136 B/chave por valor
+de T e 78 B/chave de dataset; somando N = 1, 5, 10 e 20M, ~13 GB por tipo.
+
+Piloto na VM (1 GB, swap no NVMe, commit 0afd600, ns/op em 2 repetições):
+
+| N | estrutura | inserção | busca existente | busca negativa | faults por rep |
+|---|---|---|---|---|---|
+| 5M | sbf | 95 | 88 | 52 | 0 |
+| 5M | baseline | 354 | 280 | 237 | 0 |
+| 10M | sbf | 115 | 110 | 58 | 0 |
+| 10M | baseline | 16 400 | 43 700 | 29 000 | ~7 milhões |
+
+Cada fault custa ~80 µs. O baseline de 10M levou 28 min (~9 min por repetição,
+aquecimento incluído) e o de 20M ainda não foi rodado; a estimativa é de ~35 min por
+repetição. Num HD (~10 ms por fault) o de 10M passaria de ~19 h por repetição: lá o baseline precisa de um N
+logo acima da RAM ou de um limite de operações. Decidir quando o HD chegar.
+
+Por que o I/O sorteia consultas novas por repetição (protocolo 4): repetir as mesmas
+10 mil deixava na RAM, depois do aquecimento, as páginas que elas usam, e a paginação
+sumia das repetições válidas. Medido na VM (10M, T=1, 90% negativas, 3 repetições):
+
+| protocolo | estrutura | faults maiores por repetição | latência média | p99 |
+|---|---|---|---|---|
+| 3 (repetidas) | baseline | 0 | 12,5 µs | 129 µs |
+| 4 (novas) | baseline | ~4 850 | ~49 µs | ~270 µs |
+| 4 (novas) | sbf | 0 | 13,5 µs | 130 µs |
+
+As mesmas consultas continuam valendo para todas as estruturas.
+
 - Imagem: Debian 13 `debian-13-genericcloud-amd64.qcow2`
   (cloud.debian.org/images/cloud/trixie/latest/; a *genericcloud* tem
-  cloud-init e virtio). libvirt em `qemu:///session` (sem root); no desktop
-  há `/dev/kvm`, `qemu-system-x86_64`, `virsh`, `qemu-img`, `genisoimage`.
+  cloud-init e virtio). libvirt em `qemu:///session` (sem root).
 - vCPUs fixas em núcleos dedicados (`vcpupin`); o host ainda deve ficar quieto.
 - **Swap em disco, não zram.** zram é swap comprimido na própria RAM
   (padrão no Fedora/Pop!_OS): a paginação custa µs em vez de ms e a RAM
