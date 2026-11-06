@@ -251,6 +251,25 @@ aquecimento incluído) e o de 20M ainda não foi rodado; a estimativa é de ~35 
 repetição. Num HD (~10 ms por fault) o de 10M passaria de ~19 h por repetição: lá o baseline precisa de um N
 logo acima da RAM ou de um limite de operações. Ver também o alerta "HD Seagate do autor".
 
+### Teste real na VM (só na branch `feature/results-test`; não é a campanha oficial)
+
+Nesta branch o `.gitignore` não ignora `results/`, só para consulta em outras
+máquinas. **Não rodar experimentos nela:** `results/bloom.db` é versionado, e o
+`run.py` recusaria o repositório sujo. As rodadas partem da `feature/vm`.
+
+```bash
+python3 scripts/analyze.py --db results/vm/bloom.db runs
+python3 scripts/analyze.py --db results/vm/bloom.db bench --label teste-vm-nov05
+python3 scripts/analyze.py --db results/vm/bloom.db io --label teste-vm-nov05
+```
+
+Em `results/vm/`: UUID, N = 1, 5 e 10M, todas as estruturas, benchmark e I/O, 3
+repetições × 1 rodada, commit 59a907d, protocolo 4, 56 min, 0 falhas. `results/` guarda
+também as sondagens antigas do host (protocolo 1). Ressalvas: o host estava em uso (13,6
+de 15,7 GB ocupados no início, 82 MB da RAM da VM em swap; 510 MB na manhã seguinte, sem
+medida durante a rodada). A leitura sem filtro levou ~57 µs em 1M e ~115 µs em 5M e 10M,
+causa não identificada; investigar antes da campanha oficial.
+
 ### Campanha oficial (decidida em 2026-11-05, no NVMe; ainda não executada)
 
 | tipo | N | o que roda | repetições × rodadas |

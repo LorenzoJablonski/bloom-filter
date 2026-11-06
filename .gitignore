@@ -24,8 +24,7 @@ Thumbs.db
 # Logs
 *.log
 
-# Generated artifacts (datasets/results) — keep .gitkeep only
+# Generated datasets — keep .gitkeep only. Results are versioned on this branch
+# so they can be read on other machines.
 data/*
 !data/.gitkeep
-results/*
-!results/.gitkeep
