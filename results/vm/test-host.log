@@ -1,0 +1,4 @@
+start 2026-11-05T17:12:05-03:00 host VmSwap: VmSwap:	   82032 kB
+Mem.:          15676       13627         672         237        2836        2048
+Swap:          19771        5348       14422
+end check 2026-11-06T10:12:20-03:00 (after the run, machine in use overnight): VmSwap:	  509352 kB
