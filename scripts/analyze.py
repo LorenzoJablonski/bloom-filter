@@ -75,6 +75,9 @@ BENCH_METRICS = {
     "hash_inexist": ("hash_lookup_inexist", "hashes/busca neg.", 1, 2),
     "fill": ("fill_ratio", "ocupação", 1, 3),
     "mem": ("mem_bytes", "memória (B)", 1, 0),
+    "rss": ("rss_kb", "RSS (KiB)", 1, 0),
+    "majflt": ("majflt", "page faults maiores", 1, 0),
+    "minflt": ("minflt", "page faults menores", 1, 0),
 }
 BENCH_DEFAULT = ["bits_per_key", "k", "fpr", "fpr_theory", "insert", "lookup_exist",
                  "lookup_inexist", "hash_inexist"]
@@ -89,6 +92,9 @@ IO_METRICS = {
     "gk_mem": ("gk_mem_bytes", "memória filtros (B)", 1, 0),
     "k": ("k", "k", 1, 0),
     "errors": ("errors", "erros", 1, 0),
+    "rss": ("rss_kb", "RSS (KiB)", 1, 0),
+    "majflt": ("majflt", "page faults maiores", 1, 0),
+    "minflt": ("minflt", "page faults menores", 1, 0),
 }
 IO_DEFAULT = ["reads", "wasted", "mean_us", "p50_us", "p99_us", "gk_mem"]
 
@@ -246,14 +252,15 @@ def pick_metrics(table, names, default):
 def cmd_runs(con, args):
     rows = con.execute(
         "SELECT run_id, batch_id, label, experiment, dataset_type, status, protocol, "
-        "substr(git_commit, 1, 8) AS commit_, git_dirty, host, store_model, "
-        "config_key, env_key, duration_s FROM runs ORDER BY run_id DESC LIMIT ?",
+        "substr(git_commit, 1, 8) AS commit_, git_dirty, host, store_model, swap_kind, "
+        "config_key, env_key, duration_s, maxrss_kb / 1024, majflt "
+        "FROM runs ORDER BY run_id DESC LIMIT ?",
         (args.limit,)).fetchall()
     headers = ["id", "batch", "label", "exp", "type", "status", "proto", "commit", "dirty",
-               "host", "device", "config", "env", "s"]
+               "host", "device", "swap", "config", "env", "s", "rss MiB", "majflt"]
     table = [[("-" if v is None else str(v)) for v in r] for r in rows]
     for line in table:
-        line[11], line[12] = line[11][:8], line[12][:8]
+        line[12], line[13] = line[12][:8], line[13][:8]
     widths = [max([len(h)] + [len(t[i]) for t in table]) for i, h in enumerate(headers)]
     print("  ".join(h.ljust(w) for h, w in zip(headers, widths)))
     for t in table:

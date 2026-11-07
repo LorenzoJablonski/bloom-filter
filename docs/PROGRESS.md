@@ -3,7 +3,8 @@
 Documento de passagem entre sessões/máquinas. Quem retomar o trabalho (pessoa
 ou agente) deve ler isto e o `AGENTS.md` antes de mexer no código.
 
-Última atualização: 2026-11-03 (branch `feature/plots`, sobre `develop`).
+Última atualização: 2026-11-03, desktop Pop!_OS (branch `feature/rusage`, sobre `develop`;
+`feature/plots` já mergeada em `develop`).
 
 ## Como retomar em outra máquina
 
@@ -11,6 +12,7 @@ ou agente) deve ler isto e o `AGENTS.md` antes de mexer no código.
 git clone git@github.com:LorenzoJablonski/bloom-filter.git bloom
 cd bloom
 git checkout develop          # main só tem o commit inicial; o trabalho está em develop
+git checkout feature/rusage   # trabalho em andamento (ver "Em andamento" abaixo)
 make all && make check && make test
 make data                     # datasets NÃO estão no git (N=2000, SEED=42; reprodutível)
 ```
@@ -41,6 +43,32 @@ este arquivo ao começar.
 - Git Flow: `feature/*` → `develop`. Não tocar na `main` sem pedido.
 - Nome do modelo: **rDBF**, com o robustBF (Patgiri, 2021) como implementação
   de referência.
+
+## Em andamento (retomar aqui)
+
+Branch `feature/rusage` (commitada, **não mergeada**): medição de memória e
+paginação.
+- CSV do benchmark e do iobench ganhou `rss_kb, majflt, minflt` por linha
+  (filtro × repetição), via `include/procstat.h`; `BF_PROTOCOL_VERSION` = 2.
+- `run.py` grava por execução (`os.wait4`): `maxrss_kb`, `majflt`, `minflt`,
+  `utime_s`, `stime_s`, `nvcsw`, `nivcsw` (trocas involuntárias = disputa de
+  CPU) e `swap_in_pages`/`swap_out_pages` do sistema. `swap_kind`
+  (none/disk/zram/mixed) e `swap_total_kb` entram no `env_key`.
+- `resultsdb` schema v2 com migração automática da v1 (bancos antigos mantêm
+  as execuções; colunas novas ficam NULL).
+
+**Problema aberto, a discutir antes de seguir:** com pouca RAM, quem pagina
+não é só quem estourou. Teste com 1M UUIDs num cgroup de 150 MB
+(`systemd-run --user --scope -p MemoryMax=150M ...`): o baseline ficou ~3,5×
+mais lento (38 794 faults maiores), mas o SBF, que roda logo depois no mesmo
+processo, também paginou (26 854) porque as *chaves do dataset* foram para o
+swap enquanto o baseline ocupava a RAM; o CBF ainda pagou um pouco; os demais,
+zero. Proposta: uma estrutura por processo (`--benchmark`/`--iobench` aceitam
+`--filter NAME`, que já existe para o REPL; `run.py` itera os filtros). Custo:
+perde-se a intercalação rep → filtro dentro do processo (o `REPEAT` externo
+cobre a deriva). Pode entrar no protocolo 2, que ainda não tem rodadas oficiais.
+
+Depois disso: a VM (abaixo) e as rodadas oficiais variando N.
 
 ## Lista de prioridades
 
@@ -130,6 +158,18 @@ I/O, 2000 chaves, T = 8 tabelas, 90% de consultas negativas, O_DIRECT no NVMe:
 - com SBF: 0,16–0,17 leituras/consulta, ~20 µs (≈40× menos latência);
 - baseline (exato): 0,10 leituras/consulta (só as consultas positivas).
 
+Desktop (Pop!_OS, 12 núcleos, 15 GB, NVMe ADATA SM2P41C3 em **ext4**:
+O_DIRECT mede o disco de verdade), sondagem com 1M UUIDs, 1 rodada:
+- benchmark: 16,6 s, pico 230 MB; dataset 110 MB (gerado em 4,4 s, pico 360 MB).
+- híbridos ~4× mais rápidos que o SBF na inserção (eram ~3× com 100 mil);
+  rDBF (104 bits/chave) já não cabe no cache e fica atrás do hybrid_512;
+  512 vs 4096 ainda não se separam em velocidade.
+- iobench 1 min 30 s; tabelas ~136 MB por configuração de T.
+  T = 8, 90% negativas: sem filtro 7,66 leituras · 366 µs; SBF 0,17 · 8,8 µs
+  (≈42×); baseline 0,10 · 7,0 µs com 90× mais memória.
+- Estimativa para 10M: ~3,8 GB de disco por tipo (≤ 15 GB os 4 tipos);
+  benchmark ~3 min por rodada.
+
 ## Ressalvas para o texto (anotar, não escrever agora)
 
 - O artigo do robustBF afirma ~1,382 bits/elemento com FPR quase zero; com um
@@ -141,6 +181,25 @@ I/O, 2000 chaves, T = 8 tabelas, 90% de consultas negativas, O_DIRECT no NVMe:
 - A FPR não varia entre repetições (chaves e seeds fixas); só os tempos variam.
 
 ## Plano da VM (prioridade 4)
+
+Por que VM: ambiente limpo (sem desktop, vCPUs fixas) e RAM pequena de
+verdade. Estourar a RAM **não é problema, é dado**: em big data a estrutura
+determinística não cabe na memória e pagina; os filtros, por serem de bits e
+probabilísticos, ficam pequenos (1M UUIDs: SBF 1,2 MB contra 108 MB do
+baseline; 10M: ~12 MB contra ~1,1 GB). O eixo principal é N (quantidade de
+chaves) crescendo até o baseline passar da RAM da VM.
+
+- Imagem: Debian 13 `debian-13-genericcloud-amd64.qcow2`
+  (cloud.debian.org/images/cloud/trixie/latest/; a *genericcloud* tem
+  cloud-init e virtio). libvirt em `qemu:///session` (sem root); no desktop
+  há `/dev/kvm`, `qemu-system-x86_64`, `virsh`, `qemu-img`, `genisoimage`.
+- vCPUs fixas em núcleos dedicados (`vcpupin`); o host ainda deve ficar quieto.
+- **Swap em disco, não zram.** zram é swap comprimido na própria RAM
+  (padrão no Fedora/Pop!_OS): a paginação custa µs em vez de ms e a RAM
+  "cresce" ~1,5–2×, o que não representa servidor de big data (swap em disco
+  ou nenhum). zram pode ser variante opcional; `swap_kind` separa as duas.
+- Na VM de 2 GB nem a geração do dataset de 10M cabe (pico ~3,6 GB): gerar no
+  host e copiar.
 
 - Disco virtual com cache do host desligado (`cache=none` / passthrough do HD),
   senão o O_DIRECT dentro da VM ainda passa pelo page cache do host.

@@ -10,6 +10,7 @@
 
 #include "keyset.h"
 #include "murmurhash2.h"
+#include "procstat.h"
 
 /*
  * Benchmark runner.
@@ -22,6 +23,10 @@
  *
  * Hash-call counts come from a separate, untimed pass with the MurmurHash2
  * counter enabled; timed passes run with the counter disabled.
+ *
+ * rss_kb is the process resident set right after the inserts (dataset
+ * included); majflt/minflt are the page faults of create + insert + lookups.
+ * Major faults there mean the structure did not fit in RAM and was paged.
  */
 
 static double now_ms(void)
@@ -125,17 +130,19 @@ int benchmark_run(const char *type, size_t n_override, double p_target,
     fprintf(out, "type,filter,sizing,rep,n,n_exist,n_inexist,p_target,m,cells,k,mem_bytes,bits_per_key,"
                  "insert_ms,lookup_exist_ms,lookup_inexist_ms,"
                  "hash_insert,hash_lookup_exist,hash_lookup_inexist,"
-                 "fn,fp,fpr,fpr_theory,fill_ratio\n");
+                 "fn,fp,fpr,fpr_theory,fill_ratio,rss_kb,majflt,minflt\n");
 
     for (unsigned rep = 0; rep <= reps; rep++) {   /* rep 0 = warm-up */
         for (size_t r = 0; r < nruns; r++) {
             const bf_ops_t *op = runs[r].ops;
+            proc_faults_t f0 = proc_faults();
             void *bf = op->create(runs[r].m, runs[r].k);
             if (!bf) { fprintf(stderr, "benchmark: %s create failed\n", op->name); continue; }
 
             double t0 = now_ms();
             for (size_t j = 0; j < n; j++) op->insert(bf, &ins.keys[j]);
             double t_ins = now_ms() - t0;
+            long rss = proc_rss_kb();
 
             size_t fn = 0;
             t0 = now_ms();
@@ -146,6 +153,7 @@ int benchmark_run(const char *type, size_t n_override, double p_target,
             t0 = now_ms();
             for (size_t j = 0; j < inex.count; j++) fp += op->lookup(bf, &inex.keys[j]) == BF_PRESENT;
             double t_inex = now_ms() - t0;
+            proc_faults_t f1 = proc_faults();
 
             if (rep > 0) {
                 size_t mem = op->memory_bytes(bf);
@@ -161,8 +169,9 @@ int benchmark_run(const char *type, size_t n_override, double p_target,
                 else fprintf(out, "%.4f,%.4f,%.4f,", runs[r].hashes.insert,
                              runs[r].hashes.exist, runs[r].hashes.inexist);
                 fprintf(out, "%zu,%zu,%.6f,", fn, fp, fpr);
-                if (op->exact) fprintf(out, ",\n");
-                else fprintf(out, "%.6f,%.6f\n", op->fpr_theory(bf, n), op->fill_ratio(bf));
+                if (op->exact) fprintf(out, ",,");
+                else fprintf(out, "%.6f,%.6f,", op->fpr_theory(bf, n), op->fill_ratio(bf));
+                fprintf(out, "%ld,%ld,%ld\n", rss, f1.majflt - f0.majflt, f1.minflt - f0.minflt);
             }
             op->destroy(bf);
         }

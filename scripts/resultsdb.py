@@ -25,7 +25,7 @@ import json
 import sqlite3
 from pathlib import Path
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2  # 2: memory/paging columns (see MIGRATIONS)
 
 # CSV columns exactly as written by src/benchmark.c and src/iobench.c.
 # If the C side changes them, update here and bump BF_PROTOCOL_VERSION.
@@ -37,6 +37,7 @@ BENCH_COLUMNS = [
     ("lookup_inexist_ms", "REAL"), ("hash_insert", "REAL"), ("hash_lookup_exist", "REAL"),
     ("hash_lookup_inexist", "REAL"), ("fn", "INTEGER"), ("fp", "INTEGER"), ("fpr", "REAL"),
     ("fpr_theory", "REAL"), ("fill_ratio", "REAL"),
+    ("rss_kb", "INTEGER"), ("majflt", "INTEGER"), ("minflt", "INTEGER"),
 ]
 
 IO_COLUMNS = [
@@ -47,6 +48,7 @@ IO_COLUMNS = [
     ("wasted_reads", "INTEGER"), ("reads_per_query", "REAL"), ("proc_read_bytes", "INTEGER"),
     ("total_ms", "REAL"), ("mean_us", "REAL"), ("p50_us", "REAL"), ("p99_us", "REAL"),
     ("errors", "INTEGER"),
+    ("rss_kb", "INTEGER"), ("majflt", "INTEGER"), ("minflt", "INTEGER"),
 ]
 
 RESULT_TABLES = {
@@ -63,7 +65,7 @@ CONFIG_FIELDS = [
 # harmless for the in-memory benchmark (they are NULL there).
 ENV_FIELDS = [
     "host", "cpu_model", "cpu_count", "mem_total_kb", "mem_limit_bytes", "virt",
-    "store_fstype", "store_model", "store_rotational",
+    "store_fstype", "store_model", "store_rotational", "swap_kind", "swap_total_kb",
 ]
 
 # Static description of each model, beyond what bloom_app --info reports.
@@ -98,6 +100,8 @@ RUN_COLUMNS = [
     ("host", "TEXT"), ("cpu_model", "TEXT"), ("cpu_count", "INTEGER"),
     ("mem_total_kb", "INTEGER"), ("mem_limit_bytes", "INTEGER"), ("kernel", "TEXT"),
     ("virt", "TEXT"),
+    ("swap_kind", "TEXT"),              # none | disk | zram | mixed (from /proc/swaps)
+    ("swap_total_kb", "INTEGER"),
     # storage behind store_dir (iobench)
     ("store_dir", "TEXT"), ("store_fstype", "TEXT"), ("store_fsopts", "TEXT"),
     ("store_device", "TEXT"), ("store_model", "TEXT"), ("store_rotational", "INTEGER"),
@@ -108,6 +112,26 @@ RUN_COLUMNS = [
     ("n_override", "INTEGER"), ("p_target", "REAL"), ("reps", "INTEGER"), ("sizing", "TEXT"),
     ("tables", "INTEGER"), ("neg_ratio", "REAL"), ("queries", "INTEGER"),
     ("value_size", "INTEGER"), ("direct", "INTEGER"),
+    # resources of the bloom_app process (wait4) and system swap traffic during the run
+    ("maxrss_kb", "INTEGER"), ("majflt", "INTEGER"), ("minflt", "INTEGER"),
+    ("utime_s", "REAL"), ("stime_s", "REAL"),
+    ("nvcsw", "INTEGER"), ("nivcsw", "INTEGER"),   # involuntary switches: CPU contention
+    ("swap_in_pages", "INTEGER"), ("swap_out_pages", "INTEGER"),
+]
+
+# Columns added after version 1: (from_version, table, column, type). Applied
+# with ALTER TABLE so older databases keep their runs (new columns are NULL).
+MIGRATIONS = [
+    (1, "runs", "swap_kind", "TEXT"), (1, "runs", "swap_total_kb", "INTEGER"),
+    (1, "runs", "maxrss_kb", "INTEGER"), (1, "runs", "majflt", "INTEGER"),
+    (1, "runs", "minflt", "INTEGER"), (1, "runs", "utime_s", "REAL"),
+    (1, "runs", "stime_s", "REAL"), (1, "runs", "nvcsw", "INTEGER"),
+    (1, "runs", "nivcsw", "INTEGER"), (1, "runs", "swap_in_pages", "INTEGER"),
+    (1, "runs", "swap_out_pages", "INTEGER"),
+    (1, "filter_results", "rss_kb", "INTEGER"), (1, "filter_results", "majflt", "INTEGER"),
+    (1, "filter_results", "minflt", "INTEGER"),
+    (1, "io_results", "rss_kb", "INTEGER"), (1, "io_results", "majflt", "INTEGER"),
+    (1, "io_results", "minflt", "INTEGER"),
 ]
 
 
@@ -158,10 +182,27 @@ def connect(path):
     if row is None:
         con.execute("INSERT INTO meta VALUES ('schema_version', ?)", (str(SCHEMA_VERSION),))
         con.commit()
-    elif int(row[0]) != SCHEMA_VERSION:
-        raise SystemExit(f"{path}: schema version {row[0]}, expected {SCHEMA_VERSION}; "
-                         "rebuild the database or migrate it")
+    elif int(row[0]) < SCHEMA_VERSION:
+        _migrate(con, int(row[0]))
+    elif int(row[0]) > SCHEMA_VERSION:
+        raise SystemExit(f"{path}: schema version {row[0]} is newer than this code "
+                         f"({SCHEMA_VERSION}); update the repository")
     return con
+
+
+def _migrate(con, version):
+    """Add the columns introduced after `version`; views are rebuilt because
+    they expand f.* / i.* when created."""
+    # idempotent: an interrupted migration is simply completed on the next connect
+    for since, table, column, typ in MIGRATIONS:
+        have = {r[1] for r in con.execute(f"PRAGMA table_info({table})")}
+        if since >= version and column not in have:
+            con.execute(f"ALTER TABLE {table} ADD COLUMN {column} {typ}")
+    con.execute("DROP VIEW IF EXISTS v_bench")
+    con.execute("DROP VIEW IF EXISTS v_io")
+    con.executescript(_schema_sql())
+    con.execute("UPDATE meta SET value = ? WHERE key = 'schema_version'", (str(SCHEMA_VERSION),))
+    con.commit()
 
 
 def sync_filters(con, info_filters):
