@@ -15,6 +15,8 @@ typedef struct {
     size_t value_size;      /* synthetic payload per record, bytes */
     const char *store_dir;  /* where the table files live (pick the device here) */
     const char *out_path;   /* CSV, NULL = stdout */
+    const char *filter;     /* one gatekeeper ("none" or a filter); NULL = all */
+    int build_only;         /* build the missing tables and exit, measuring nothing */
 } iobench_cfg_t;
 
 int iobench_run(const iobench_cfg_t *cfg);

@@ -5,10 +5,16 @@ Every bloom_app invocation becomes one row in `runs` (code version, machine,
 storage device, dataset, parameters) plus its CSV rows in filter_results or
 io_results. The raw CSV is kept in results/raw/.
 
+Each structure runs in its own process, once per sizing regime (benchmark) or
+per T x neg_ratio (iobench): nothing a large structure pushes to swap can be
+paid by the next one. Disk tables are built before the grid, in a separate
+process that is not recorded.
+
 Examples
   python3 scripts/run.py benchmark --types uuid cpf --reps 5 --repeat 3 --label baseline-ssd
   python3 scripts/run.py iobench --types uuid --tables 1 8 --neg 0.5 0.9 \\
       --store-dir /mnt/hd/store --label hd-T8
+  python3 scripts/run.py benchmark --filters sbf baseline --label test
 
 --repeat R runs the whole grid R times (outer loop), so repetitions of the
 same configuration are spread over time instead of back to back.
@@ -225,33 +231,59 @@ def dataset_info(dtype):
 
 # ---------------------------------------------------------------- grid
 
-def build_jobs(args):
-    """List of (params, argv) for one pass over the grid."""
+def build_jobs(args, filters):
+    """List of (params, argv) for one pass over the grid; one structure per job.
+    filters: (name, exact, supports_delete, fixed_k) from bloom_app --info."""
     jobs = []
+    names = {f[0] for f in filters}
+    unknown = set(args.filters or []) - names - {"none"}
+    if unknown:
+        raise SystemExit(f"unknown filter(s) {sorted(unknown)}; available: {sorted(names)}")
+    chosen = [f for f in filters if not args.filters or f[0] in args.filters]
     if args.experiment == "benchmark":
+        sizings = ["same_m", "same_fpr"] if args.sizing == "both" else [args.sizing]
         for t in args.types:
-            params = {"dataset_type": t, "n_override": args.n, "p_target": args.p,
-                      "reps": args.reps, "sizing": args.sizing}
-            argv = ["--benchmark", "--type", t, "--p", repr(args.p), "--reps", str(args.reps),
-                    "--sizing", args.sizing]
-            if args.n:
-                argv += ["--n", str(args.n)]
-            jobs.append((params, argv))
+            for name, exact, _, _ in chosen:
+                for sizing in (["none"] if exact else sizings):
+                    params = {"dataset_type": t, "filter": name, "n_override": args.n,
+                              "p_target": args.p, "reps": args.reps, "sizing": sizing}
+                    argv = ["--benchmark", "--type", t, "--filter", name, "--p", repr(args.p),
+                            "--reps", str(args.reps),
+                            "--sizing", "both" if exact else sizing]
+                    if args.n:
+                        argv += ["--n", str(args.n)]
+                    jobs.append((params, argv))
     else:
-        for t, tables, neg in itertools.product(args.types, args.tables, args.neg):
-            params = {"dataset_type": t, "n_override": args.n, "p_target": args.p,
+        gatekeepers = [f[0] for f in chosen]
+        if not args.filters or "none" in args.filters:
+            gatekeepers.insert(0, "none")
+        for t, tables, neg, name in itertools.product(args.types, args.tables, args.neg,
+                                                      gatekeepers):
+            params = {"dataset_type": t, "filter": name, "n_override": args.n, "p_target": args.p,
                       "reps": args.reps, "tables": tables, "neg_ratio": neg,
                       "queries": args.queries, "value_size": args.value_size,
                       "direct": 0 if args.cached else 1}
-            argv = ["--iobench", "--type", t, "--p", repr(args.p), "--reps", str(args.reps),
-                    "--tables", str(tables), "--neg", repr(neg), "--queries", str(args.queries),
-                    "--value-size", str(args.value_size), "--store-dir", args.store_dir]
+            argv = ["--iobench", "--type", t, "--filter", name, "--p", repr(args.p),
+                    "--reps", str(args.reps), "--tables", str(tables), "--neg", repr(neg),
+                    "--queries", str(args.queries), "--value-size", str(args.value_size),
+                    "--store-dir", args.store_dir]
             if args.n:
                 argv += ["--n", str(args.n)]
             if args.cached:
                 argv.append("--cached")
             jobs.append((params, argv))
     return jobs
+
+
+def build_tables(args):
+    """Build the missing disk tables once, before anything is measured."""
+    for t, tables in itertools.product(args.types, args.tables):
+        argv = ["--iobench", "--build-store", "--type", t, "--tables", str(tables),
+                "--value-size", str(args.value_size), "--store-dir", args.store_dir]
+        if args.n:
+            argv += ["--n", str(args.n)]
+        if subprocess.run([str(BINARY)] + argv, cwd=ROOT).returncode != 0:
+            raise SystemExit(f"could not build the tables of {t}, T={tables}")
 
 
 def main():
@@ -265,6 +297,8 @@ def main():
     common.add_argument("--reps", type=int, default=5, help="reported reps per run (+1 warm-up)")
     common.add_argument("--repeat", type=int, default=1, help="independent runs of the whole grid")
     common.add_argument("--label", default=None, help="campaign name stored with each run")
+    common.add_argument("--filters", nargs="+", metavar="NAME",
+                        help="structures to run (default: all; iobench also accepts none)")
     common.add_argument("--db", default=str(ROOT / "results" / "bloom.db"))
     common.add_argument("--raw-dir", default=str(ROOT / "results" / "raw"))
     common.add_argument("--allow-dirty", action="store_true",
@@ -283,7 +317,10 @@ def main():
     io.add_argument("--cached", action="store_true", help="page cache instead of O_DIRECT")
     args = ap.parse_args()
 
-    jobs = build_jobs(args)
+    if subprocess.run(["make", "-s", "all"], cwd=ROOT).returncode != 0:
+        raise SystemExit("build failed")
+    code, filters = code_info()
+    jobs = build_jobs(args, filters)
     total = len(jobs) * args.repeat
     if args.dry_run:
         for r in range(args.repeat):
@@ -291,14 +328,14 @@ def main():
                 print(f"[{r + 1}/{args.repeat}]", shlex.join([str(BINARY)] + argv))
         return 0
 
-    if subprocess.run(["make", "-s", "all"], cwd=ROOT).returncode != 0:
-        raise SystemExit("build failed")
-    code, filters = code_info()
     if code["git_dirty"] and not args.allow_dirty:
         raise SystemExit("tracked files have uncommitted changes; commit first or pass "
                          "--allow-dirty (those runs are marked git_dirty=1)")
     machine = machine_info()
     storage = storage_info(args.store_dir) if args.experiment == "iobench" else {}
+
+    if args.experiment == "iobench":
+        build_tables(args)
 
     con = resultsdb.connect(args.db)
     resultsdb.sync_filters(con, filters)
@@ -316,7 +353,8 @@ def main():
     for r in range(args.repeat):
         for params, argv in jobs:
             seq += 1
-            raw = raw_dir / f"{batch}_{seq:03d}_{args.experiment}_{params['dataset_type']}.csv"
+            raw = raw_dir / (f"{batch}_{seq:03d}_{args.experiment}_{params['dataset_type']}_"
+                             f"{params['filter']}.csv")
             cmd = [str(BINARY)] + argv + ["--out", str(raw)]
             print(f"[{seq}/{total}] {shlex.join(cmd[1:])}", file=sys.stderr)
 

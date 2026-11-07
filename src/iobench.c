@@ -32,13 +32,16 @@
  *   probabilistic filters skip the read on "absent"; FPs cost a wasted read
  *   "baseline"            exact set, never wastes a read, costs RAM
  *
- * Tables are built once and reused while the key set is unchanged (writes
- * are the only thing that wears an SSD; queries only read).
+ * Tables are built once, by a separate unmeasured step (--build-store, which
+ * needs all the keys in RAM to sort them), and reused while the key set is
+ * unchanged (writes are the only thing that wears an SSD; queries only read).
+ * A measured run holds no dataset in RAM: filters are built from a key stream
+ * and only the sampled query keys are kept.
  *
  * Output: long format CSV, one row per (gatekeeper, repetition). Repetition
- * 0 is a warm-up and is not written. Gatekeepers run one after the other
- * (filters of one gatekeeper are freed before the next is built) so that a
- * RAM-limited machine never holds every structure at once.
+ * 0 is a warm-up and is not written. Experiments run one gatekeeper per process
+ * (--filter, driven by run.py) so that one structure's paging cannot be paid by
+ * the next one.
  *
  * rss_kb/majflt/minflt: process resident set after the query loop and the
  * page faults during it. O_DIRECT and pread do not fault, so major faults
@@ -135,47 +138,132 @@ static double percentile(const double *sorted, size_t n, double q)
     return sorted[i];
 }
 
+/* Table index of key number j of Dins, for chunk bounds lo[0..T]. */
+static unsigned table_of(const size_t *lo, unsigned t, size_t j)
+{
+    while (j >= lo[t + 1]) t++;
+    return t;
+}
+
+/* Build the tables whose fingerprint does not match. Needs all the keys in RAM. */
+static int build_tables(const iobench_cfg_t *cfg, const char *dir, const size_t *lo, unsigned T,
+                        const int *ready, const uint64_t *fp)
+{
+    keyset_t all;
+    char path[1100];
+    snprintf(path, sizeof(path), "data/%s/insert.txt", cfg->type);
+    if (!keyset_load(path, &all)) { fprintf(stderr, "iobench: cannot read %s\n", path); return 0; }
+    int ok = 1;
+    for (unsigned t = 0; t < T && ok; t++) {
+        if (ready[t]) continue;
+        snprintf(path, sizeof(path), "%s/table_%u.sst", dir, t);
+        fprintf(stderr, "iobench: building %s (%zu records)\n", path, lo[t + 1] - lo[t]);
+        ok = store_build(path, all.keys + lo[t], lo[t + 1] - lo[t], cfg->value_size, fp[t]);
+        if (!ok) fprintf(stderr, "iobench: failed to build %s\n", path);
+    }
+    keyset_free(&all);
+    return ok;
+}
+
+typedef struct {
+    size_t index; /* position of the key in its file */
+    size_t slot;  /* position in the query sequence */
+} pick_t;
+
+static int cmp_pick(const void *a, const void *b)
+{
+    size_t x = ((const pick_t *)a)->index, y = ((const pick_t *)b)->index;
+    return (x > y) - (x < y);
+}
+
+/* Copy the picked keys of a file into qk, in one pass over the stream. */
+static int copy_picks(keystream_t *ks, pick_t *picks, size_t count, bf_key_t *qk)
+{
+    qsort(picks, count, sizeof(*picks), cmp_pick);
+    size_t p = 0, base = 0, c;
+    keystream_rewind(ks);
+    while (p < count && (c = keystream_next(ks)) > 0) {
+        for (; p < count && picks[p].index < base + c; p++) {
+            const bf_key_t *key = &ks->keys[picks[p].index - base];
+            void *copy = malloc(key->len);
+            if (!copy) return 0;
+            memcpy(copy, key->data, key->len);
+            qk[picks[p].slot].data = copy;
+            qk[picks[p].slot].len = key->len;
+        }
+        base += c;
+    }
+    return p == count;
+}
+
 int iobench_run(const iobench_cfg_t *cfg)
 {
+    if (cfg->filter && strcmp(cfg->filter, "none") != 0 && !bf_ops_by_name(cfg->filter)) {
+        fprintf(stderr, "iobench: unknown gatekeeper %s\n", cfg->filter);
+        return 2;
+    }
     dataset_t ds;
-    if (!dataset_load(cfg->type, cfg->n_override, "iobench", &ds)) return 1;
+    if (!dataset_open(cfg->type, cfg->n_override, "iobench", &ds)) return 1;
     size_t n = ds.n;
     unsigned T = cfg->tables ? cfg->tables : 1;
     if (T > n) T = (unsigned)n;
-    if (ds.ex.count == 0 || ds.inex.count == 0) {
+    if (ds.n_exist == 0 || ds.n_inexist == 0) {
         fprintf(stderr, "iobench: Dexist and Dinexist must be non-empty\n");
-        dataset_free(&ds);
+        dataset_close(&ds);
         return 1;
     }
 
     /* ---- tables on disk (built once, reused) ---- */
     char dir[1024];
     snprintf(dir, sizeof(dir), "%s/%s_n%zu_T%u_v%zu", cfg->store_dir, cfg->type, n, T, cfg->value_size);
-    if (!mkdir_p(dir)) { fprintf(stderr, "iobench: cannot create %s\n", dir); dataset_free(&ds); return 1; }
+    if (!mkdir_p(dir)) { fprintf(stderr, "iobench: cannot create %s\n", dir); dataset_close(&ds); return 1; }
 
     disable_compression(dir);
 
     table_t *tb = (table_t *)calloc(T, sizeof(table_t));
     size_t *lo = (size_t *)calloc(T + 1, sizeof(size_t));
-    if (!tb || !lo) { dataset_free(&ds); return 1; }
+    uint64_t *fps = (uint64_t *)calloc(T, sizeof(uint64_t));
+    int *ready = (int *)calloc(T, sizeof(int));
+    if (!tb || !lo || !fps || !ready) { dataset_close(&ds); return 1; }
     for (unsigned t = 0; t <= T; t++) lo[t] = (size_t)((unsigned long long)n * t / T);
 
+    /* fingerprints of the chunks, to check the tables on disk */
     int fail = 0;
+    {
+        for (unsigned t = 0; t < T; t++) fps[t] = store_fingerprint_init(lo[t + 1] - lo[t]);
+        size_t c, j = 0;
+        unsigned t = 0;
+        keystream_rewind(&ds.ins);
+        while ((c = keystream_next(&ds.ins)) > 0) {
+            for (size_t i = 0; i < c; i++, j++) {
+                t = table_of(lo, t, j);
+                fps[t] = store_fingerprint_add(fps[t], &ds.ins.keys[i], 1);
+            }
+        }
+        int missing = 0;
+        for (unsigned u = 0; u < T; u++) {
+            char path[1100];
+            snprintf(path, sizeof(path), "%s/table_%u.sst", dir, u);
+            ready[u] = store_matches(path, lo[u + 1] - lo[u], cfg->value_size, fps[u]);
+            missing += !ready[u];
+        }
+        if (cfg->build_only) {
+            int ok = !missing || build_tables(cfg, dir, lo, T, ready, fps);
+            free(tb); free(lo); free(fps); free(ready);
+            dataset_close(&ds);
+            return ok ? 0 : 1;
+        }
+        if (missing) {
+            fprintf(stderr, "iobench: %d table(s) missing or stale in %s; build them first "
+                    "with --build-store\n", missing, dir);
+            fail = 1;
+        }
+    }
+
     size_t index_mem = 0, blocks = 0;
     for (unsigned t = 0; t < T && !fail; t++) {
         char path[1100];
         snprintf(path, sizeof(path), "%s/table_%u.sst", dir, t);
-        const bf_key_t *keys = ds.ins.keys + lo[t];
-        size_t cnt = lo[t + 1] - lo[t];
-        uint64_t fp = store_fingerprint(keys, cnt);
-        if (!store_matches(path, cnt, cfg->value_size, fp)) {
-            fprintf(stderr, "iobench: building %s (%zu records)\n", path, cnt);
-            if (!store_build(path, keys, cnt, cfg->value_size, fp)) {
-                fprintf(stderr, "iobench: failed to build %s\n", path);
-                fail = 1;
-                break;
-            }
-        }
         tb[t].st = store_open(path, cfg->direct);
         if (!tb[t].st) {
             fprintf(stderr, "iobench: cannot open %s%s\n", path,
@@ -191,22 +279,30 @@ int iobench_run(const iobench_cfg_t *cfg)
     size_t Q = cfg->queries;
     size_t nneg = (size_t)((double)Q * cfg->neg_ratio + 0.5);
     if (nneg > Q) nneg = Q;
-    const bf_key_t **qk = (const bf_key_t **)malloc((Q ? Q : 1) * sizeof(*qk));
+    bf_key_t *qk = (bf_key_t *)calloc(Q ? Q : 1, sizeof(*qk));
     unsigned char *truth = (unsigned char *)malloc(Q ? Q : 1);
     double *lat = (double *)malloc((Q ? Q : 1) * sizeof(double));
-    if (!qk || !truth || !lat) fail = 1;
+    pick_t *picks = (pick_t *)malloc((Q ? Q : 1) * sizeof(*picks));
+    if (!qk || !truth || !lat || !picks) fail = 1;
     if (!fail) {
         rng_state = 0x853C49E6748FEA9BULL;
         for (size_t i = 0; i < Q; i++) {
-            if (i < nneg) { qk[i] = &ds.inex.keys[rng_next() % ds.inex.count]; truth[i] = 0; }
-            else          { qk[i] = &ds.ex.keys[rng_next() % ds.ex.count];     truth[i] = 1; }
+            picks[i].slot = i;
+            if (i < nneg) { picks[i].index = rng_next() % ds.n_inexist; truth[i] = 0; }
+            else          { picks[i].index = rng_next() % ds.n_exist;   truth[i] = 1; }
         }
-        for (size_t i = Q; i > 1; i--) {         /* Fisher-Yates */
+        if (!copy_picks(&ds.inex, picks, nneg, qk) ||
+            !copy_picks(&ds.ex, picks + nneg, Q - nneg, qk)) {
+            fprintf(stderr, "iobench: cannot sample the query keys\n");
+            fail = 1;
+        }
+        for (size_t i = Q; i > 1 && !fail; i--) { /* Fisher-Yates */
             size_t j = (size_t)(rng_next() % i);
-            const bf_key_t *tk = qk[i - 1]; qk[i - 1] = qk[j]; qk[j] = tk;
+            bf_key_t tk = qk[i - 1]; qk[i - 1] = qk[j]; qk[j] = tk;
             unsigned char tt = truth[i - 1]; truth[i - 1] = truth[j]; truth[j] = tt;
         }
     }
+    free(picks);
 
     FILE *out = stdout;
     if (!fail && cfg->out_path && cfg->out_path[0]) {
@@ -225,6 +321,7 @@ int iobench_run(const iobench_cfg_t *cfg)
         for (size_t g = 0; g <= nops && !fail; g++) {   /* g == 0: no gatekeeper */
             const bf_ops_t *op = g ? &ops[g - 1] : NULL;
             const char *name = op ? op->name : "none";
+            if (cfg->filter && strcmp(cfg->filter, name) != 0) continue;
             size_t gk_mem = 0;
             unsigned k_used = 0;
 
@@ -234,11 +331,21 @@ int iobench_run(const iobench_cfg_t *cfg)
                 if (op->params && !op->params(cnt, cfg->p_target, &sz)) { fail = 1; break; }
                 tb[t].bf = op->create(sz.m, sz.k);
                 if (!tb[t].bf) { fail = 1; break; }
-                for (size_t j = lo[t]; j < lo[t + 1]; j++) op->insert(tb[t].bf, &ds.ins.keys[j]);
-                gk_mem += op->memory_bytes(tb[t].bf);
                 if (op->params) k_used = op->fixed_k ? op->fixed_k : sz.k;
             }
             if (fail) { fprintf(stderr, "iobench: cannot build gatekeeper %s\n", name); break; }
+            if (op) {
+                size_t c, j = 0;
+                unsigned t = 0;
+                keystream_rewind(&ds.ins);
+                while ((c = keystream_next(&ds.ins)) > 0) {
+                    for (size_t i = 0; i < c; i++, j++) {
+                        t = table_of(lo, t, j);
+                        op->insert(tb[t].bf, &ds.ins.keys[i]);
+                    }
+                }
+                for (t = 0; t < T; t++) gk_mem += op->memory_bytes(tb[t].bf);
+            }
 
             for (unsigned rep = 0; rep <= cfg->reps; rep++) {   /* rep 0 = warm-up */
                 for (unsigned t = 0; t < T; t++) store_reset_stats(tb[t].st);
@@ -251,8 +358,8 @@ int iobench_run(const iobench_cfg_t *cfg)
                     double t0 = now_ns();
                     int found = 0;
                     for (unsigned t = T; t-- > 0 && !found; ) {          /* newest first */
-                        if (op && op->lookup(tb[t].bf, qk[i]) == BF_ABSENT) continue;
-                        int r = store_get(tb[t].st, qk[i]);
+                        if (op && op->lookup(tb[t].bf, &qk[i]) == BF_ABSENT) continue;
+                        int r = store_get(tb[t].st, &qk[i]);
                         if (r < 0) { errors++; break; }
                         if (r == 1) found = 1;
                         else wasted++;
@@ -306,9 +413,12 @@ int iobench_run(const iobench_cfg_t *cfg)
     for (unsigned t = 0; t < T; t++) store_close(tb[t].st);
     free(tb);
     free(lo);
+    free(fps);
+    free(ready);
+    if (qk) for (size_t i = 0; i < Q; i++) free((void *)qk[i].data);
     free(qk);
     free(truth);
     free(lat);
-    dataset_free(&ds);
+    dataset_close(&ds);
     return fail;
 }
