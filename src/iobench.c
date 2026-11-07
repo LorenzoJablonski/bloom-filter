@@ -38,6 +38,8 @@
  * A measured run holds no dataset in RAM: filters are built from a key stream
  * and only the sampled query keys are kept.
  *
+ * Every repetition runs its own query sample, the same for all gatekeepers.
+ *
  * Output: long format CSV, one row per (gatekeeper, repetition). Repetition
  * 0 is a warm-up and is not written. Experiments run one gatekeeper per process
  * (--filter, driven by run.py) so that one structure's paging cannot be paid by
@@ -275,31 +277,52 @@ int iobench_run(const iobench_cfg_t *cfg)
         blocks += store_blocks(tb[t].st);
     }
 
-    /* ---- query workload: fixed sequence shared by every gatekeeper ---- */
+    /*
+     * ---- query workload: fixed sequence shared by every gatekeeper ----
+     * Each repetition gets its own Q keys. Repeating one sample would leave the
+     * pages it touches in RAM after the warm-up, and a structure that does not fit
+     * in memory would show no paging at all in the reported repetitions.
+     */
     size_t Q = cfg->queries;
     size_t nneg = (size_t)((double)Q * cfg->neg_ratio + 0.5);
     if (nneg > Q) nneg = Q;
-    bf_key_t *qk = (bf_key_t *)calloc(Q ? Q : 1, sizeof(*qk));
-    unsigned char *truth = (unsigned char *)malloc(Q ? Q : 1);
+    size_t passes = (size_t)cfg->reps + 1;   /* warm-up + reported repetitions */
+    size_t total = Q * passes;
+    bf_key_t *qk = (bf_key_t *)calloc(total ? total : 1, sizeof(*qk));
+    unsigned char *truth = (unsigned char *)malloc(total ? total : 1);
     double *lat = (double *)malloc((Q ? Q : 1) * sizeof(double));
-    pick_t *picks = (pick_t *)malloc((Q ? Q : 1) * sizeof(*picks));
+    pick_t *picks = (pick_t *)malloc((total ? total : 1) * sizeof(*picks));
     if (!qk || !truth || !lat || !picks) fail = 1;
     if (!fail) {
         rng_state = 0x853C49E6748FEA9BULL;
-        for (size_t i = 0; i < Q; i++) {
-            picks[i].slot = i;
-            if (i < nneg) { picks[i].index = rng_next() % ds.n_inexist; truth[i] = 0; }
-            else          { picks[i].index = rng_next() % ds.n_exist;   truth[i] = 1; }
+        size_t p = 0;
+        for (size_t r = 0; r < passes; r++) {
+            for (size_t i = 0; i < nneg; i++, p++) {
+                picks[p].slot = r * Q + i;
+                picks[p].index = rng_next() % ds.n_inexist;
+                truth[picks[p].slot] = 0;
+            }
         }
-        if (!copy_picks(&ds.inex, picks, nneg, qk) ||
-            !copy_picks(&ds.ex, picks + nneg, Q - nneg, qk)) {
+        for (size_t r = 0; r < passes; r++) {
+            for (size_t i = nneg; i < Q; i++, p++) {
+                picks[p].slot = r * Q + i;
+                picks[p].index = rng_next() % ds.n_exist;
+                truth[picks[p].slot] = 1;
+            }
+        }
+        if (!copy_picks(&ds.inex, picks, nneg * passes, qk) ||
+            !copy_picks(&ds.ex, picks + nneg * passes, (Q - nneg) * passes, qk)) {
             fprintf(stderr, "iobench: cannot sample the query keys\n");
             fail = 1;
         }
-        for (size_t i = Q; i > 1 && !fail; i--) { /* Fisher-Yates */
-            size_t j = (size_t)(rng_next() % i);
-            bf_key_t tk = qk[i - 1]; qk[i - 1] = qk[j]; qk[j] = tk;
-            unsigned char tt = truth[i - 1]; truth[i - 1] = truth[j]; truth[j] = tt;
+        for (size_t r = 0; r < passes && !fail; r++) {
+            bf_key_t *rk = qk + r * Q;
+            unsigned char *rt = truth + r * Q;
+            for (size_t i = Q; i > 1; i--) { /* Fisher-Yates */
+                size_t j = (size_t)(rng_next() % i);
+                bf_key_t tk = rk[i - 1]; rk[i - 1] = rk[j]; rk[j] = tk;
+                unsigned char tt = rt[i - 1]; rt[i - 1] = rt[j]; rt[j] = tt;
+            }
         }
     }
     free(picks);
@@ -350,6 +373,8 @@ int iobench_run(const iobench_cfg_t *cfg)
             for (unsigned rep = 0; rep <= cfg->reps; rep++) {   /* rep 0 = warm-up */
                 for (unsigned t = 0; t < T; t++) store_reset_stats(tb[t].st);
                 size_t errors = 0, wasted = 0;
+                const bf_key_t *rk = qk + rep * Q;
+                const unsigned char *rt = truth + rep * Q;
                 long long rb0 = proc_read_bytes();
                 proc_faults_t f0 = proc_faults();
                 double t_all = now_ns();
@@ -358,14 +383,14 @@ int iobench_run(const iobench_cfg_t *cfg)
                     double t0 = now_ns();
                     int found = 0;
                     for (unsigned t = T; t-- > 0 && !found; ) {          /* newest first */
-                        if (op && op->lookup(tb[t].bf, &qk[i]) == BF_ABSENT) continue;
-                        int r = store_get(tb[t].st, &qk[i]);
+                        if (op && op->lookup(tb[t].bf, &rk[i]) == BF_ABSENT) continue;
+                        int r = store_get(tb[t].st, &rk[i]);
                         if (r < 0) { errors++; break; }
                         if (r == 1) found = 1;
                         else wasted++;
                     }
                     lat[i] = now_ns() - t0;
-                    if (found != truth[i]) errors++;
+                    if (found != rt[i]) errors++;
                 }
 
                 double total_ms = (now_ns() - t_all) / 1e6;
@@ -415,7 +440,7 @@ int iobench_run(const iobench_cfg_t *cfg)
     free(lo);
     free(fps);
     free(ready);
-    if (qk) for (size_t i = 0; i < Q; i++) free((void *)qk[i].data);
+    if (qk) for (size_t i = 0; i < total; i++) free((void *)qk[i].data);
     free(qk);
     free(truth);
     free(lat);

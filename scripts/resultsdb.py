@@ -27,7 +27,7 @@ import json
 import sqlite3
 from pathlib import Path
 
-SCHEMA_VERSION = 3  # 2: memory/paging columns; 3: runs.filter (see MIGRATIONS)
+SCHEMA_VERSION = 4  # 2: memory/paging columns; 3: runs.filter; 4: swap disk (see MIGRATIONS)
 
 # CSV columns exactly as written by src/benchmark.c and src/iobench.c.
 # If the C side changes them, update here and bump BF_PROTOCOL_VERSION.
@@ -68,6 +68,7 @@ CONFIG_FIELDS = [
 ENV_FIELDS = [
     "host", "cpu_model", "cpu_count", "mem_total_kb", "mem_limit_bytes", "virt",
     "store_fstype", "store_model", "store_rotational", "swap_kind", "swap_total_kb",
+    "swap_model", "swap_rotational",
 ]
 
 # Static description of each model, beyond what bloom_app --info reports.
@@ -104,6 +105,8 @@ RUN_COLUMNS = [
     ("virt", "TEXT"),
     ("swap_kind", "TEXT"),              # none | disk | zram | mixed (from /proc/swaps)
     ("swap_total_kb", "INTEGER"),
+    ("swap_model", "TEXT"),             # disk behind the swap: paging cost depends on it
+    ("swap_rotational", "INTEGER"),
     # storage behind store_dir (iobench)
     ("store_dir", "TEXT"), ("store_fstype", "TEXT"), ("store_fsopts", "TEXT"),
     ("store_device", "TEXT"), ("store_model", "TEXT"), ("store_rotational", "INTEGER"),
@@ -136,6 +139,7 @@ MIGRATIONS = [
     (1, "io_results", "rss_kb", "INTEGER"), (1, "io_results", "majflt", "INTEGER"),
     (1, "io_results", "minflt", "INTEGER"),
     (2, "runs", "filter", "TEXT"),
+    (3, "runs", "swap_model", "TEXT"), (3, "runs", "swap_rotational", "INTEGER"),
 ]
 
 
