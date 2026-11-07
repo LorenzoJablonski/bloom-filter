@@ -1,0 +1,3 @@
+type,filter,sizing,rep,n,n_exist,n_inexist,p_target,m,cells,k,mem_bytes,bits_per_key,insert_ms,lookup_exist_ms,lookup_inexist_ms,hash_insert,hash_lookup_exist,hash_lookup_inexist,fn,fp,fpr,fpr_theory,fill_ratio,rss_kb,majflt,minflt
+cpf,hybrid_c_4096,same_m,1,10000000,1000000,10000000,0.01,95929548,95930064,7,48070656,38.4565,831.5797,61.3527,584.4209,1.0000,1.0000,1.0000,0,103375,0.010337,0.010192,0.517911,56524,0,495
+cpf,hybrid_c_4096,same_m,2,10000000,1000000,10000000,0.01,95929548,95930064,7,48070656,38.4565,822.9500,63.1623,581.5979,1.0000,1.0000,1.0000,0,103375,0.010337,0.010192,0.517911,56524,0,495

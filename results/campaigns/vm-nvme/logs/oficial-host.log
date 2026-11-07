@@ -1,0 +1,5 @@
+official start 2026-11-06T22:46:52-03:00 commit c2c52ec host kernel 7.2.6-76070206-generic: VmSwap:	       0 kB
+Power Profile: Performance CPU: 18% - 100%, Turbo 
+Mem.:          15675        4901        4031         129        7916       10774
+Swap:          19771           0       19771
+after official 2026-11-07T11:33:20-03:00: VmSwap:	       0 kB

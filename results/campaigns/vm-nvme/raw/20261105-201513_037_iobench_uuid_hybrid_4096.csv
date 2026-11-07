@@ -1,0 +1,4 @@
+type,gatekeeper,rep,n,tables,neg_ratio,queries,direct,value_size,blocks,gk_mem_bytes,index_mem_bytes,k,disk_reads,wasted_reads,reads_per_query,proc_read_bytes,total_ms,mean_us,p50_us,p99_us,errors,rss_kb,majflt,minflt
+uuid,hybrid_4096,1,5000000,8,0.9,10000,1,100,172416,6033408,8277760,7,1777,777,0.1777,7278592,211.651,21.025,0.625,128.914,0,23572,0,0
+uuid,hybrid_4096,2,5000000,8,0.9,10000,1,100,172416,6033408,8277760,7,1804,804,0.1804,7389184,213.244,21.183,0.628,129.462,0,23636,0,0
+uuid,hybrid_4096,3,5000000,8,0.9,10000,1,100,172416,6033408,8277760,7,1785,785,0.1785,7311360,209.473,20.812,0.553,128.707,0,23636,0,0

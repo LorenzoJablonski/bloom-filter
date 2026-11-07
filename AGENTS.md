@@ -42,9 +42,11 @@ Merge order matters — murmurhash is prerequisite for all filters:
 3. `feature/sbf`, `feature/baseline` — DONE
 4. `feature/cbf`, `feature/pbf`, `feature/rdbf` — DONE (rDBF follows robustBF Eq. 1: X x Y 64-bit cells, beta=61, X != Y primes; no delete: 1 bit/key, no counters)
 5. `feature/benchmark` — DONE; `feature/threads` — later (after scale runs)
+   `feature/rusage`, `feature/isolation`, `feature/vm` (memory/paging metrics, one process per structure, VM for the official runs) — DONE
 6. `feature/hybrid` — key-sharded prime-matrix filter, 1 MurmurHash64A call, double hashing inside the shard;
    variants hybrid_512 / hybrid_4096 (bits) and hybrid_c_512 / hybrid_c_4096 (4-bit counters, delete)
-7. `feature/io` — DONE (store + iobench); `feature/analysis` — DONE (SQLite results, tables); `feature/plots` — figures (`analyze.py --plot`); `feature/docs`
+7. `feature/io` — DONE (store + iobench); `feature/analysis` — DONE (SQLite results, tables); `feature/plots` — DONE (`analyze.py --plot`); `feature/docs`
+8. `feature/results` — DONE: official VM campaign frozen in results/campaigns/vm-nvme/
 
 ## Key Conventions
 - MurmurHash2 family only: MurmurHash2 (32-bit, seed varies per invocation) for SBF/CBF/PBF/rDBF; MurmurHash64A (64-bit, one call) for the hybrid. Both checked against smhasher verification values in tests/test_murmurhash2.c
@@ -58,5 +60,5 @@ Merge order matters — murmurhash is prerequisite for all filters:
 - Datasets are streamed in batches through a fixed 1 MiB buffer (include/keyset.h: dataset_open, keystream_next), and only the operations are timed: a measured process holds the structure under test, not the dataset. Whole-file loading (keyset_load) is only for the unmeasured table build. Generate one dataset per N (`make data N=...`); `--n` keeps keys in RAM and is for quick tests only
 - One structure per process: run.py launches bloom_app with `--filter NAME` per structure x sizing regime (benchmark) or per structure x T x neg (iobench, `none` is the control), so paging is attributed to the structure that caused it. Disk tables are built first by `--iobench --build-store`, unmeasured; a measured run fails if they are missing
 - Benchmark: rep 0 is an unreported warm-up; hash-call counts come from an untimed pass (`murmurhash2_counter`), never enable it in timed code
-- Results: scripts/run.py records each bloom_app run in results/bloom.db (runs + filter_results/io_results, schema in scripts/resultsdb.py) and keeps the raw CSV in results/raw/. Runs are pooled only with equal config_key (protocol, dataset hash, parameters; not the structure or its sizing regime, which are result columns) and env_key (machine, device, swap). Bump `BF_PROTOCOL_VERSION` (include/common.h) when a change breaks comparability; update resultsdb column lists when CSV columns change. Python scripts use the standard library only; matplotlib is optional and confined to scripts/plots.py (imported only with --plot)
+- Results: scripts/run.py records each bloom_app run in results/bloom.db (runs + filter_results/io_results, schema in scripts/resultsdb.py) and keeps the raw CSV in results/raw/. Both are ignored by git; a finished campaign is frozen (`analyze.py freeze --out`) into results/campaigns/<name>/ with its raw CSVs, logs, tables and plots, which is versioned (see its README). Runs are pooled only with equal config_key (protocol, dataset hash, parameters; not the structure or its sizing regime, which are result columns) and env_key (machine, device, swap). Bump `BF_PROTOCOL_VERSION` (include/common.h) when a change breaks comparability; update resultsdb column lists when CSV columns change. Python scripts use the standard library only; matplotlib is optional and confined to scripts/plots.py (imported only with --plot)
 - Commit messages in English

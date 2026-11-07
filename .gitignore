@@ -24,8 +24,12 @@ Thumbs.db
 # Logs
 *.log
 
-# Generated artifacts (datasets/results) — keep .gitkeep only
+# Generated artifacts: datasets and the working results database stay out of git.
+# Finished campaigns are frozen into results/campaigns/<name>/ and versioned
+# (logs included); new runs never write there, so they cannot dirty the tree.
 data/*
 !data/.gitkeep
 results/*
 !results/.gitkeep
+!results/campaigns/
+!results/campaigns/**

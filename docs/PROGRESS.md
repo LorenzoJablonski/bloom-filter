@@ -3,8 +3,8 @@
 Documento de passagem entre sessões/máquinas. Quem retomar o trabalho (pessoa
 ou agente) deve ler isto e o `AGENTS.md` antes de mexer no código.
 
-Última atualização: 2026-11-05, desktop Pop!_OS (branch `feature/vm`, sobre
-`feature/isolation` e `feature/rusage`; `feature/plots` já mergeada em `develop`).
+Última atualização: 2026-11-07, desktop Pop!_OS. Tudo mergeado em `develop`
+(inclusive `rusage`, `isolation`, `vm` e `results`); campanha oficial concluída.
 
 ## Como retomar em outra máquina
 
@@ -12,7 +12,6 @@ ou agente) deve ler isto e o `AGENTS.md` antes de mexer no código.
 git clone git@github.com:LorenzoJablonski/bloom-filter.git bloom
 cd bloom
 git checkout develop          # main só tem o commit inicial; o trabalho está em develop
-git checkout feature/vm       # trabalho em andamento (ver "Em andamento" abaixo)
 make all && make check && make test
 make data                     # datasets NÃO estão no git (N=2000, SEED=42; reprodutível)
 ```
@@ -22,8 +21,10 @@ Requisitos: GCC (C99), make, Python 3.10+ (só biblioteca padrão), util-linux
 matplotlib; usa o `uv` se existir, útil onde falta o `python3-venv`), depois
 `make plots`.
 
-Os artefatos gerados (`data/*`, `results/*`, incluindo `results/bloom.db`) são
-ignorados pelo git e recriados pelos comandos acima. Os arquivos de sessão
+Os datasets (`data/*`) e o banco de trabalho (`results/bloom.db`, `results/raw/`)
+são ignorados pelo git e recriados pelos comandos acima. As campanhas terminadas
+ficam congeladas e versionadas em `results/campaigns/` (banco, CSVs brutos, logs,
+tabelas e gráficos; ver o README de lá). Os arquivos de sessão
 (`session-ses_*.md`, exports `20??-??-??-*.txt`) também são ignorados; copie à
 mão se quiser o histórico das conversas.
 
@@ -46,24 +47,17 @@ este arquivo ao começar.
 
 ## Em andamento (retomar aqui)
 
-Branches ainda não mergeadas em `develop`, nesta ordem:
-- `feature/rusage`: medição de memória e paginação. CSV ganhou `rss_kb, majflt,
-  minflt` por linha (`include/procstat.h`); `run.py` grava por execução
-  `maxrss_kb`, faults, tempo de CPU, trocas de contexto (`nivcsw` = disputa de
-  CPU) e swap in/out; `swap_kind` e `swap_total_kb` entram no `env_key`.
-- `feature/isolation`: um processo por estrutura e chaves em lotes
-  (`BF_PROTOCOL_VERSION` 3, schema v3 com migração). Ver a decisão abaixo.
+Feito: campanha oficial na VM (2026-11-06/07, commit c2c52ec, 1786 execuções, 0
+falhas, ~8,5 h), resultados em `results/campaigns/vm-nvme/` (rótulo `oficial`).
+Resumo em "Resultados da campanha oficial" abaixo.
 
-- `feature/vm`: scripts da VM, disco do swap no `env_key` (schema v4) e consultas
-  novas a cada repetição no I/O (`BF_PROTOCOL_VERSION` 4).
-
-Depois disso: as rodadas oficiais variando N (ver "Plano da VM" e "Campanha
-oficial"). Nada longo foi iniciado; rodar só com a liberação do autor.
-
-Pendências:
-- Capítulo de materiais e métodos: a base feita no notebook não está no GitHub.
-  Quando chegar, revisar e atualizar conforme o código atual.
-- HD: ver o alerta "HD Seagate do autor" antes de qualquer uso.
+Próximos passos:
+- Capítulo de materiais e métodos: a base feita no notebook não está no GitHub
+  (conferido em 2026-11-07). Quando chegar, revisar e atualizar conforme o código
+  atual e as ressalvas abaixo.
+- Texto dos resultados, com as figuras de `results/campaigns/vm-nvme/plots/`.
+- Threads (`feature/threads`), só depois do resto.
+- HD: só com um disco vazio. Ver o alerta "HD Seagate do autor".
 
 ## HD Seagate do autor: tem arquivos que não podem ser perdidos
 
@@ -205,7 +199,49 @@ Depois do isolamento (protocolo 3, mesmo desktop, 2 repetições, 1 rodada):
   outros programas abertos e governor `powersave`. Provável causa: a idade dos dados
   no SSD (ver "Campanha oficial"); as rodadas oficiais precisam de ambiente controlado.
 
+## Resultados da campanha oficial (VM, 1 GB, NVMe)
+
+Benchmark em memória, UUID, `same_fpr`, ns por operação:
+
+| N | SBF inserção | hybrid_512 inserção | baseline inserção | baseline busca existente | baseline busca negativa |
+|---|---|---|---|---|---|
+| 5M | 94,5 | 22,3 | 361 | 292 | 241 |
+| 10M | 121 | 26,5 | 17 390 | 45 688 | 30 341 |
+| 20M | 187 | 41,4 | 65 512 | 95 195 | 64 926 |
+
+O baseline (907 bits/chave, ~2,3 GB em 20M) pagina a partir de 10M: 182 milhões de
+faults maiores em 20M. Os filtros têm 0 faults; o SBF piora com N por cache de CPU.
+
+I/O, UUID, T = 8, 90% negativas, latência média:
+
+| N | sem filtro | SBF | baseline | memória SBF / baseline |
+|---|---|---|---|---|
+| 1M | 771 µs | 18,0 µs | 12,2 µs | 1,2 MB / 108 MB |
+| 5M | 856 µs | 20,3 µs | 13,5 µs | 6 MB / 563 MB |
+| 10M | 882 µs | 21,2 µs | 250 µs | 12 MB / 1,1 GB |
+| 20M | 738 µs | 18,0 µs | 492 µs | 24 MB / 2,3 GB |
+
+Filtros: 7,65 → 0,18 leituras por consulta (~40× menos latência que sem filtro).
+O baseline é um pouco mais rápido enquanto cabe na RAM (0 leituras inúteis) e ~27×
+mais lento que o SBF em 20M. A latência "sem filtro" menor em 20M é a idade das
+tabelas no SSD: comparar estruturas no mesmo N.
+
+FPR por tipo de chave (alvo 1%): CPF, CNPJ e URL iguais ao UUID em todos os
+filtros e N (SBF 20M: 1,000–1,005%). O desvio do rDBF cresce com N igual em todos os
+tipos (1,01% em 10M, ~1,03% em 20M): é o hash de 32 bits, não a chave. hybrid_512
+fica em ~1,06% em qualquer N e tipo. 0 falsos negativos, 0 erros no I/O.
+
 ## Ressalvas para o texto (anotar, não escrever agora)
+
+- Proporções: baseline ÷ RAM de 0,1× (1M) a 2,3× (20M); tabelas em disco ÷ RAM de
+  0,14× a 2,9×. Apresentar como modelo em escala reduzida: transfere-se a proporção,
+  não os tempos absolutos.
+- Ninguém deixaria uma tabela hash paginar em swap em produção; o baseline mostra o
+  custo de um índice exato em RAM que deixou de caber nela.
+- Consultas uniformes, sem chaves "quentes": desfavorável ao baseline (com
+  concentração ele paginaria menos). Declarar.
+- Baseline de 10M e 20M: 3 repetições de um processo, sem variação entre rodadas.
+- Latência absoluta depende da idade dos dados no SSD; contagens e FPR não.
 
 - O artigo do robustBF afirma ~1,382 bits/elemento com FPR quase zero; com um
   bit por chave a matemática dá FPR ≈ 52% nesse tamanho. Os nossos números
