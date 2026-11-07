@@ -22,6 +22,10 @@ typedef struct hybrid hybrid_t;
 hybrid_t *hybrid_create(size_t m, unsigned k, size_t shard_max, int counting);
 void hybrid_destroy(hybrid_t *bf);
 void hybrid_insert(hybrid_t *bf, const bf_key_t *key);
+/* Same writes as hybrid_insert, returning how many probed positions were already
+ * non-zero (collisions). For the untimed counting pass only: hybrid_insert stays the
+ * measured path. */
+unsigned hybrid_insert_counted(hybrid_t *bf, const bf_key_t *key);
 bf_member_t hybrid_lookup(hybrid_t *bf, const bf_key_t *key);
 int hybrid_delete(hybrid_t *bf, const bf_key_t *key); /* 0 when not counting */
 

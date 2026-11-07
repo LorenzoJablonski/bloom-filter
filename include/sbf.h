@@ -10,6 +10,10 @@ typedef struct sbf sbf_t;
 sbf_t *sbf_create(size_t m, unsigned k);
 void sbf_destroy(sbf_t *bf);
 void sbf_insert(sbf_t *bf, const bf_key_t *key);
+/* Same writes as sbf_insert, returning how many probed positions were already
+ * non-zero (collisions). For the untimed counting pass only: sbf_insert stays the
+ * measured path. */
+unsigned sbf_insert_counted(sbf_t *bf, const bf_key_t *key);
 bf_member_t sbf_lookup(sbf_t *bf, const bf_key_t *key);
 size_t sbf_memory_bytes(const sbf_t *bf);
 size_t sbf_cells(const sbf_t *bf); /* effective m */

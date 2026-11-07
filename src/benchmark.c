@@ -26,8 +26,18 @@
  * the operations are timed, so the file reads do not count and the dataset
  * does not compete with the structure for RAM.
  *
- * Hash-call counts come from a separate, untimed pass with the MurmurHash2
- * counter enabled; timed passes run with the counter disabled.
+ * Hash-call and collision counts come from a separate, untimed pass: the
+ * MurmurHash2 counter is enabled there and the inserts go through
+ * ops->insert_counted, a copy of the insert that also counts. Timed passes use
+ * the plain insert, unchanged. A collision is a probe on a position that was
+ * already non-zero (written by another key or, rarely, by an earlier probe of
+ * the same key); collision_rate divides by the positions written (n * k).
+ *
+ * Structures with delete (CBF, hybrid_c_*, baseline) then remove Dexist, after
+ * the lookups and the fault count, so the other columns keep their meaning:
+ * delete_ms is timed; del_still_present counts deleted keys still reported
+ * present (filters: false positives or saturated counters), fn_after_delete the
+ * keys never deleted that are no longer found (must be 0).
  *
  * rss_kb is the process resident set right after the inserts (dataset
  * included); majflt/minflt are the page faults of create + insert + lookups.
@@ -43,6 +53,7 @@ static double now_ms(void)
 
 typedef struct {
     double insert, exist, inexist; /* average MurmurHash2 calls per operation */
+    uint64_t collisions;           /* insert writes on already non-zero positions */
 } hash_avg_t;
 
 /* Insert one pass of the stream; only the operations are timed, not the file reads. */
@@ -54,6 +65,19 @@ static double timed_insert(const bf_ops_t *op, void *bf, keystream_t *ks)
     while ((c = keystream_next(ks)) > 0) {
         double t0 = now_ms();
         for (size_t j = 0; j < c; j++) op->insert(bf, &ks->keys[j]);
+        total += now_ms() - t0;
+    }
+    return total;
+}
+
+static double timed_remove(const bf_ops_t *op, void *bf, keystream_t *ks)
+{
+    double total = 0.0;
+    size_t c;
+    keystream_rewind(ks);
+    while ((c = keystream_next(ks)) > 0) {
+        double t0 = now_ms();
+        for (size_t j = 0; j < c; j++) op->remove(bf, &ks->keys[j]);
         total += now_ms() - t0;
     }
     return total;
@@ -75,15 +99,18 @@ static double timed_lookup(const bf_ops_t *op, void *bf, keystream_t *ks, size_t
 
 static hash_avg_t count_hashes(const bf_ops_t *ops, size_t m, unsigned k, dataset_t *ds)
 {
-    hash_avg_t r = { 0.0, 0.0, 0.0 };
+    hash_avg_t r = { 0.0, 0.0, 0.0, 0 };
     void *bf = ops->create(m, k);
     if (!bf) return r;
-    uint64_t c = 0;
+    uint64_t c = 0, col = 0;
     murmurhash2_counter = &c;
 
-    size_t present;
-    (void)timed_insert(ops, bf, &ds->ins);
+    size_t present, cnt;
+    keystream_rewind(&ds->ins);
+    while ((cnt = keystream_next(&ds->ins)) > 0)
+        for (size_t j = 0; j < cnt; j++) col += ops->insert_counted(bf, &ds->ins.keys[j]);
     r.insert = ds->n ? (double)c / (double)ds->n : 0.0;
+    r.collisions = col;
 
     c = 0;
     (void)timed_lookup(ops, bf, &ds->ex, &present);
@@ -147,15 +174,15 @@ int benchmark_run(const char *type, size_t n_override, double p_target,
     for (size_t i = 0; i < nops; i++) {
         if (filter && strcmp(ops[i].name, filter) != 0) continue;
         if (ops[i].exact) {
-            runs[nruns++] = (run_t){ &ops[i], "none", 0, 0, { 0, 0, 0 } };
+            runs[nruns++] = (run_t){ &ops[i], "none", 0, 0, { 0, 0, 0, 0 } };
             continue;
         }
         if (sizing & SIZING_SAME_M)
-            runs[nruns++] = (run_t){ &ops[i], "same_m", ref.m, ref.k, { 0, 0, 0 } };
+            runs[nruns++] = (run_t){ &ops[i], "same_m", ref.m, ref.k, { 0, 0, 0, 0 } };
         if (sizing & SIZING_SAME_FPR) {
             bf_sizing_t own;
             if (ops[i].params(n, p_target, &own))
-                runs[nruns++] = (run_t){ &ops[i], "same_fpr", own.m, own.k, { 0, 0, 0 } };
+                runs[nruns++] = (run_t){ &ops[i], "same_fpr", own.m, own.k, { 0, 0, 0, 0 } };
         }
     }
     for (size_t r = 0; r < nruns; r++) {
@@ -166,7 +193,8 @@ int benchmark_run(const char *type, size_t n_override, double p_target,
     fprintf(out, "type,filter,sizing,rep,n,n_exist,n_inexist,p_target,m,cells,k,mem_bytes,bits_per_key,"
                  "insert_ms,lookup_exist_ms,lookup_inexist_ms,"
                  "hash_insert,hash_lookup_exist,hash_lookup_inexist,"
-                 "fn,fp,fpr,fpr_theory,fill_ratio,rss_kb,majflt,minflt\n");
+                 "fn,fp,fpr,fpr_theory,fill_ratio,rss_kb,majflt,minflt,"
+                 "collisions,collision_rate,delete_ms,del_still_present,fn_after_delete\n");
 
     for (unsigned rep = 0; rep <= reps; rep++) {   /* rep 0 = warm-up */
         for (size_t r = 0; r < nruns; r++) {
@@ -185,9 +213,24 @@ int benchmark_run(const char *type, size_t n_override, double p_target,
             size_t fp;
             double t_inex = timed_lookup(op, bf, &ds.inex, &fp);
             proc_faults_t f1 = proc_faults();
+            /* state metrics are read before the delete pass changes the structure */
+            size_t mem = op->memory_bytes(bf);
+            double fpr_th = op->exact ? 0.0 : op->fpr_theory(bf, n);
+            double fill = op->exact ? 0.0 : op->fill_ratio(bf);
+
+            double t_del = 0.0;
+            size_t del_still = 0, fn_del = 0;
+            if (op->remove) {
+                t_del = timed_remove(op, bf, &ds.ex);
+                (void)timed_lookup(op, bf, &ds.ex, &del_still);
+                size_t ins_present;
+                (void)timed_lookup(op, bf, &ds.ins, &ins_present);
+                /* Dins keys found = never-deleted keys found + deleted keys still present */
+                size_t kept = ds.n - ds.n_exist, kept_found = ins_present - del_still;
+                fn_del = kept > kept_found ? kept - kept_found : 0;
+            }
 
             if (rep > 0) {
-                size_t mem = op->memory_bytes(bf);
                 double fpr = ds.n_inexist ? (double)fp / (double)ds.n_inexist : 0.0;
                 fprintf(out, "%s,%s,%s,%u,%zu,%zu,%zu,%g,", type, op->name, runs[r].sizing, rep,
                         n, ds.n_exist, ds.n_inexist, p_target);
@@ -201,8 +244,17 @@ int benchmark_run(const char *type, size_t n_override, double p_target,
                              runs[r].hashes.exist, runs[r].hashes.inexist);
                 fprintf(out, "%zu,%zu,%.6f,", fn, fp, fpr);
                 if (op->exact) fprintf(out, ",,");
-                else fprintf(out, "%.6f,%.6f,", op->fpr_theory(bf, n), op->fill_ratio(bf));
-                fprintf(out, "%ld,%ld,%ld\n", rss, f1.majflt - f0.majflt, f1.minflt - f0.minflt);
+                else fprintf(out, "%.6f,%.6f,", fpr_th, fill);
+                fprintf(out, "%ld,%ld,%ld,", rss, f1.majflt - f0.majflt, f1.minflt - f0.minflt);
+                if (op->exact) fprintf(out, ",,");
+                else {
+                    unsigned kk = op->fixed_k ? op->fixed_k : runs[r].k;
+                    double writes = (double)n * (double)kk;
+                    fprintf(out, "%llu,%.6f,", (unsigned long long)runs[r].hashes.collisions,
+                            writes > 0 ? (double)runs[r].hashes.collisions / writes : 0.0);
+                }
+                if (op->remove) fprintf(out, "%.4f,%zu,%zu\n", t_del, del_still, fn_del);
+                else fprintf(out, ",,\n");
             }
             op->destroy(bf);
         }

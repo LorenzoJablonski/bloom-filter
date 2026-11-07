@@ -312,3 +312,24 @@ int hybrid_params(size_t n, double p, size_t shard_max, bf_sizing_t *out)
     out->k = best_k;
     return 1;
 }
+
+/* ---- collision counting (untimed pass; kept apart from the measured insert) ---- */
+
+unsigned hybrid_insert_counted(hybrid_t *bf, const bf_key_t *key)
+{
+    if (!bf || !key || !key->data) return 0;
+    unsigned col = 0;
+    probe_t p = hybrid_probe(bf, key);
+    for (unsigned i = 0; i < bf->k; i++, probe_next(bf, &p)) {
+        if (bf->counting) {
+            unsigned v = cnt_get(p.shard, p.g);
+            col += v > 0;
+            if (v < HYBRID_COUNTER_MAX) cnt_set(p.shard, p.g, v + 1);
+        } else {
+            unsigned char bit = (unsigned char)(1u << (p.g % 8));
+            col += (p.shard[p.g / 8] & bit) != 0;
+            p.shard[p.g / 8] |= bit;
+        }
+    }
+    return col;
+}

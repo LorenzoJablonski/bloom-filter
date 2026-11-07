@@ -51,6 +51,25 @@ Feito: campanha oficial na VM (2026-11-06/07, commit c2c52ec, 1786 execuções, 
 falhas, ~8,5 h), resultados em `results/campaigns/vm-nvme/` (rótulo `oficial`).
 Resumo em "Resultados da campanha oficial" abaixo.
 
+Em andamento: `feature/delete-collisions` (protocolo 5, schema 5). O TCC1 promete
+avaliar a deleção (4.1) e a taxa de colisões estruturais (4.4.2, métrica 5), e nada
+disso era medido. Agora o benchmark:
+- conta colisões numa passada não cronometrada: cada posição sondada que já estava
+  não nula soma 1 (`collisions`; `collision_rate` = colisões ÷ n·k). Nos filtros de
+  bits bate exatamente com k·n − posições ocupadas (conferido em 1M UUIDs);
+- apaga o Dexist nas estruturas com deleção (CBF, hybrid_c_*, e o baseline, que
+  ganhou `baseline_remove`), cronometra (`delete_ns_op`) e confere o efeito:
+  `del_still_present` (apagadas que ainda respondem presente) e `fn_after_delete`
+  (falsos negativos entre as não apagadas; tem que ser 0).
+Por que as inserções medidas não mudaram: a contagem fica numa cópia à parte
+(`<modelo>_insert_counted`). A primeira versão testava o contador dentro do insert
+e deixou o hybrid_512 6% mais lento; a segunda, com um teste só por chave, deixou o
+SBF 9% mais lento. Na versão final, objdump mostra `*_insert` e `*_lookup` idênticos
+ao binário antigo, e o A/B de tempo (4 rodadas × 5 repetições) ficou dentro do IC.
+Falta rodar `scripts/vm/extra.sh` na VM (`PLAN=extra.sh vm.sh official`, ~1–1h30):
+colisões em todos os filtros, tipos e N (1 repetição, é determinístico) e deleção em
+UUID (5 × 3; baseline só em 1M e 5M, porque apagar exige N buscas a mais e ele pagina).
+
 Próximos passos:
 - Capítulo de materiais e métodos: a base feita no notebook não está no GitHub
   (conferido em 2026-11-07). Quando chegar, revisar e atualizar conforme o código

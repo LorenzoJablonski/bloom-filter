@@ -14,6 +14,10 @@ typedef struct rdbf rdbf_t;
 rdbf_t *rdbf_create(size_t m);
 void rdbf_destroy(rdbf_t *bf);
 void rdbf_insert(rdbf_t *bf, const bf_key_t *key);
+/* Same writes as rdbf_insert, returning how many probed positions were already
+ * non-zero (collisions). For the untimed counting pass only: rdbf_insert stays the
+ * measured path. */
+unsigned rdbf_insert_counted(rdbf_t *bf, const bf_key_t *key);
 bf_member_t rdbf_lookup(rdbf_t *bf, const bf_key_t *key);
 
 unsigned long rdbf_dim_x(const rdbf_t *bf);

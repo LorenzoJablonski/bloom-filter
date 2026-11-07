@@ -154,3 +154,18 @@ int cbf_params(size_t n, double p, bf_sizing_t *out)
     out->k = best_k;
     return 1;
 }
+
+/* ---- collision counting (untimed pass; kept apart from the measured insert) ---- */
+
+unsigned cbf_insert_counted(cbf_t *bf, const bf_key_t *key)
+{
+    if (!bf || !key || !key->data || bf->m == 0) return 0;
+    unsigned col = 0;
+    for (unsigned i = 0; i < bf->k; i++) {
+        size_t idx = cbf_hash_index(key, i, bf->m);
+        unsigned v = cbf_get(bf, idx);
+        col += v > 0;
+        if (v < CBF_COUNTER_MAX) cbf_set(bf, idx, v + 1);
+    }
+    return col;
+}

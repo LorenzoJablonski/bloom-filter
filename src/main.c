@@ -199,6 +199,53 @@ static int run_test(void)
         ops[i].destroy(bf);
     }
 
+    /* colisoes: reinserir a mesma chave escreve so em posicoes ja ocupadas,
+     * entao o contador sobe exatamente k (rDBF: 1) */
+    for (size_t i = 0; i < nops; i++) {
+        if (ops[i].exact) continue;
+        unsigned k = ops[i].fixed_k ? ops[i].fixed_k : 5;
+        void *bf = ops[i].create(1u << 16, 5);
+        if (!bf) { ok = 0; continue; }
+        bf_key_t kk = { "colisao", 7 };
+        (void)ops[i].insert_counted(bf, &kk);
+        unsigned again = ops[i].insert_counted(bf, &kk);
+        /* the counted insert writes like the plain one: lookup must find the key */
+        int found = ops[i].lookup(bf, &kk) == BF_PRESENT;
+        printf("test: %s colisoes na reinsercao=%u (esperado %u)\n", ops[i].name, again, k);
+        if (again != k || !found) ok = 0;
+        ops[i].destroy(bf);
+    }
+
+    /* delecao pela interface: apagar metade nao gera FN nos restantes, e no
+     * baseline as apagadas somem */
+    for (size_t i = 0; i < nops; i++) {
+        if (!ops[i].remove) continue;
+        void *bf = ops[i].create(8192, 5);
+        if (!bf) { ok = 0; continue; }
+        char buf[32];
+        for (int j = 0; j < 500; j++) {
+            int len = snprintf(buf, sizeof(buf), "d-%d", j);
+            bf_key_t kk = { buf, (size_t)len };
+            ops[i].insert(bf, &kk);
+        }
+        for (int j = 0; j < 250; j++) {
+            int len = snprintf(buf, sizeof(buf), "d-%d", j);
+            bf_key_t kk = { buf, (size_t)len };
+            ops[i].remove(bf, &kk);
+        }
+        int fn = 0, left = 0;
+        for (int j = 0; j < 500; j++) {
+            int len = snprintf(buf, sizeof(buf), "d-%d", j);
+            bf_key_t kk = { buf, (size_t)len };
+            int present = ops[i].lookup(bf, &kk) == BF_PRESENT;
+            if (j >= 250 && !present) fn++;
+            if (j < 250 && present) left++;
+        }
+        printf("test: %s (delete) FN=%d apagadas ainda presentes=%d\n", ops[i].name, fn, left);
+        if (fn != 0 || (ops[i].exact && left != 0)) ok = 0;
+        ops[i].destroy(bf);
+    }
+
     /* CBF: delete de metade nao gera FN nos restantes */
     {
         cbf_t *cbf = cbf_create(8192, 5);

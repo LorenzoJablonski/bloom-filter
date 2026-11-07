@@ -8,7 +8,8 @@
 #   scripts/vm/vm.sh push-code               send the committed HEAD to the guest and build it
 #   scripts/vm/vm.sh data N [TYPE] [T...]    generate on the host (if missing) and copy to the guest (T = none: no tables)
 #   scripts/vm/vm.sh campaign [VAR=value...] start scripts/vm/campaign.sh detached in the guest
-#   scripts/vm/vm.sh official [VAR=value...] start the official campaign (scripts/vm/official.sh) detached in the guest
+#   scripts/vm/vm.sh official [VAR=value...] start the official campaign (scripts/vm/official.sh) detached in the guest;
+#                                            PLAN=extra.sh runs scripts/vm/extra.sh (collisions, delete) instead
 #   scripts/vm/vm.sh pull                    bring results/ back to data/vm/results/
 #   scripts/vm/vm.sh ssh [command]           shell in the guest
 #   scripts/vm/vm.sh start|stop|status|destroy
@@ -247,8 +248,8 @@ cmd_campaign() {
 cmd_official() {
     scp -q -i "$VM_DIR/id_ed25519" -P "$SSH_PORT" -o StrictHostKeyChecking=no \
         -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR \
-        "$ROOT/scripts/vm/campaign.sh" "$ROOT/scripts/vm/official.sh" "$GUEST:"
-    g "nohup env $* bash official.sh > campaign.log 2>&1 < /dev/null & echo started, pid \$!"
+        "$ROOT/scripts/vm/campaign.sh" "$ROOT/scripts/vm/${PLAN:-official.sh}" "$GUEST:"
+    g "nohup env $* bash ${PLAN:-official.sh} > campaign.log 2>&1 < /dev/null & echo started, pid \$!"
     log "follow with: scripts/vm/vm.sh ssh tail -f campaign.log"
 }
 
@@ -285,5 +286,5 @@ case ${1:-} in
     stop)      "${VIRSH[@]}" shutdown "$VM_NAME" ;;
     status)    cmd_status ;;
     destroy)   cmd_destroy ;;
-    *)         sed -n '2,19p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; exit 2 ;;
+    *)         sed -n '2,20p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; exit 2 ;;
 esac

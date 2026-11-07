@@ -33,7 +33,7 @@ typedef struct {
  * timing method, CSV columns, store layout...). scripts/run.py records it per
  * run and the analysis only groups runs with the same version.
  */
-#define BF_PROTOCOL_VERSION 4 /* 2: rss_kb/majflt/minflt; 3: one structure per process, keys streamed in batches; 4: iobench draws new queries per repetition */
+#define BF_PROTOCOL_VERSION 5 /* 2: rss_kb/majflt/minflt; 3: one structure per process, keys streamed in batches; 4: iobench draws new queries per repetition; 5: collision count, timed delete of Dexist */
 
 typedef enum {
     BF_ABSENT  = 0,
