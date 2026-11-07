@@ -142,6 +142,8 @@ def _hbars(ax, labels, series, title, dec):
     ax.grid(axis="y", visible=False)
     if log:
         ax.set_xscale("log")
+        # below ~2 decades matplotlib also labels minor ticks, and they overlap
+        ax.xaxis.set_minor_formatter(matplotlib.ticker.NullFormatter())
     elif n == 1 and all_vals:  # room for the value labels
         ax.set_xlim(0, max(all_vals) * 1.25 or 1)
     ax.set_title(title + (" (log)" if log else ""), loc="left", color=INK)
@@ -161,11 +163,18 @@ def bench(records, metrics, outdir, formats):
     refs = [r for r in records if r["sizing"] == "none"]
     sized = [r for r in records if r["sizing"] != "none"] or refs
     for (typ, n, sizing), tag, recs in _figures(sized, ["type", "n", "sizing"], ["filter"]):
+        labels = [r["filter"] for r in recs]
         if sizing != "none":
             keys = {(r["config_key"], r["env_key"]) for r in recs}
-            recs = recs + [r for r in refs if r["type"] == typ and r["n"] == n
-                           and (r["config_key"], r["env_key"]) in keys]
-        labels = [r["filter"] for r in recs]
+            same = [r for r in refs if r["type"] == typ and r["n"] == n and r["env_key"]
+                    in {k[1] for k in keys}]
+            exact = [r for r in same if (r["config_key"], r["env_key"]) in keys]
+            # a baseline run with fewer repetitions (it pages and takes hours) has its
+            # own config_key: still drawn, with its sample count in the label
+            extra = exact or same
+            recs = recs + extra
+            labels += [r["filter"] if r in exact else f'{r["filter"]} ({r["samples"]} amostras)'
+                       for r in extra]
         panels = [m for m in metrics if m[0] != "fpr_theory"]
         ncol = min(3, len(panels))
         nrow = math.ceil(len(panels) / ncol)

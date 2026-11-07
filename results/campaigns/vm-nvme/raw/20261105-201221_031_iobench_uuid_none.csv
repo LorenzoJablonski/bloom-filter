@@ -1,0 +1,4 @@
+type,gatekeeper,rep,n,tables,neg_ratio,queries,direct,value_size,blocks,gk_mem_bytes,index_mem_bytes,k,disk_reads,wasted_reads,reads_per_query,proc_read_bytes,total_ms,mean_us,p50_us,p99_us,errors,rss_kb,majflt,minflt
+uuid,none,1,1000000,8,0.9,10000,1,100,34488,0,1655600,,76522,75522,7.6522,313434112,4299.109,429.749,447.508,480.870,0,10904,0,0
+uuid,none,2,1000000,8,0.9,10000,1,100,34488,0,1655600,,76584,75584,7.6584,313688064,4325.895,432.428,447.338,485.168,0,10904,0,0
+uuid,none,3,1000000,8,0.9,10000,1,100,34488,0,1655600,,76485,75485,7.6485,313282560,4289.056,428.744,447.433,477.325,0,10904,0,0

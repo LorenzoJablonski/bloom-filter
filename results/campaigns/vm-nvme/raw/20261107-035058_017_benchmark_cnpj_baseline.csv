@@ -1,0 +1,6 @@
+type,filter,sizing,rep,n,n_exist,n_inexist,p_target,m,cells,k,mem_bytes,bits_per_key,insert_ms,lookup_exist_ms,lookup_inexist_ms,hash_insert,hash_lookup_exist,hash_lookup_inexist,fn,fp,fpr,fpr_theory,fill_ratio,rss_kb,majflt,minflt
+cnpj,baseline,none,1,1000000,100000,1000000,0.01,,,,94777296,758.2184,254.9928,13.7953,103.2658,,,,0,0,0.000000,,,124016,0,5904
+cnpj,baseline,none,2,1000000,100000,1000000,0.01,,,,94777296,758.2184,247.1829,13.3368,105.2287,,,,0,0,0.000000,,,124016,0,0
+cnpj,baseline,none,3,1000000,100000,1000000,0.01,,,,94777296,758.2184,238.7407,14.5566,104.3145,,,,0,0,0.000000,,,124016,0,0
+cnpj,baseline,none,4,1000000,100000,1000000,0.01,,,,94777296,758.2184,249.7820,13.4756,106.4564,,,,0,0,0.000000,,,124016,0,0
+cnpj,baseline,none,5,1000000,100000,1000000,0.01,,,,94777296,758.2184,242.0627,13.2886,104.3718,,,,0,0,0.000000,,,124016,0,0
