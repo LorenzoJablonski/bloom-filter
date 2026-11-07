@@ -155,7 +155,8 @@ def aggregate(con, view, group_cols, metrics, args, extra=()):
         rec["samples"] = len(g["rows"])
         for m in metrics:
             col = m[0]
-            rec[col] = summarize([row[col] for row in g["rows"]])
+            # a column the database predates (older schema) reads as missing
+            rec[col] = summarize([row[col] if col in row.keys() else None for row in g["rows"]])
         out.append(rec)
     return out, len(rows)
 
@@ -363,7 +364,7 @@ def main():
 
     if not Path(args.db).exists():
         raise SystemExit(f"{args.db} não existe; rode scripts/run.py primeiro")
-    con = resultsdb.connect(args.db)
+    con = resultsdb.connect_readonly(args.db)  # analysis never writes, not even a migration
     {"runs": cmd_runs, "bench": cmd_bench, "io": cmd_io, "freeze": cmd_freeze}[args.cmd](con, args)
     return 0
 

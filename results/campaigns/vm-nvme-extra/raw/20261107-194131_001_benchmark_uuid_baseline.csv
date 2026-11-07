@@ -1,0 +1,6 @@
+type,filter,sizing,rep,n,n_exist,n_inexist,p_target,m,cells,k,mem_bytes,bits_per_key,insert_ms,lookup_exist_ms,lookup_inexist_ms,hash_insert,hash_lookup_exist,hash_lookup_inexist,fn,fp,fpr,fpr_theory,fill_ratio,rss_kb,majflt,minflt,collisions,collision_rate,delete_ms,del_still_present,fn_after_delete
+uuid,baseline,none,1,1000000,100000,1000000,0.01,,,,108388688,867.1095,309.0121,28.4290,257.7188,,,,0,0,0.000000,,,124296,0,2049,,,29.4464,0,0
+uuid,baseline,none,2,1000000,100000,1000000,0.01,,,,108388688,867.1095,277.7299,26.7197,269.5323,,,,0,0,0.000000,,,124296,0,6,,,29.3866,0,0
+uuid,baseline,none,3,1000000,100000,1000000,0.01,,,,108388688,867.1095,269.4728,27.1575,254.7131,,,,0,0,0.000000,,,124296,0,0,,,29.3096,0,0
+uuid,baseline,none,4,1000000,100000,1000000,0.01,,,,108388688,867.1095,265.3616,26.5946,254.3988,,,,0,0,0.000000,,,124296,0,0,,,30.2650,0,0
+uuid,baseline,none,5,1000000,100000,1000000,0.01,,,,108388688,867.1095,272.3949,26.0148,254.3282,,,,0,0,0.000000,,,124296,0,0,,,29.6023,0,0

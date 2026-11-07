@@ -1,0 +1,2 @@
+type,filter,sizing,rep,n,n_exist,n_inexist,p_target,m,cells,k,mem_bytes,bits_per_key,insert_ms,lookup_exist_ms,lookup_inexist_ms,hash_insert,hash_lookup_exist,hash_lookup_inexist,fn,fp,fpr,fpr_theory,fill_ratio,rss_kb,majflt,minflt,collisions,collision_rate,delete_ms,del_still_present,fn_after_delete
+cpf,sbf,same_fpr,1,5000000,500000,5000000,0.01,47964774,47964774,7,5995597,9.5930,373.0964,21.0762,172.3413,7.0000,7.0000,2.0536,0,49768,0.009954,0.010000,0.517965,15376,0,0,10155910,0.290169,,,

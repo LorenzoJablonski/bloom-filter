@@ -1,0 +1,777 @@
+##### 2026-11-07T18:39:32+00:00 LABEL=colisoes TYPES=uuid cpf cnpj url NS=1000000 5000000 10000000 20000000 FILTERS=sbf cbf pbf rdbf hybrid_512 hybrid_4096 hybrid_c_512 hybrid_c_4096 EXPERIMENTS=benchmark REPS=1 REPEAT=1
+=== 2026-11-07T18:39:32+00:00 pass 1/1 N=1000000 uuid benchmark
+batch 20261107-183932: 16 run(s), protocol 5, commit 30fc9a09
+[1/16] --benchmark --type uuid --filter sbf --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-183932_001_benchmark_uuid_sbf.csv
+  run_id=1964 status=ok rows=1 (0.524 s, rss 22 MiB, 0 major faults)
+[2/16] --benchmark --type uuid --filter sbf --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-183932_002_benchmark_uuid_sbf.csv
+  run_id=1965 status=ok rows=1 (0.541 s, rss 22 MiB, 0 major faults)
+[3/16] --benchmark --type uuid --filter cbf --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-183932_003_benchmark_uuid_cbf.csv
+  run_id=1966 status=ok rows=1 (1.01 s, rss 22 MiB, 0 major faults)
+[4/16] --benchmark --type uuid --filter cbf --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-183932_004_benchmark_uuid_cbf.csv
+  run_id=1967 status=ok rows=1 (1.009 s, rss 22 MiB, 0 major faults)
+[5/16] --benchmark --type uuid --filter pbf --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-183932_005_benchmark_uuid_pbf.csv
+  run_id=1968 status=ok rows=1 (0.549 s, rss 22 MiB, 0 major faults)
+[6/16] --benchmark --type uuid --filter pbf --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-183932_006_benchmark_uuid_pbf.csv
+  run_id=1969 status=ok rows=1 (0.563 s, rss 22 MiB, 0 major faults)
+[7/16] --benchmark --type uuid --filter rdbf --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-183932_007_benchmark_uuid_rdbf.csv
+  run_id=1970 status=ok rows=1 (0.22 s, rss 22 MiB, 0 major faults)
+[8/16] --benchmark --type uuid --filter rdbf --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-183932_008_benchmark_uuid_rdbf.csv
+  run_id=1971 status=ok rows=1 (0.313 s, rss 22 MiB, 0 major faults)
+[9/16] --benchmark --type uuid --filter hybrid_512 --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-183932_009_benchmark_uuid_hybrid_512.csv
+  run_id=1972 status=ok rows=1 (0.29 s, rss 22 MiB, 1 major faults)
+[10/16] --benchmark --type uuid --filter hybrid_512 --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-183932_010_benchmark_uuid_hybrid_512.csv
+  run_id=1973 status=ok rows=1 (0.37 s, rss 22 MiB, 0 major faults)
+[11/16] --benchmark --type uuid --filter hybrid_4096 --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-183932_011_benchmark_uuid_hybrid_4096.csv
+  run_id=1974 status=ok rows=1 (0.325 s, rss 22 MiB, 0 major faults)
+[12/16] --benchmark --type uuid --filter hybrid_4096 --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-183932_012_benchmark_uuid_hybrid_4096.csv
+  run_id=1975 status=ok rows=1 (0.4 s, rss 22 MiB, 0 major faults)
+[13/16] --benchmark --type uuid --filter hybrid_c_512 --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-183932_013_benchmark_uuid_hybrid_c_512.csv
+  run_id=1976 status=ok rows=1 (0.523 s, rss 22 MiB, 0 major faults)
+[14/16] --benchmark --type uuid --filter hybrid_c_512 --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-183932_014_benchmark_uuid_hybrid_c_512.csv
+  run_id=1977 status=ok rows=1 (0.551 s, rss 22 MiB, 0 major faults)
+[15/16] --benchmark --type uuid --filter hybrid_c_4096 --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-183932_015_benchmark_uuid_hybrid_c_4096.csv
+  run_id=1978 status=ok rows=1 (0.525 s, rss 22 MiB, 0 major faults)
+[16/16] --benchmark --type uuid --filter hybrid_c_4096 --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-183932_016_benchmark_uuid_hybrid_c_4096.csv
+  run_id=1979 status=ok rows=1 (0.642 s, rss 22 MiB, 0 major faults)
+database: /home/debian/bloom/results/bloom.db
+=== 2026-11-07T18:39:40+00:00 pass 1/1 N=1000000 cpf benchmark
+batch 20261107-183940: 16 run(s), protocol 5, commit 30fc9a09
+[1/16] --benchmark --type cpf --filter sbf --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-183940_001_benchmark_cpf_sbf.csv
+  run_id=1980 status=ok rows=1 (0.325 s, rss 22 MiB, 0 major faults)
+[2/16] --benchmark --type cpf --filter sbf --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-183940_002_benchmark_cpf_sbf.csv
+  run_id=1981 status=ok rows=1 (0.345 s, rss 22 MiB, 0 major faults)
+[3/16] --benchmark --type cpf --filter cbf --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-183940_003_benchmark_cpf_cbf.csv
+  run_id=1982 status=ok rows=1 (0.672 s, rss 22 MiB, 0 major faults)
+[4/16] --benchmark --type cpf --filter cbf --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-183940_004_benchmark_cpf_cbf.csv
+  run_id=1983 status=ok rows=1 (0.673 s, rss 22 MiB, 0 major faults)
+[5/16] --benchmark --type cpf --filter pbf --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-183940_005_benchmark_cpf_pbf.csv
+  run_id=1984 status=ok rows=1 (0.348 s, rss 22 MiB, 0 major faults)
+[6/16] --benchmark --type cpf --filter pbf --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-183940_006_benchmark_cpf_pbf.csv
+  run_id=1985 status=ok rows=1 (0.345 s, rss 22 MiB, 0 major faults)
+[7/16] --benchmark --type cpf --filter rdbf --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-183940_007_benchmark_cpf_rdbf.csv
+  run_id=1986 status=ok rows=1 (0.157 s, rss 22 MiB, 0 major faults)
+[8/16] --benchmark --type cpf --filter rdbf --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-183940_008_benchmark_cpf_rdbf.csv
+  run_id=1987 status=ok rows=1 (0.233 s, rss 22 MiB, 0 major faults)
+[9/16] --benchmark --type cpf --filter hybrid_512 --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-183940_009_benchmark_cpf_hybrid_512.csv
+  run_id=1988 status=ok rows=1 (0.245 s, rss 22 MiB, 0 major faults)
+[10/16] --benchmark --type cpf --filter hybrid_512 --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-183940_010_benchmark_cpf_hybrid_512.csv
+  run_id=1989 status=ok rows=1 (0.291 s, rss 22 MiB, 0 major faults)
+[11/16] --benchmark --type cpf --filter hybrid_4096 --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-183940_011_benchmark_cpf_hybrid_4096.csv
+  run_id=1990 status=ok rows=1 (0.249 s, rss 22 MiB, 0 major faults)
+[12/16] --benchmark --type cpf --filter hybrid_4096 --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-183940_012_benchmark_cpf_hybrid_4096.csv
+  run_id=1991 status=ok rows=1 (0.321 s, rss 22 MiB, 0 major faults)
+[13/16] --benchmark --type cpf --filter hybrid_c_512 --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-183940_013_benchmark_cpf_hybrid_c_512.csv
+  run_id=1992 status=ok rows=1 (0.424 s, rss 22 MiB, 0 major faults)
+[14/16] --benchmark --type cpf --filter hybrid_c_512 --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-183940_014_benchmark_cpf_hybrid_c_512.csv
+  run_id=1993 status=ok rows=1 (0.458 s, rss 22 MiB, 0 major faults)
+[15/16] --benchmark --type cpf --filter hybrid_c_4096 --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-183940_015_benchmark_cpf_hybrid_c_4096.csv
+  run_id=1994 status=ok rows=1 (0.436 s, rss 22 MiB, 0 major faults)
+[16/16] --benchmark --type cpf --filter hybrid_c_4096 --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-183940_016_benchmark_cpf_hybrid_c_4096.csv
+  run_id=1995 status=ok rows=1 (0.498 s, rss 22 MiB, 0 major faults)
+database: /home/debian/bloom/results/bloom.db
+=== 2026-11-07T18:39:47+00:00 pass 1/1 N=1000000 cnpj benchmark
+batch 20261107-183947: 16 run(s), protocol 5, commit 30fc9a09
+[1/16] --benchmark --type cnpj --filter sbf --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-183947_001_benchmark_cnpj_sbf.csv
+  run_id=1996 status=ok rows=1 (0.357 s, rss 22 MiB, 0 major faults)
+[2/16] --benchmark --type cnpj --filter sbf --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-183947_002_benchmark_cnpj_sbf.csv
+  run_id=1997 status=ok rows=1 (0.367 s, rss 22 MiB, 0 major faults)
+[3/16] --benchmark --type cnpj --filter cbf --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-183947_003_benchmark_cnpj_cbf.csv
+  run_id=1998 status=ok rows=1 (0.711 s, rss 22 MiB, 0 major faults)
+[4/16] --benchmark --type cnpj --filter cbf --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-183947_004_benchmark_cnpj_cbf.csv
+  run_id=1999 status=ok rows=1 (0.72 s, rss 22 MiB, 0 major faults)
+[5/16] --benchmark --type cnpj --filter pbf --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-183947_005_benchmark_cnpj_pbf.csv
+  run_id=2000 status=ok rows=1 (0.373 s, rss 22 MiB, 0 major faults)
+[6/16] --benchmark --type cnpj --filter pbf --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-183947_006_benchmark_cnpj_pbf.csv
+  run_id=2001 status=ok rows=1 (0.372 s, rss 22 MiB, 0 major faults)
+[7/16] --benchmark --type cnpj --filter rdbf --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-183947_007_benchmark_cnpj_rdbf.csv
+  run_id=2002 status=ok rows=1 (0.17 s, rss 22 MiB, 0 major faults)
+[8/16] --benchmark --type cnpj --filter rdbf --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-183947_008_benchmark_cnpj_rdbf.csv
+  run_id=2003 status=ok rows=1 (0.246 s, rss 22 MiB, 0 major faults)
+[9/16] --benchmark --type cnpj --filter hybrid_512 --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-183947_009_benchmark_cnpj_hybrid_512.csv
+  run_id=2004 status=ok rows=1 (0.26 s, rss 22 MiB, 0 major faults)
+[10/16] --benchmark --type cnpj --filter hybrid_512 --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-183947_010_benchmark_cnpj_hybrid_512.csv
+  run_id=2005 status=ok rows=1 (0.305 s, rss 22 MiB, 0 major faults)
+[11/16] --benchmark --type cnpj --filter hybrid_4096 --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-183947_011_benchmark_cnpj_hybrid_4096.csv
+  run_id=2006 status=ok rows=1 (0.262 s, rss 22 MiB, 0 major faults)
+[12/16] --benchmark --type cnpj --filter hybrid_4096 --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-183947_012_benchmark_cnpj_hybrid_4096.csv
+  run_id=2007 status=ok rows=1 (0.336 s, rss 22 MiB, 0 major faults)
+[13/16] --benchmark --type cnpj --filter hybrid_c_512 --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-183947_013_benchmark_cnpj_hybrid_c_512.csv
+  run_id=2008 status=ok rows=1 (0.441 s, rss 22 MiB, 0 major faults)
+[14/16] --benchmark --type cnpj --filter hybrid_c_512 --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-183947_014_benchmark_cnpj_hybrid_c_512.csv
+  run_id=2009 status=ok rows=1 (0.477 s, rss 22 MiB, 0 major faults)
+[15/16] --benchmark --type cnpj --filter hybrid_c_4096 --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-183947_015_benchmark_cnpj_hybrid_c_4096.csv
+  run_id=2010 status=ok rows=1 (0.452 s, rss 22 MiB, 0 major faults)
+[16/16] --benchmark --type cnpj --filter hybrid_c_4096 --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-183947_016_benchmark_cnpj_hybrid_c_4096.csv
+  run_id=2011 status=ok rows=1 (0.524 s, rss 22 MiB, 0 major faults)
+database: /home/debian/bloom/results/bloom.db
+=== 2026-11-07T18:39:53+00:00 pass 1/1 N=1000000 url benchmark
+batch 20261107-183953: 16 run(s), protocol 5, commit 30fc9a09
+[1/16] --benchmark --type url --filter sbf --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-183953_001_benchmark_url_sbf.csv
+  run_id=2012 status=ok rows=1 (0.603 s, rss 22 MiB, 0 major faults)
+[2/16] --benchmark --type url --filter sbf --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-183953_002_benchmark_url_sbf.csv
+  run_id=2013 status=ok rows=1 (0.664 s, rss 22 MiB, 0 major faults)
+[3/16] --benchmark --type url --filter cbf --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-183953_003_benchmark_url_cbf.csv
+  run_id=2014 status=ok rows=1 (1.16 s, rss 22 MiB, 0 major faults)
+[4/16] --benchmark --type url --filter cbf --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-183953_004_benchmark_url_cbf.csv
+  run_id=2015 status=ok rows=1 (1.166 s, rss 22 MiB, 0 major faults)
+[5/16] --benchmark --type url --filter pbf --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-183953_005_benchmark_url_pbf.csv
+  run_id=2016 status=ok rows=1 (0.661 s, rss 22 MiB, 0 major faults)
+[6/16] --benchmark --type url --filter pbf --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-183953_006_benchmark_url_pbf.csv
+  run_id=2017 status=ok rows=1 (0.698 s, rss 22 MiB, 0 major faults)
+[7/16] --benchmark --type url --filter rdbf --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-183953_007_benchmark_url_rdbf.csv
+  run_id=2018 status=ok rows=1 (0.355 s, rss 22 MiB, 0 major faults)
+[8/16] --benchmark --type url --filter rdbf --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-183953_008_benchmark_url_rdbf.csv
+  run_id=2019 status=ok rows=1 (0.412 s, rss 22 MiB, 0 major faults)
+[9/16] --benchmark --type url --filter hybrid_512 --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-183953_009_benchmark_url_hybrid_512.csv
+  run_id=2020 status=ok rows=1 (0.403 s, rss 22 MiB, 0 major faults)
+[10/16] --benchmark --type url --filter hybrid_512 --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-183953_010_benchmark_url_hybrid_512.csv
+  run_id=2021 status=ok rows=1 (0.45 s, rss 22 MiB, 0 major faults)
+[11/16] --benchmark --type url --filter hybrid_4096 --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-183953_011_benchmark_url_hybrid_4096.csv
+  run_id=2022 status=ok rows=1 (0.408 s, rss 22 MiB, 0 major faults)
+[12/16] --benchmark --type url --filter hybrid_4096 --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-183953_012_benchmark_url_hybrid_4096.csv
+  run_id=2023 status=ok rows=1 (0.476 s, rss 22 MiB, 0 major faults)
+[13/16] --benchmark --type url --filter hybrid_c_512 --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-183953_013_benchmark_url_hybrid_c_512.csv
+  run_id=2024 status=ok rows=1 (0.625 s, rss 22 MiB, 0 major faults)
+[14/16] --benchmark --type url --filter hybrid_c_512 --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-183953_014_benchmark_url_hybrid_c_512.csv
+  run_id=2025 status=ok rows=1 (0.667 s, rss 22 MiB, 0 major faults)
+[15/16] --benchmark --type url --filter hybrid_c_4096 --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-183953_015_benchmark_url_hybrid_c_4096.csv
+  run_id=2026 status=ok rows=1 (0.638 s, rss 22 MiB, 0 major faults)
+[16/16] --benchmark --type url --filter hybrid_c_4096 --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-183953_016_benchmark_url_hybrid_c_4096.csv
+  run_id=2027 status=ok rows=1 (0.704 s, rss 22 MiB, 0 major faults)
+database: /home/debian/bloom/results/bloom.db
+=== 2026-11-07T18:40:04+00:00 pass 1/1 N=5000000 uuid benchmark
+batch 20261107-184004: 16 run(s), protocol 5, commit 30fc9a09
+[1/16] --benchmark --type uuid --filter sbf --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-184004_001_benchmark_uuid_sbf.csv
+  run_id=2028 status=ok rows=1 (3.025 s, rss 22 MiB, 0 major faults)
+[2/16] --benchmark --type uuid --filter sbf --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-184004_002_benchmark_uuid_sbf.csv
+  run_id=2029 status=ok rows=1 (3.317 s, rss 22 MiB, 0 major faults)
+[3/16] --benchmark --type uuid --filter cbf --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-184004_003_benchmark_uuid_cbf.csv
+  run_id=2030 status=ok rows=1 (8.592 s, rss 29 MiB, 0 major faults)
+[4/16] --benchmark --type uuid --filter cbf --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-184004_004_benchmark_uuid_cbf.csv
+  run_id=2031 status=ok rows=1 (8.62 s, rss 29 MiB, 0 major faults)
+[5/16] --benchmark --type uuid --filter pbf --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-184004_005_benchmark_uuid_pbf.csv
+  run_id=2032 status=ok rows=1 (3.345 s, rss 22 MiB, 0 major faults)
+[6/16] --benchmark --type uuid --filter pbf --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-184004_006_benchmark_uuid_pbf.csv
+  run_id=2033 status=ok rows=1 (3.396 s, rss 22 MiB, 0 major faults)
+[7/16] --benchmark --type uuid --filter rdbf --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-184004_007_benchmark_uuid_rdbf.csv
+  run_id=2034 status=ok rows=1 (1.75 s, rss 22 MiB, 0 major faults)
+[8/16] --benchmark --type uuid --filter rdbf --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-184004_008_benchmark_uuid_rdbf.csv
+  run_id=2035 status=ok rows=1 (2.002 s, rss 68 MiB, 0 major faults)
+[9/16] --benchmark --type uuid --filter hybrid_512 --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-184004_009_benchmark_uuid_hybrid_512.csv
+  run_id=2036 status=ok rows=1 (1.532 s, rss 22 MiB, 0 major faults)
+[10/16] --benchmark --type uuid --filter hybrid_512 --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-184004_010_benchmark_uuid_hybrid_512.csv
+  run_id=2037 status=ok rows=1 (1.663 s, rss 22 MiB, 0 major faults)
+[11/16] --benchmark --type uuid --filter hybrid_4096 --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-184004_011_benchmark_uuid_hybrid_4096.csv
+  run_id=2038 status=ok rows=1 (1.863 s, rss 22 MiB, 0 major faults)
+[12/16] --benchmark --type uuid --filter hybrid_4096 --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-184004_012_benchmark_uuid_hybrid_4096.csv
+  run_id=2039 status=ok rows=1 (2.008 s, rss 22 MiB, 0 major faults)
+[13/16] --benchmark --type uuid --filter hybrid_c_512 --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-184004_013_benchmark_uuid_hybrid_c_512.csv
+  run_id=2040 status=ok rows=1 (3.655 s, rss 52 MiB, 0 major faults)
+[14/16] --benchmark --type uuid --filter hybrid_c_512 --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-184004_014_benchmark_uuid_hybrid_c_512.csv
+  run_id=2041 status=ok rows=1 (3.608 s, rss 53 MiB, 0 major faults)
+[15/16] --benchmark --type uuid --filter hybrid_c_4096 --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-184004_015_benchmark_uuid_hybrid_c_4096.csv
+  run_id=2042 status=ok rows=1 (4.112 s, rss 52 MiB, 0 major faults)
+[16/16] --benchmark --type uuid --filter hybrid_c_4096 --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-184004_016_benchmark_uuid_hybrid_c_4096.csv
+  run_id=2043 status=ok rows=1 (4.323 s, rss 52 MiB, 0 major faults)
+database: /home/debian/bloom/results/bloom.db
+=== 2026-11-07T18:41:02+00:00 pass 1/1 N=5000000 cpf benchmark
+batch 20261107-184102: 16 run(s), protocol 5, commit 30fc9a09
+[1/16] --benchmark --type cpf --filter sbf --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-184102_001_benchmark_cpf_sbf.csv
+  run_id=2044 status=ok rows=1 (2.135 s, rss 22 MiB, 0 major faults)
+[2/16] --benchmark --type cpf --filter sbf --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-184102_002_benchmark_cpf_sbf.csv
+  run_id=2045 status=ok rows=1 (2.174 s, rss 22 MiB, 0 major faults)
+[3/16] --benchmark --type cpf --filter cbf --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-184102_003_benchmark_cpf_cbf.csv
+  run_id=2046 status=ok rows=1 (5.534 s, rss 32 MiB, 0 major faults)
+[4/16] --benchmark --type cpf --filter cbf --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-184102_004_benchmark_cpf_cbf.csv
+  run_id=2047 status=ok rows=1 (5.714 s, rss 32 MiB, 0 major faults)
+[5/16] --benchmark --type cpf --filter pbf --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-184102_005_benchmark_cpf_pbf.csv
+  run_id=2048 status=ok rows=1 (2.237 s, rss 22 MiB, 0 major faults)
+[6/16] --benchmark --type cpf --filter pbf --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-184102_006_benchmark_cpf_pbf.csv
+  run_id=2049 status=ok rows=1 (2.22 s, rss 22 MiB, 0 major faults)
+[7/16] --benchmark --type cpf --filter rdbf --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-184102_007_benchmark_cpf_rdbf.csv
+  run_id=2050 status=ok rows=1 (0.797 s, rss 22 MiB, 0 major faults)
+[8/16] --benchmark --type cpf --filter rdbf --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-184102_008_benchmark_cpf_rdbf.csv
+  run_id=2051 status=ok rows=1 (1.326 s, rss 71 MiB, 0 major faults)
+[9/16] --benchmark --type cpf --filter hybrid_512 --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-184102_009_benchmark_cpf_hybrid_512.csv
+  run_id=2052 status=ok rows=1 (1.209 s, rss 22 MiB, 0 major faults)
+[10/16] --benchmark --type cpf --filter hybrid_512 --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-184102_010_benchmark_cpf_hybrid_512.csv
+  run_id=2053 status=ok rows=1 (1.259 s, rss 22 MiB, 0 major faults)
+[11/16] --benchmark --type cpf --filter hybrid_4096 --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-184102_011_benchmark_cpf_hybrid_4096.csv
+  run_id=2054 status=ok rows=1 (1.283 s, rss 22 MiB, 0 major faults)
+[12/16] --benchmark --type cpf --filter hybrid_4096 --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-184102_012_benchmark_cpf_hybrid_4096.csv
+  run_id=2055 status=ok rows=1 (1.419 s, rss 22 MiB, 0 major faults)
+[13/16] --benchmark --type cpf --filter hybrid_c_512 --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-184102_013_benchmark_cpf_hybrid_c_512.csv
+  run_id=2056 status=ok rows=1 (2.89 s, rss 55 MiB, 0 major faults)
+[14/16] --benchmark --type cpf --filter hybrid_c_512 --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-184102_014_benchmark_cpf_hybrid_c_512.csv
+  run_id=2057 status=ok rows=1 (2.905 s, rss 56 MiB, 0 major faults)
+[15/16] --benchmark --type cpf --filter hybrid_c_4096 --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-184102_015_benchmark_cpf_hybrid_c_4096.csv
+  run_id=2058 status=ok rows=1 (3.303 s, rss 55 MiB, 0 major faults)
+[16/16] --benchmark --type cpf --filter hybrid_c_4096 --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-184102_016_benchmark_cpf_hybrid_c_4096.csv
+  run_id=2059 status=ok rows=1 (3.426 s, rss 55 MiB, 0 major faults)
+database: /home/debian/bloom/results/bloom.db
+=== 2026-11-07T18:41:42+00:00 pass 1/1 N=5000000 cnpj benchmark
+batch 20261107-184142: 16 run(s), protocol 5, commit 30fc9a09
+[1/16] --benchmark --type cnpj --filter sbf --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-184142_001_benchmark_cnpj_sbf.csv
+  run_id=2060 status=ok rows=1 (2.207 s, rss 22 MiB, 0 major faults)
+[2/16] --benchmark --type cnpj --filter sbf --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-184142_002_benchmark_cnpj_sbf.csv
+  run_id=2061 status=ok rows=1 (2.319 s, rss 22 MiB, 0 major faults)
+[3/16] --benchmark --type cnpj --filter cbf --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-184142_003_benchmark_cnpj_cbf.csv
+  run_id=2062 status=ok rows=1 (5.746 s, rss 31 MiB, 0 major faults)
+[4/16] --benchmark --type cnpj --filter cbf --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-184142_004_benchmark_cnpj_cbf.csv
+  run_id=2063 status=ok rows=1 (5.913 s, rss 31 MiB, 0 major faults)
+[5/16] --benchmark --type cnpj --filter pbf --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-184142_005_benchmark_cnpj_pbf.csv
+  run_id=2064 status=ok rows=1 (2.343 s, rss 22 MiB, 0 major faults)
+[6/16] --benchmark --type cnpj --filter pbf --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-184142_006_benchmark_cnpj_pbf.csv
+  run_id=2065 status=ok rows=1 (2.34 s, rss 22 MiB, 0 major faults)
+[7/16] --benchmark --type cnpj --filter rdbf --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-184142_007_benchmark_cnpj_rdbf.csv
+  run_id=2066 status=ok rows=1 (0.861 s, rss 22 MiB, 0 major faults)
+[8/16] --benchmark --type cnpj --filter rdbf --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-184142_008_benchmark_cnpj_rdbf.csv
+  run_id=2067 status=ok rows=1 (1.405 s, rss 70 MiB, 0 major faults)
+[9/16] --benchmark --type cnpj --filter hybrid_512 --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-184142_009_benchmark_cnpj_hybrid_512.csv
+  run_id=2068 status=ok rows=1 (1.282 s, rss 22 MiB, 0 major faults)
+[10/16] --benchmark --type cnpj --filter hybrid_512 --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-184142_010_benchmark_cnpj_hybrid_512.csv
+  run_id=2069 status=ok rows=1 (1.33 s, rss 22 MiB, 0 major faults)
+[11/16] --benchmark --type cnpj --filter hybrid_4096 --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-184142_011_benchmark_cnpj_hybrid_4096.csv
+  run_id=2070 status=ok rows=1 (1.346 s, rss 22 MiB, 0 major faults)
+[12/16] --benchmark --type cnpj --filter hybrid_4096 --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-184142_012_benchmark_cnpj_hybrid_4096.csv
+  run_id=2071 status=ok rows=1 (1.483 s, rss 22 MiB, 0 major faults)
+[13/16] --benchmark --type cnpj --filter hybrid_c_512 --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-184142_013_benchmark_cnpj_hybrid_c_512.csv
+  run_id=2072 status=ok rows=1 (2.937 s, rss 54 MiB, 0 major faults)
+[14/16] --benchmark --type cnpj --filter hybrid_c_512 --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-184142_014_benchmark_cnpj_hybrid_c_512.csv
+  run_id=2073 status=ok rows=1 (2.992 s, rss 55 MiB, 0 major faults)
+[15/16] --benchmark --type cnpj --filter hybrid_c_4096 --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-184142_015_benchmark_cnpj_hybrid_c_4096.csv
+  run_id=2074 status=ok rows=1 (3.378 s, rss 54 MiB, 0 major faults)
+[16/16] --benchmark --type cnpj --filter hybrid_c_4096 --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-184142_016_benchmark_cnpj_hybrid_c_4096.csv
+  run_id=2075 status=ok rows=1 (3.524 s, rss 54 MiB, 0 major faults)
+database: /home/debian/bloom/results/bloom.db
+=== 2026-11-07T18:42:24+00:00 pass 1/1 N=5000000 url benchmark
+batch 20261107-184224: 16 run(s), protocol 5, commit 30fc9a09
+[1/16] --benchmark --type url --filter sbf --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-184224_001_benchmark_url_sbf.csv
+  run_id=2076 status=ok rows=1 (3.171 s, rss 22 MiB, 0 major faults)
+[2/16] --benchmark --type url --filter sbf --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-184224_002_benchmark_url_sbf.csv
+  run_id=2077 status=ok rows=1 (3.554 s, rss 22 MiB, 0 major faults)
+[3/16] --benchmark --type url --filter cbf --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-184224_003_benchmark_url_cbf.csv
+  run_id=2078 status=ok rows=1 (9.134 s, rss 29 MiB, 0 major faults)
+[4/16] --benchmark --type url --filter cbf --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-184224_004_benchmark_url_cbf.csv
+  run_id=2079 status=ok rows=1 (9.077 s, rss 29 MiB, 0 major faults)
+[5/16] --benchmark --type url --filter pbf --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-184224_005_benchmark_url_pbf.csv
+  run_id=2080 status=ok rows=1 (3.525 s, rss 22 MiB, 0 major faults)
+[6/16] --benchmark --type url --filter pbf --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-184224_006_benchmark_url_pbf.csv
+  run_id=2081 status=ok rows=1 (3.534 s, rss 22 MiB, 0 major faults)
+[7/16] --benchmark --type url --filter rdbf --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-184224_007_benchmark_url_rdbf.csv
+  run_id=2082 status=ok rows=1 (1.75 s, rss 22 MiB, 0 major faults)
+[8/16] --benchmark --type url --filter rdbf --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-184224_008_benchmark_url_rdbf.csv
+  run_id=2083 status=ok rows=1 (2.367 s, rss 68 MiB, 0 major faults)
+[9/16] --benchmark --type url --filter hybrid_512 --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-184224_009_benchmark_url_hybrid_512.csv
+  run_id=2084 status=ok rows=1 (2.019 s, rss 22 MiB, 0 major faults)
+[10/16] --benchmark --type url --filter hybrid_512 --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-184224_010_benchmark_url_hybrid_512.csv
+  run_id=2085 status=ok rows=1 (2.088 s, rss 22 MiB, 0 major faults)
+[11/16] --benchmark --type url --filter hybrid_4096 --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-184224_011_benchmark_url_hybrid_4096.csv
+  run_id=2086 status=ok rows=1 (2.086 s, rss 22 MiB, 0 major faults)
+[12/16] --benchmark --type url --filter hybrid_4096 --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-184224_012_benchmark_url_hybrid_4096.csv
+  run_id=2087 status=ok rows=1 (1.986 s, rss 22 MiB, 0 major faults)
+[13/16] --benchmark --type url --filter hybrid_c_512 --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-184224_013_benchmark_url_hybrid_c_512.csv
+  run_id=2088 status=ok rows=1 (3.756 s, rss 52 MiB, 0 major faults)
+[14/16] --benchmark --type url --filter hybrid_c_512 --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-184224_014_benchmark_url_hybrid_c_512.csv
+  run_id=2089 status=ok rows=1 (3.92 s, rss 53 MiB, 0 major faults)
+[15/16] --benchmark --type url --filter hybrid_c_4096 --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-184224_015_benchmark_url_hybrid_c_4096.csv
+  run_id=2090 status=ok rows=1 (4.42 s, rss 52 MiB, 0 major faults)
+[16/16] --benchmark --type url --filter hybrid_c_4096 --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-184224_016_benchmark_url_hybrid_c_4096.csv
+  run_id=2091 status=ok rows=1 (4.549 s, rss 52 MiB, 0 major faults)
+database: /home/debian/bloom/results/bloom.db
+=== 2026-11-07T18:43:26+00:00 pass 1/1 N=10000000 uuid benchmark
+batch 20261107-184326: 16 run(s), protocol 5, commit 30fc9a09
+[1/16] --benchmark --type uuid --filter sbf --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-184326_001_benchmark_uuid_sbf.csv
+  run_id=2092 status=ok rows=1 (6.904 s, rss 22 MiB, 0 major faults)
+[2/16] --benchmark --type uuid --filter sbf --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-184326_002_benchmark_uuid_sbf.csv
+  run_id=2093 status=ok rows=1 (8.113 s, rss 22 MiB, 0 major faults)
+[3/16] --benchmark --type uuid --filter cbf --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-184326_003_benchmark_uuid_cbf.csv
+  run_id=2094 status=ok rows=1 (19.312 s, rss 52 MiB, 0 major faults)
+[4/16] --benchmark --type uuid --filter cbf --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-184326_004_benchmark_uuid_cbf.csv
+  run_id=2095 status=ok rows=1 (19.419 s, rss 52 MiB, 0 major faults)
+[5/16] --benchmark --type uuid --filter pbf --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-184326_005_benchmark_uuid_pbf.csv
+  run_id=2096 status=ok rows=1 (7.386 s, rss 29 MiB, 0 major faults)
+[6/16] --benchmark --type uuid --filter pbf --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-184326_006_benchmark_uuid_pbf.csv
+  run_id=2097 status=ok rows=1 (7.72 s, rss 29 MiB, 0 major faults)
+[7/16] --benchmark --type uuid --filter rdbf --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-184326_007_benchmark_uuid_rdbf.csv
+  run_id=2098 status=ok rows=1 (3.457 s, rss 22 MiB, 0 major faults)
+[8/16] --benchmark --type uuid --filter rdbf --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-184326_008_benchmark_uuid_rdbf.csv
+  run_id=2099 status=ok rows=1 (4.123 s, rss 131 MiB, 0 major faults)
+[9/16] --benchmark --type uuid --filter hybrid_512 --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-184326_009_benchmark_uuid_hybrid_512.csv
+  run_id=2100 status=ok rows=1 (3.674 s, rss 29 MiB, 0 major faults)
+[10/16] --benchmark --type uuid --filter hybrid_512 --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-184326_010_benchmark_uuid_hybrid_512.csv
+  run_id=2101 status=ok rows=1 (3.283 s, rss 29 MiB, 0 major faults)
+[11/16] --benchmark --type uuid --filter hybrid_4096 --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-184326_011_benchmark_uuid_hybrid_4096.csv
+  run_id=2102 status=ok rows=1 (3.498 s, rss 29 MiB, 0 major faults)
+[12/16] --benchmark --type uuid --filter hybrid_4096 --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-184326_012_benchmark_uuid_hybrid_4096.csv
+  run_id=2103 status=ok rows=1 (3.759 s, rss 29 MiB, 0 major faults)
+[13/16] --benchmark --type uuid --filter hybrid_c_512 --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-184326_013_benchmark_uuid_hybrid_c_512.csv
+  run_id=2104 status=ok rows=1 (8.043 s, rss 52 MiB, 0 major faults)
+[14/16] --benchmark --type uuid --filter hybrid_c_512 --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-184326_014_benchmark_uuid_hybrid_c_512.csv
+  run_id=2105 status=ok rows=1 (7.768 s, rss 53 MiB, 0 major faults)
+[15/16] --benchmark --type uuid --filter hybrid_c_4096 --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-184326_015_benchmark_uuid_hybrid_c_4096.csv
+  run_id=2106 status=ok rows=1 (8.914 s, rss 52 MiB, 0 major faults)
+[16/16] --benchmark --type uuid --filter hybrid_c_4096 --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-184326_016_benchmark_uuid_hybrid_c_4096.csv
+  run_id=2107 status=ok rows=1 (9.357 s, rss 52 MiB, 0 major faults)
+database: /home/debian/bloom/results/bloom.db
+=== 2026-11-07T18:45:33+00:00 pass 1/1 N=10000000 cpf benchmark
+batch 20261107-184533: 16 run(s), protocol 5, commit 30fc9a09
+[1/16] --benchmark --type cpf --filter sbf --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-184533_001_benchmark_cpf_sbf.csv
+  run_id=2108 status=ok rows=1 (4.742 s, rss 22 MiB, 0 major faults)
+[2/16] --benchmark --type cpf --filter sbf --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-184533_002_benchmark_cpf_sbf.csv
+  run_id=2109 status=ok rows=1 (4.883 s, rss 22 MiB, 0 major faults)
+[3/16] --benchmark --type cpf --filter cbf --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-184533_003_benchmark_cpf_cbf.csv
+  run_id=2110 status=ok rows=1 (12.708 s, rss 54 MiB, 0 major faults)
+[4/16] --benchmark --type cpf --filter cbf --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-184533_004_benchmark_cpf_cbf.csv
+  run_id=2111 status=ok rows=1 (12.648 s, rss 54 MiB, 0 major faults)
+[5/16] --benchmark --type cpf --filter pbf --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-184533_005_benchmark_cpf_pbf.csv
+  run_id=2112 status=ok rows=1 (4.604 s, rss 32 MiB, 0 major faults)
+[6/16] --benchmark --type cpf --filter pbf --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-184533_006_benchmark_cpf_pbf.csv
+  run_id=2113 status=ok rows=1 (4.58 s, rss 31 MiB, 0 major faults)
+[7/16] --benchmark --type cpf --filter rdbf --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-184533_007_benchmark_cpf_rdbf.csv
+  run_id=2114 status=ok rows=1 (1.773 s, rss 22 MiB, 0 major faults)
+[8/16] --benchmark --type cpf --filter rdbf --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-184533_008_benchmark_cpf_rdbf.csv
+  run_id=2115 status=ok rows=1 (2.698 s, rss 133 MiB, 0 major faults)
+[9/16] --benchmark --type cpf --filter hybrid_512 --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-184533_009_benchmark_cpf_hybrid_512.csv
+  run_id=2116 status=ok rows=1 (2.71 s, rss 32 MiB, 0 major faults)
+[10/16] --benchmark --type cpf --filter hybrid_512 --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-184533_010_benchmark_cpf_hybrid_512.csv
+  run_id=2117 status=ok rows=1 (2.59 s, rss 32 MiB, 0 major faults)
+[11/16] --benchmark --type cpf --filter hybrid_4096 --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-184533_011_benchmark_cpf_hybrid_4096.csv
+  run_id=2118 status=ok rows=1 (2.824 s, rss 31 MiB, 0 major faults)
+[12/16] --benchmark --type cpf --filter hybrid_4096 --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-184533_012_benchmark_cpf_hybrid_4096.csv
+  run_id=2119 status=ok rows=1 (2.864 s, rss 32 MiB, 0 major faults)
+[13/16] --benchmark --type cpf --filter hybrid_c_512 --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-184533_013_benchmark_cpf_hybrid_c_512.csv
+  run_id=2120 status=ok rows=1 (6.344 s, rss 55 MiB, 0 major faults)
+[14/16] --benchmark --type cpf --filter hybrid_c_512 --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-184533_014_benchmark_cpf_hybrid_c_512.csv
+  run_id=2121 status=ok rows=1 (6.23 s, rss 56 MiB, 0 major faults)
+[15/16] --benchmark --type cpf --filter hybrid_c_4096 --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-184533_015_benchmark_cpf_hybrid_c_4096.csv
+  run_id=2122 status=ok rows=1 (7.286 s, rss 55 MiB, 0 major faults)
+[16/16] --benchmark --type cpf --filter hybrid_c_4096 --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-184533_016_benchmark_cpf_hybrid_c_4096.csv
+  run_id=2123 status=ok rows=1 (7.469 s, rss 55 MiB, 0 major faults)
+database: /home/debian/bloom/results/bloom.db
+=== 2026-11-07T18:47:02+00:00 pass 1/1 N=10000000 cnpj benchmark
+batch 20261107-184702: 16 run(s), protocol 5, commit 30fc9a09
+[1/16] --benchmark --type cnpj --filter sbf --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-184702_001_benchmark_cnpj_sbf.csv
+  run_id=2124 status=ok rows=1 (4.891 s, rss 22 MiB, 0 major faults)
+[2/16] --benchmark --type cnpj --filter sbf --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-184702_002_benchmark_cnpj_sbf.csv
+  run_id=2125 status=ok rows=1 (5.083 s, rss 22 MiB, 0 major faults)
+[3/16] --benchmark --type cnpj --filter cbf --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-184702_003_benchmark_cnpj_cbf.csv
+  run_id=2126 status=ok rows=1 (13.388 s, rss 54 MiB, 0 major faults)
+[4/16] --benchmark --type cnpj --filter cbf --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-184702_004_benchmark_cnpj_cbf.csv
+  run_id=2127 status=ok rows=1 (13.617 s, rss 54 MiB, 0 major faults)
+[5/16] --benchmark --type cnpj --filter pbf --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-184702_005_benchmark_cnpj_pbf.csv
+  run_id=2128 status=ok rows=1 (4.863 s, rss 31 MiB, 0 major faults)
+[6/16] --benchmark --type cnpj --filter pbf --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-184702_006_benchmark_cnpj_pbf.csv
+  run_id=2129 status=ok rows=1 (4.904 s, rss 31 MiB, 0 major faults)
+[7/16] --benchmark --type cnpj --filter rdbf --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-184702_007_benchmark_cnpj_rdbf.csv
+  run_id=2130 status=ok rows=1 (1.838 s, rss 22 MiB, 0 major faults)
+[8/16] --benchmark --type cnpj --filter rdbf --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-184702_008_benchmark_cnpj_rdbf.csv
+  run_id=2131 status=ok rows=1 (2.865 s, rss 132 MiB, 0 major faults)
+[9/16] --benchmark --type cnpj --filter hybrid_512 --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-184702_009_benchmark_cnpj_hybrid_512.csv
+  run_id=2132 status=ok rows=1 (2.671 s, rss 31 MiB, 0 major faults)
+[10/16] --benchmark --type cnpj --filter hybrid_512 --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-184702_010_benchmark_cnpj_hybrid_512.csv
+  run_id=2133 status=ok rows=1 (2.761 s, rss 31 MiB, 0 major faults)
+[11/16] --benchmark --type cnpj --filter hybrid_4096 --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-184702_011_benchmark_cnpj_hybrid_4096.csv
+  run_id=2134 status=ok rows=1 (2.935 s, rss 31 MiB, 0 major faults)
+[12/16] --benchmark --type cnpj --filter hybrid_4096 --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-184702_012_benchmark_cnpj_hybrid_4096.csv
+  run_id=2135 status=ok rows=1 (3.217 s, rss 31 MiB, 0 major faults)
+[13/16] --benchmark --type cnpj --filter hybrid_c_512 --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-184702_013_benchmark_cnpj_hybrid_c_512.csv
+  run_id=2136 status=ok rows=1 (6.649 s, rss 54 MiB, 0 major faults)
+[14/16] --benchmark --type cnpj --filter hybrid_c_512 --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-184702_014_benchmark_cnpj_hybrid_c_512.csv
+  run_id=2137 status=ok rows=1 (6.484 s, rss 55 MiB, 0 major faults)
+[15/16] --benchmark --type cnpj --filter hybrid_c_4096 --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-184702_015_benchmark_cnpj_hybrid_c_4096.csv
+  run_id=2138 status=ok rows=1 (7.648 s, rss 54 MiB, 0 major faults)
+[16/16] --benchmark --type cnpj --filter hybrid_c_4096 --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-184702_016_benchmark_cnpj_hybrid_c_4096.csv
+  run_id=2139 status=ok rows=1 (7.814 s, rss 54 MiB, 0 major faults)
+database: /home/debian/bloom/results/bloom.db
+=== 2026-11-07T18:48:35+00:00 pass 1/1 N=10000000 url benchmark
+batch 20261107-184835: 16 run(s), protocol 5, commit 30fc9a09
+[1/16] --benchmark --type url --filter sbf --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-184835_001_benchmark_url_sbf.csv
+  run_id=2140 status=ok rows=1 (7.523 s, rss 22 MiB, 0 major faults)
+[2/16] --benchmark --type url --filter sbf --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-184835_002_benchmark_url_sbf.csv
+  run_id=2141 status=ok rows=1 (8.076 s, rss 22 MiB, 0 major faults)
+[3/16] --benchmark --type url --filter cbf --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-184835_003_benchmark_url_cbf.csv
+  run_id=2142 status=ok rows=1 (20.228 s, rss 52 MiB, 0 major faults)
+[4/16] --benchmark --type url --filter cbf --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-184835_004_benchmark_url_cbf.csv
+  run_id=2143 status=ok rows=1 (20.581 s, rss 52 MiB, 0 major faults)
+[5/16] --benchmark --type url --filter pbf --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-184835_005_benchmark_url_pbf.csv
+  run_id=2144 status=ok rows=1 (8.183 s, rss 29 MiB, 0 major faults)
+[6/16] --benchmark --type url --filter pbf --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-184835_006_benchmark_url_pbf.csv
+  run_id=2145 status=ok rows=1 (7.891 s, rss 29 MiB, 0 major faults)
+[7/16] --benchmark --type url --filter rdbf --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-184835_007_benchmark_url_rdbf.csv
+  run_id=2146 status=ok rows=1 (3.699 s, rss 22 MiB, 0 major faults)
+[8/16] --benchmark --type url --filter rdbf --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-184835_008_benchmark_url_rdbf.csv
+  run_id=2147 status=ok rows=1 (4.375 s, rss 131 MiB, 0 major faults)
+[9/16] --benchmark --type url --filter hybrid_512 --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-184835_009_benchmark_url_hybrid_512.csv
+  run_id=2148 status=ok rows=1 (4.25 s, rss 29 MiB, 0 major faults)
+[10/16] --benchmark --type url --filter hybrid_512 --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-184835_010_benchmark_url_hybrid_512.csv
+  run_id=2149 status=ok rows=1 (4.244 s, rss 30 MiB, 0 major faults)
+[11/16] --benchmark --type url --filter hybrid_4096 --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-184835_011_benchmark_url_hybrid_4096.csv
+  run_id=2150 status=ok rows=1 (4.362 s, rss 29 MiB, 0 major faults)
+[12/16] --benchmark --type url --filter hybrid_4096 --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-184835_012_benchmark_url_hybrid_4096.csv
+  run_id=2151 status=ok rows=1 (4.549 s, rss 29 MiB, 0 major faults)
+[13/16] --benchmark --type url --filter hybrid_c_512 --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-184835_013_benchmark_url_hybrid_c_512.csv
+  run_id=2152 status=ok rows=1 (8.647 s, rss 52 MiB, 0 major faults)
+[14/16] --benchmark --type url --filter hybrid_c_512 --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-184835_014_benchmark_url_hybrid_c_512.csv
+  run_id=2153 status=ok rows=1 (8.052 s, rss 53 MiB, 0 major faults)
+[15/16] --benchmark --type url --filter hybrid_c_4096 --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-184835_015_benchmark_url_hybrid_c_4096.csv
+  run_id=2154 status=ok rows=1 (9.669 s, rss 52 MiB, 0 major faults)
+[16/16] --benchmark --type url --filter hybrid_c_4096 --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-184835_016_benchmark_url_hybrid_c_4096.csv
+  run_id=2155 status=ok rows=1 (9.817 s, rss 52 MiB, 0 major faults)
+database: /home/debian/bloom/results/bloom.db
+=== 2026-11-07T18:50:51+00:00 pass 1/1 N=20000000 uuid benchmark
+batch 20261107-185051: 16 run(s), protocol 5, commit 30fc9a09
+[1/16] --benchmark --type uuid --filter sbf --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-185051_001_benchmark_uuid_sbf.csv
+  run_id=2156 status=ok rows=1 (21.117 s, rss 29 MiB, 0 major faults)
+[2/16] --benchmark --type uuid --filter sbf --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-185051_002_benchmark_uuid_sbf.csv
+  run_id=2157 status=ok rows=1 (21.867 s, rss 29 MiB, 0 major faults)
+[3/16] --benchmark --type uuid --filter cbf --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-185051_003_benchmark_uuid_cbf.csv
+  run_id=2158 status=ok rows=1 (41.474 s, rss 98 MiB, 0 major faults)
+[4/16] --benchmark --type uuid --filter cbf --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-185051_004_benchmark_uuid_cbf.csv
+  run_id=2159 status=ok rows=1 (41.099 s, rss 98 MiB, 0 major faults)
+[5/16] --benchmark --type uuid --filter pbf --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-185051_005_benchmark_uuid_pbf.csv
+  run_id=2160 status=ok rows=1 (20.822 s, rss 52 MiB, 0 major faults)
+[6/16] --benchmark --type uuid --filter pbf --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-185051_006_benchmark_uuid_pbf.csv
+  run_id=2161 status=ok rows=1 (19.953 s, rss 52 MiB, 0 major faults)
+[7/16] --benchmark --type uuid --filter rdbf --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-185051_007_benchmark_uuid_rdbf.csv
+  run_id=2162 status=ok rows=1 (7.65 s, rss 30 MiB, 0 major faults)
+[8/16] --benchmark --type uuid --filter rdbf --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-185051_008_benchmark_uuid_rdbf.csv
+  run_id=2163 status=ok rows=1 (8.898 s, rss 255 MiB, 0 major faults)
+[9/16] --benchmark --type uuid --filter hybrid_512 --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-185051_009_benchmark_uuid_hybrid_512.csv
+  run_id=2164 status=ok rows=1 (9.251 s, rss 52 MiB, 0 major faults)
+[10/16] --benchmark --type uuid --filter hybrid_512 --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-185051_010_benchmark_uuid_hybrid_512.csv
+  run_id=2165 status=ok rows=1 (9.107 s, rss 53 MiB, 0 major faults)
+[11/16] --benchmark --type uuid --filter hybrid_4096 --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-185051_011_benchmark_uuid_hybrid_4096.csv
+  run_id=2166 status=ok rows=1 (10.552 s, rss 52 MiB, 0 major faults)
+[12/16] --benchmark --type uuid --filter hybrid_4096 --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-185051_012_benchmark_uuid_hybrid_4096.csv
+  run_id=2167 status=ok rows=1 (10.802 s, rss 52 MiB, 0 major faults)
+[13/16] --benchmark --type uuid --filter hybrid_c_512 --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-185051_013_benchmark_uuid_hybrid_c_512.csv
+  run_id=2168 status=ok rows=1 (16.327 s, rss 98 MiB, 0 major faults)
+[14/16] --benchmark --type uuid --filter hybrid_c_512 --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-185051_014_benchmark_uuid_hybrid_c_512.csv
+  run_id=2169 status=ok rows=1 (15.877 s, rss 101 MiB, 0 major faults)
+[15/16] --benchmark --type uuid --filter hybrid_c_4096 --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-185051_015_benchmark_uuid_hybrid_c_4096.csv
+  run_id=2170 status=ok rows=1 (18.329 s, rss 98 MiB, 0 major faults)
+[16/16] --benchmark --type uuid --filter hybrid_c_4096 --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-185051_016_benchmark_uuid_hybrid_c_4096.csv
+  run_id=2171 status=ok rows=1 (18.421 s, rss 98 MiB, 0 major faults)
+database: /home/debian/bloom/results/bloom.db
+=== 2026-11-07T18:55:47+00:00 pass 1/1 N=20000000 cpf benchmark
+batch 20261107-185547: 16 run(s), protocol 5, commit 30fc9a09
+[1/16] --benchmark --type cpf --filter sbf --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-185547_001_benchmark_cpf_sbf.csv
+  run_id=2172 status=ok rows=1 (13.297 s, rss 32 MiB, 0 major faults)
+[2/16] --benchmark --type cpf --filter sbf --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-185547_002_benchmark_cpf_sbf.csv
+  run_id=2173 status=ok rows=1 (13.644 s, rss 32 MiB, 0 major faults)
+[3/16] --benchmark --type cpf --filter cbf --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-185547_003_benchmark_cpf_cbf.csv
+  run_id=2174 status=ok rows=1 (27.217 s, rss 100 MiB, 0 major faults)
+[4/16] --benchmark --type cpf --filter cbf --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-185547_004_benchmark_cpf_cbf.csv
+  run_id=2175 status=ok rows=1 (27.236 s, rss 100 MiB, 0 major faults)
+[5/16] --benchmark --type cpf --filter pbf --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-185547_005_benchmark_cpf_pbf.csv
+  run_id=2176 status=ok rows=1 (12.535 s, rss 54 MiB, 0 major faults)
+[6/16] --benchmark --type cpf --filter pbf --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-185547_006_benchmark_cpf_pbf.csv
+  run_id=2177 status=ok rows=1 (12.696 s, rss 55 MiB, 0 major faults)
+[7/16] --benchmark --type cpf --filter rdbf --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-185547_007_benchmark_cpf_rdbf.csv
+  run_id=2178 status=ok rows=1 (4.529 s, rss 33 MiB, 0 major faults)
+[8/16] --benchmark --type cpf --filter rdbf --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-185547_008_benchmark_cpf_rdbf.csv
+  run_id=2179 status=ok rows=1 (5.452 s, rss 258 MiB, 0 major faults)
+[9/16] --benchmark --type cpf --filter hybrid_512 --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-185547_009_benchmark_cpf_hybrid_512.csv
+  run_id=2180 status=ok rows=1 (6.808 s, rss 55 MiB, 0 major faults)
+[10/16] --benchmark --type cpf --filter hybrid_512 --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-185547_010_benchmark_cpf_hybrid_512.csv
+  run_id=2181 status=ok rows=1 (6.764 s, rss 56 MiB, 0 major faults)
+[11/16] --benchmark --type cpf --filter hybrid_4096 --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-185547_011_benchmark_cpf_hybrid_4096.csv
+  run_id=2182 status=ok rows=1 (7.97 s, rss 54 MiB, 0 major faults)
+[12/16] --benchmark --type cpf --filter hybrid_4096 --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-185547_012_benchmark_cpf_hybrid_4096.csv
+  run_id=2183 status=ok rows=1 (8.207 s, rss 55 MiB, 0 major faults)
+[13/16] --benchmark --type cpf --filter hybrid_c_512 --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-185547_013_benchmark_cpf_hybrid_c_512.csv
+  run_id=2184 status=ok rows=1 (13.111 s, rss 101 MiB, 0 major faults)
+[14/16] --benchmark --type cpf --filter hybrid_c_512 --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-185547_014_benchmark_cpf_hybrid_c_512.csv
+  run_id=2185 status=ok rows=1 (12.789 s, rss 103 MiB, 0 major faults)
+[15/16] --benchmark --type cpf --filter hybrid_c_4096 --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-185547_015_benchmark_cpf_hybrid_c_4096.csv
+  run_id=2186 status=ok rows=1 (15.127 s, rss 100 MiB, 0 major faults)
+[16/16] --benchmark --type cpf --filter hybrid_c_4096 --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-185547_016_benchmark_cpf_hybrid_c_4096.csv
+  run_id=2187 status=ok rows=1 (15.384 s, rss 101 MiB, 0 major faults)
+database: /home/debian/bloom/results/bloom.db
+=== 2026-11-07T18:59:12+00:00 pass 1/1 N=20000000 cnpj benchmark
+batch 20261107-185912: 16 run(s), protocol 5, commit 30fc9a09
+[1/16] --benchmark --type cnpj --filter sbf --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-185912_001_benchmark_cnpj_sbf.csv
+  run_id=2188 status=ok rows=1 (14.283 s, rss 31 MiB, 0 major faults)
+[2/16] --benchmark --type cnpj --filter sbf --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-185912_002_benchmark_cnpj_sbf.csv
+  run_id=2189 status=ok rows=1 (14.812 s, rss 31 MiB, 0 major faults)
+[3/16] --benchmark --type cnpj --filter cbf --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-185912_003_benchmark_cnpj_cbf.csv
+  run_id=2190 status=ok rows=1 (28.385 s, rss 99 MiB, 0 major faults)
+[4/16] --benchmark --type cnpj --filter cbf --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-185912_004_benchmark_cnpj_cbf.csv
+  run_id=2191 status=ok rows=1 (29.014 s, rss 99 MiB, 0 major faults)
+[5/16] --benchmark --type cnpj --filter pbf --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-185912_005_benchmark_cnpj_pbf.csv
+  run_id=2192 status=ok rows=1 (14.078 s, rss 54 MiB, 0 major faults)
+[6/16] --benchmark --type cnpj --filter pbf --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-185912_006_benchmark_cnpj_pbf.csv
+  run_id=2193 status=ok rows=1 (13.956 s, rss 54 MiB, 0 major faults)
+[7/16] --benchmark --type cnpj --filter rdbf --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-185912_007_benchmark_cnpj_rdbf.csv
+  run_id=2194 status=ok rows=1 (4.891 s, rss 32 MiB, 0 major faults)
+[8/16] --benchmark --type cnpj --filter rdbf --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-185912_008_benchmark_cnpj_rdbf.csv
+  run_id=2195 status=ok rows=1 (5.824 s, rss 257 MiB, 0 major faults)
+[9/16] --benchmark --type cnpj --filter hybrid_512 --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-185912_009_benchmark_cnpj_hybrid_512.csv
+  run_id=2196 status=ok rows=1 (7.147 s, rss 54 MiB, 0 major faults)
+[10/16] --benchmark --type cnpj --filter hybrid_512 --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-185912_010_benchmark_cnpj_hybrid_512.csv
+  run_id=2197 status=ok rows=1 (7.091 s, rss 55 MiB, 0 major faults)
+[11/16] --benchmark --type cnpj --filter hybrid_4096 --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-185912_011_benchmark_cnpj_hybrid_4096.csv
+  run_id=2198 status=ok rows=1 (8.393 s, rss 54 MiB, 0 major faults)
+[12/16] --benchmark --type cnpj --filter hybrid_4096 --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-185912_012_benchmark_cnpj_hybrid_4096.csv
+  run_id=2199 status=ok rows=1 (8.373 s, rss 54 MiB, 0 major faults)
+[13/16] --benchmark --type cnpj --filter hybrid_c_512 --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-185912_013_benchmark_cnpj_hybrid_c_512.csv
+  run_id=2200 status=ok rows=1 (13.959 s, rss 100 MiB, 0 major faults)
+[14/16] --benchmark --type cnpj --filter hybrid_c_512 --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-185912_014_benchmark_cnpj_hybrid_c_512.csv
+  run_id=2201 status=ok rows=1 (13.443 s, rss 103 MiB, 0 major faults)
+[15/16] --benchmark --type cnpj --filter hybrid_c_4096 --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-185912_015_benchmark_cnpj_hybrid_c_4096.csv
+  run_id=2202 status=ok rows=1 (15.948 s, rss 100 MiB, 0 major faults)
+[16/16] --benchmark --type cnpj --filter hybrid_c_4096 --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-185912_016_benchmark_cnpj_hybrid_c_4096.csv
+  run_id=2203 status=ok rows=1 (16.281 s, rss 100 MiB, 0 major faults)
+database: /home/debian/bloom/results/bloom.db
+=== 2026-11-07T19:02:51+00:00 pass 1/1 N=20000000 url benchmark
+batch 20261107-190251: 16 run(s), protocol 5, commit 30fc9a09
+[1/16] --benchmark --type url --filter sbf --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-190251_001_benchmark_url_sbf.csv
+  run_id=2204 status=ok rows=1 (21.915 s, rss 29 MiB, 0 major faults)
+[2/16] --benchmark --type url --filter sbf --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-190251_002_benchmark_url_sbf.csv
+  run_id=2205 status=ok rows=1 (21.828 s, rss 29 MiB, 0 major faults)
+[3/16] --benchmark --type url --filter cbf --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-190251_003_benchmark_url_cbf.csv
+  run_id=2206 status=ok rows=1 (44.189 s, rss 97 MiB, 0 major faults)
+[4/16] --benchmark --type url --filter cbf --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-190251_004_benchmark_url_cbf.csv
+  run_id=2207 status=ok rows=1 (43.841 s, rss 98 MiB, 0 major faults)
+[5/16] --benchmark --type url --filter pbf --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-190251_005_benchmark_url_pbf.csv
+  run_id=2208 status=ok rows=1 (22.001 s, rss 52 MiB, 0 major faults)
+[6/16] --benchmark --type url --filter pbf --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-190251_006_benchmark_url_pbf.csv
+  run_id=2209 status=ok rows=1 (21.761 s, rss 52 MiB, 0 major faults)
+[7/16] --benchmark --type url --filter rdbf --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-190251_007_benchmark_url_rdbf.csv
+  run_id=2210 status=ok rows=1 (8.44 s, rss 30 MiB, 0 major faults)
+[8/16] --benchmark --type url --filter rdbf --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-190251_008_benchmark_url_rdbf.csv
+  run_id=2211 status=ok rows=1 (9.777 s, rss 255 MiB, 0 major faults)
+[9/16] --benchmark --type url --filter hybrid_512 --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-190251_009_benchmark_url_hybrid_512.csv
+  run_id=2212 status=ok rows=1 (10.221 s, rss 52 MiB, 0 major faults)
+[10/16] --benchmark --type url --filter hybrid_512 --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-190251_010_benchmark_url_hybrid_512.csv
+  run_id=2213 status=ok rows=1 (9.749 s, rss 53 MiB, 0 major faults)
+[11/16] --benchmark --type url --filter hybrid_4096 --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-190251_011_benchmark_url_hybrid_4096.csv
+  run_id=2214 status=ok rows=1 (11.513 s, rss 52 MiB, 0 major faults)
+[12/16] --benchmark --type url --filter hybrid_4096 --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-190251_012_benchmark_url_hybrid_4096.csv
+  run_id=2215 status=ok rows=1 (11.841 s, rss 52 MiB, 0 major faults)
+[13/16] --benchmark --type url --filter hybrid_c_512 --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-190251_013_benchmark_url_hybrid_c_512.csv
+  run_id=2216 status=ok rows=1 (17.946 s, rss 98 MiB, 0 major faults)
+[14/16] --benchmark --type url --filter hybrid_c_512 --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-190251_014_benchmark_url_hybrid_c_512.csv
+  run_id=2217 status=ok rows=1 (16.747 s, rss 101 MiB, 0 major faults)
+[15/16] --benchmark --type url --filter hybrid_c_4096 --p 0.01 --reps 1 --sizing same_m --out /home/debian/bloom/results/raw/20261107-190251_015_benchmark_url_hybrid_c_4096.csv
+  run_id=2218 status=ok rows=1 (20.031 s, rss 98 MiB, 0 major faults)
+[16/16] --benchmark --type url --filter hybrid_c_4096 --p 0.01 --reps 1 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-190251_016_benchmark_url_hybrid_c_4096.csv
+  run_id=2219 status=ok rows=1 (20.176 s, rss 98 MiB, 0 major faults)
+database: /home/debian/bloom/results/bloom.db
+=== 2026-11-07T19:08:07+00:00 finished, 0 step(s) with failures
+##### 2026-11-07T19:08:07+00:00 LABEL=delecao TYPES=uuid NS=1000000 5000000 10000000 20000000 FILTERS=cbf hybrid_c_512 hybrid_c_4096 EXPERIMENTS=benchmark REPS=5 REPEAT=3
+=== 2026-11-07T19:08:07+00:00 pass 1/3 N=1000000 uuid benchmark
+batch 20261107-190808: 6 run(s), protocol 5, commit 30fc9a09
+[1/6] --benchmark --type uuid --filter cbf --p 0.01 --reps 5 --sizing same_m --out /home/debian/bloom/results/raw/20261107-190808_001_benchmark_uuid_cbf.csv
+  run_id=2220 status=ok rows=5 (2.591 s, rss 22 MiB, 0 major faults)
+[2/6] --benchmark --type uuid --filter cbf --p 0.01 --reps 5 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-190808_002_benchmark_uuid_cbf.csv
+  run_id=2221 status=ok rows=5 (2.661 s, rss 22 MiB, 0 major faults)
+[3/6] --benchmark --type uuid --filter hybrid_c_512 --p 0.01 --reps 5 --sizing same_m --out /home/debian/bloom/results/raw/20261107-190808_003_benchmark_uuid_hybrid_c_512.csv
+  run_id=2222 status=ok rows=5 (1.281 s, rss 22 MiB, 0 major faults)
+[4/6] --benchmark --type uuid --filter hybrid_c_512 --p 0.01 --reps 5 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-190808_004_benchmark_uuid_hybrid_c_512.csv
+  run_id=2223 status=ok rows=5 (1.286 s, rss 22 MiB, 0 major faults)
+[5/6] --benchmark --type uuid --filter hybrid_c_4096 --p 0.01 --reps 5 --sizing same_m --out /home/debian/bloom/results/raw/20261107-190808_005_benchmark_uuid_hybrid_c_4096.csv
+  run_id=2224 status=ok rows=5 (1.308 s, rss 22 MiB, 0 major faults)
+[6/6] --benchmark --type uuid --filter hybrid_c_4096 --p 0.01 --reps 5 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-190808_006_benchmark_uuid_hybrid_c_4096.csv
+  run_id=2225 status=ok rows=5 (1.373 s, rss 22 MiB, 0 major faults)
+database: /home/debian/bloom/results/bloom.db
+=== 2026-11-07T19:08:18+00:00 pass 1/3 N=5000000 uuid benchmark
+batch 20261107-190818: 6 run(s), protocol 5, commit 30fc9a09
+[1/6] --benchmark --type uuid --filter cbf --p 0.01 --reps 5 --sizing same_m --out /home/debian/bloom/results/raw/20261107-190818_001_benchmark_uuid_cbf.csv
+  run_id=2226 status=ok rows=5 (20.166 s, rss 29 MiB, 0 major faults)
+[2/6] --benchmark --type uuid --filter cbf --p 0.01 --reps 5 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-190818_002_benchmark_uuid_cbf.csv
+  run_id=2227 status=ok rows=5 (20.194 s, rss 29 MiB, 0 major faults)
+[3/6] --benchmark --type uuid --filter hybrid_c_512 --p 0.01 --reps 5 --sizing same_m --out /home/debian/bloom/results/raw/20261107-190818_003_benchmark_uuid_hybrid_c_512.csv
+  run_id=2228 status=ok rows=5 (8.568 s, rss 52 MiB, 0 major faults)
+[4/6] --benchmark --type uuid --filter hybrid_c_512 --p 0.01 --reps 5 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-190818_004_benchmark_uuid_hybrid_c_512.csv
+  run_id=2229 status=ok rows=5 (8.281 s, rss 53 MiB, 0 major faults)
+[5/6] --benchmark --type uuid --filter hybrid_c_4096 --p 0.01 --reps 5 --sizing same_m --out /home/debian/bloom/results/raw/20261107-190818_005_benchmark_uuid_hybrid_c_4096.csv
+  run_id=2230 status=ok rows=5 (9.711 s, rss 52 MiB, 0 major faults)
+[6/6] --benchmark --type uuid --filter hybrid_c_4096 --p 0.01 --reps 5 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-190818_006_benchmark_uuid_hybrid_c_4096.csv
+  run_id=2231 status=ok rows=5 (9.659 s, rss 52 MiB, 0 major faults)
+database: /home/debian/bloom/results/bloom.db
+=== 2026-11-07T19:09:36+00:00 pass 1/3 N=10000000 uuid benchmark
+batch 20261107-190936: 6 run(s), protocol 5, commit 30fc9a09
+[1/6] --benchmark --type uuid --filter cbf --p 0.01 --reps 5 --sizing same_m --out /home/debian/bloom/results/raw/20261107-190936_001_benchmark_uuid_cbf.csv
+  run_id=2232 status=ok rows=5 (47.505 s, rss 52 MiB, 0 major faults)
+[2/6] --benchmark --type uuid --filter cbf --p 0.01 --reps 5 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-190936_002_benchmark_uuid_cbf.csv
+  run_id=2233 status=ok rows=5 (48.308 s, rss 52 MiB, 0 major faults)
+[3/6] --benchmark --type uuid --filter hybrid_c_512 --p 0.01 --reps 5 --sizing same_m --out /home/debian/bloom/results/raw/20261107-190936_003_benchmark_uuid_hybrid_c_512.csv
+  run_id=2234 status=ok rows=5 (19.262 s, rss 52 MiB, 0 major faults)
+[4/6] --benchmark --type uuid --filter hybrid_c_512 --p 0.01 --reps 5 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-190936_004_benchmark_uuid_hybrid_c_512.csv
+  run_id=2235 status=ok rows=5 (17.956 s, rss 53 MiB, 0 major faults)
+[5/6] --benchmark --type uuid --filter hybrid_c_4096 --p 0.01 --reps 5 --sizing same_m --out /home/debian/bloom/results/raw/20261107-190936_005_benchmark_uuid_hybrid_c_4096.csv
+  run_id=2236 status=ok rows=5 (21.881 s, rss 52 MiB, 0 major faults)
+[6/6] --benchmark --type uuid --filter hybrid_c_4096 --p 0.01 --reps 5 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-190936_006_benchmark_uuid_hybrid_c_4096.csv
+  run_id=2237 status=ok rows=5 (22.022 s, rss 52 MiB, 0 major faults)
+database: /home/debian/bloom/results/bloom.db
+=== 2026-11-07T19:12:35+00:00 pass 1/3 N=20000000 uuid benchmark
+batch 20261107-191235: 6 run(s), protocol 5, commit 30fc9a09
+[1/6] --benchmark --type uuid --filter cbf --p 0.01 --reps 5 --sizing same_m --out /home/debian/bloom/results/raw/20261107-191235_001_benchmark_uuid_cbf.csv
+  run_id=2238 status=ok rows=5 (101.568 s, rss 97 MiB, 0 major faults)
+[2/6] --benchmark --type uuid --filter cbf --p 0.01 --reps 5 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-191235_002_benchmark_uuid_cbf.csv
+  run_id=2239 status=ok rows=5 (102.48 s, rss 97 MiB, 0 major faults)
+[3/6] --benchmark --type uuid --filter hybrid_c_512 --p 0.01 --reps 5 --sizing same_m --out /home/debian/bloom/results/raw/20261107-191235_003_benchmark_uuid_hybrid_c_512.csv
+  run_id=2240 status=ok rows=5 (40.18 s, rss 98 MiB, 0 major faults)
+[4/6] --benchmark --type uuid --filter hybrid_c_512 --p 0.01 --reps 5 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-191235_004_benchmark_uuid_hybrid_c_512.csv
+  run_id=2241 status=ok rows=5 (37.213 s, rss 101 MiB, 0 major faults)
+[5/6] --benchmark --type uuid --filter hybrid_c_4096 --p 0.01 --reps 5 --sizing same_m --out /home/debian/bloom/results/raw/20261107-191235_005_benchmark_uuid_hybrid_c_4096.csv
+  run_id=2242 status=ok rows=5 (44.524 s, rss 98 MiB, 0 major faults)
+[6/6] --benchmark --type uuid --filter hybrid_c_4096 --p 0.01 --reps 5 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-191235_006_benchmark_uuid_hybrid_c_4096.csv
+  run_id=2243 status=ok rows=5 (45.561 s, rss 98 MiB, 0 major faults)
+database: /home/debian/bloom/results/bloom.db
+=== 2026-11-07T19:18:50+00:00 pass 2/3 N=1000000 uuid benchmark
+batch 20261107-191850: 6 run(s), protocol 5, commit 30fc9a09
+[1/6] --benchmark --type uuid --filter cbf --p 0.01 --reps 5 --sizing same_m --out /home/debian/bloom/results/raw/20261107-191850_001_benchmark_uuid_cbf.csv
+  run_id=2244 status=ok rows=5 (2.564 s, rss 22 MiB, 0 major faults)
+[2/6] --benchmark --type uuid --filter cbf --p 0.01 --reps 5 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-191850_002_benchmark_uuid_cbf.csv
+  run_id=2245 status=ok rows=5 (2.682 s, rss 22 MiB, 0 major faults)
+[3/6] --benchmark --type uuid --filter hybrid_c_512 --p 0.01 --reps 5 --sizing same_m --out /home/debian/bloom/results/raw/20261107-191850_003_benchmark_uuid_hybrid_c_512.csv
+  run_id=2246 status=ok rows=5 (1.28 s, rss 22 MiB, 0 major faults)
+[4/6] --benchmark --type uuid --filter hybrid_c_512 --p 0.01 --reps 5 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-191850_004_benchmark_uuid_hybrid_c_512.csv
+  run_id=2247 status=ok rows=5 (1.296 s, rss 22 MiB, 0 major faults)
+[5/6] --benchmark --type uuid --filter hybrid_c_4096 --p 0.01 --reps 5 --sizing same_m --out /home/debian/bloom/results/raw/20261107-191850_005_benchmark_uuid_hybrid_c_4096.csv
+  run_id=2248 status=ok rows=5 (1.301 s, rss 22 MiB, 0 major faults)
+[6/6] --benchmark --type uuid --filter hybrid_c_4096 --p 0.01 --reps 5 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-191850_006_benchmark_uuid_hybrid_c_4096.csv
+  run_id=2249 status=ok rows=5 (1.386 s, rss 22 MiB, 0 major faults)
+database: /home/debian/bloom/results/bloom.db
+=== 2026-11-07T19:19:01+00:00 pass 2/3 N=5000000 uuid benchmark
+batch 20261107-191901: 6 run(s), protocol 5, commit 30fc9a09
+[1/6] --benchmark --type uuid --filter cbf --p 0.01 --reps 5 --sizing same_m --out /home/debian/bloom/results/raw/20261107-191901_001_benchmark_uuid_cbf.csv
+  run_id=2250 status=ok rows=5 (20.628 s, rss 29 MiB, 0 major faults)
+[2/6] --benchmark --type uuid --filter cbf --p 0.01 --reps 5 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-191901_002_benchmark_uuid_cbf.csv
+  run_id=2251 status=ok rows=5 (20.775 s, rss 29 MiB, 0 major faults)
+[3/6] --benchmark --type uuid --filter hybrid_c_512 --p 0.01 --reps 5 --sizing same_m --out /home/debian/bloom/results/raw/20261107-191901_003_benchmark_uuid_hybrid_c_512.csv
+  run_id=2252 status=ok rows=5 (8.552 s, rss 52 MiB, 0 major faults)
+[4/6] --benchmark --type uuid --filter hybrid_c_512 --p 0.01 --reps 5 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-191901_004_benchmark_uuid_hybrid_c_512.csv
+  run_id=2253 status=ok rows=5 (8.295 s, rss 53 MiB, 0 major faults)
+[5/6] --benchmark --type uuid --filter hybrid_c_4096 --p 0.01 --reps 5 --sizing same_m --out /home/debian/bloom/results/raw/20261107-191901_005_benchmark_uuid_hybrid_c_4096.csv
+  run_id=2254 status=ok rows=5 (9.538 s, rss 52 MiB, 0 major faults)
+[6/6] --benchmark --type uuid --filter hybrid_c_4096 --p 0.01 --reps 5 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-191901_006_benchmark_uuid_hybrid_c_4096.csv
+  run_id=2255 status=ok rows=5 (9.924 s, rss 52 MiB, 0 major faults)
+database: /home/debian/bloom/results/bloom.db
+=== 2026-11-07T19:20:20+00:00 pass 2/3 N=10000000 uuid benchmark
+batch 20261107-192020: 6 run(s), protocol 5, commit 30fc9a09
+[1/6] --benchmark --type uuid --filter cbf --p 0.01 --reps 5 --sizing same_m --out /home/debian/bloom/results/raw/20261107-192020_001_benchmark_uuid_cbf.csv
+  run_id=2256 status=ok rows=5 (47.762 s, rss 52 MiB, 0 major faults)
+[2/6] --benchmark --type uuid --filter cbf --p 0.01 --reps 5 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-192020_002_benchmark_uuid_cbf.csv
+  run_id=2257 status=ok rows=5 (48.271 s, rss 52 MiB, 0 major faults)
+[3/6] --benchmark --type uuid --filter hybrid_c_512 --p 0.01 --reps 5 --sizing same_m --out /home/debian/bloom/results/raw/20261107-192020_003_benchmark_uuid_hybrid_c_512.csv
+  run_id=2258 status=ok rows=5 (19.252 s, rss 52 MiB, 0 major faults)
+[4/6] --benchmark --type uuid --filter hybrid_c_512 --p 0.01 --reps 5 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-192020_004_benchmark_uuid_hybrid_c_512.csv
+  run_id=2259 status=ok rows=5 (17.619 s, rss 53 MiB, 0 major faults)
+[5/6] --benchmark --type uuid --filter hybrid_c_4096 --p 0.01 --reps 5 --sizing same_m --out /home/debian/bloom/results/raw/20261107-192020_005_benchmark_uuid_hybrid_c_4096.csv
+  run_id=2260 status=ok rows=5 (21.812 s, rss 52 MiB, 0 major faults)
+[6/6] --benchmark --type uuid --filter hybrid_c_4096 --p 0.01 --reps 5 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-192020_006_benchmark_uuid_hybrid_c_4096.csv
+  run_id=2261 status=ok rows=5 (22.021 s, rss 52 MiB, 0 major faults)
+database: /home/debian/bloom/results/bloom.db
+=== 2026-11-07T19:23:18+00:00 pass 2/3 N=20000000 uuid benchmark
+batch 20261107-192318: 6 run(s), protocol 5, commit 30fc9a09
+[1/6] --benchmark --type uuid --filter cbf --p 0.01 --reps 5 --sizing same_m --out /home/debian/bloom/results/raw/20261107-192318_001_benchmark_uuid_cbf.csv
+  run_id=2262 status=ok rows=5 (101.369 s, rss 98 MiB, 0 major faults)
+[2/6] --benchmark --type uuid --filter cbf --p 0.01 --reps 5 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-192318_002_benchmark_uuid_cbf.csv
+  run_id=2263 status=ok rows=5 (102.437 s, rss 97 MiB, 0 major faults)
+[3/6] --benchmark --type uuid --filter hybrid_c_512 --p 0.01 --reps 5 --sizing same_m --out /home/debian/bloom/results/raw/20261107-192318_003_benchmark_uuid_hybrid_c_512.csv
+  run_id=2264 status=ok rows=5 (40.27 s, rss 98 MiB, 0 major faults)
+[4/6] --benchmark --type uuid --filter hybrid_c_512 --p 0.01 --reps 5 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-192318_004_benchmark_uuid_hybrid_c_512.csv
+  run_id=2265 status=ok rows=5 (37.338 s, rss 101 MiB, 0 major faults)
+[5/6] --benchmark --type uuid --filter hybrid_c_4096 --p 0.01 --reps 5 --sizing same_m --out /home/debian/bloom/results/raw/20261107-192318_005_benchmark_uuid_hybrid_c_4096.csv
+  run_id=2266 status=ok rows=5 (44.722 s, rss 98 MiB, 0 major faults)
+[6/6] --benchmark --type uuid --filter hybrid_c_4096 --p 0.01 --reps 5 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-192318_006_benchmark_uuid_hybrid_c_4096.csv
+  run_id=2267 status=ok rows=5 (45.252 s, rss 98 MiB, 0 major faults)
+database: /home/debian/bloom/results/bloom.db
+=== 2026-11-07T19:29:33+00:00 pass 3/3 N=1000000 uuid benchmark
+batch 20261107-192934: 6 run(s), protocol 5, commit 30fc9a09
+[1/6] --benchmark --type uuid --filter cbf --p 0.01 --reps 5 --sizing same_m --out /home/debian/bloom/results/raw/20261107-192934_001_benchmark_uuid_cbf.csv
+  run_id=2268 status=ok rows=5 (2.587 s, rss 22 MiB, 0 major faults)
+[2/6] --benchmark --type uuid --filter cbf --p 0.01 --reps 5 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-192934_002_benchmark_uuid_cbf.csv
+  run_id=2269 status=ok rows=5 (2.672 s, rss 22 MiB, 0 major faults)
+[3/6] --benchmark --type uuid --filter hybrid_c_512 --p 0.01 --reps 5 --sizing same_m --out /home/debian/bloom/results/raw/20261107-192934_003_benchmark_uuid_hybrid_c_512.csv
+  run_id=2270 status=ok rows=5 (1.297 s, rss 22 MiB, 0 major faults)
+[4/6] --benchmark --type uuid --filter hybrid_c_512 --p 0.01 --reps 5 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-192934_004_benchmark_uuid_hybrid_c_512.csv
+  run_id=2271 status=ok rows=5 (1.298 s, rss 22 MiB, 0 major faults)
+[5/6] --benchmark --type uuid --filter hybrid_c_4096 --p 0.01 --reps 5 --sizing same_m --out /home/debian/bloom/results/raw/20261107-192934_005_benchmark_uuid_hybrid_c_4096.csv
+  run_id=2272 status=ok rows=5 (1.301 s, rss 22 MiB, 0 major faults)
+[6/6] --benchmark --type uuid --filter hybrid_c_4096 --p 0.01 --reps 5 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-192934_006_benchmark_uuid_hybrid_c_4096.csv
+  run_id=2273 status=ok rows=5 (1.415 s, rss 22 MiB, 0 major faults)
+database: /home/debian/bloom/results/bloom.db
+=== 2026-11-07T19:29:44+00:00 pass 3/3 N=5000000 uuid benchmark
+batch 20261107-192944: 6 run(s), protocol 5, commit 30fc9a09
+[1/6] --benchmark --type uuid --filter cbf --p 0.01 --reps 5 --sizing same_m --out /home/debian/bloom/results/raw/20261107-192944_001_benchmark_uuid_cbf.csv
+  run_id=2274 status=ok rows=5 (20.801 s, rss 29 MiB, 0 major faults)
+[2/6] --benchmark --type uuid --filter cbf --p 0.01 --reps 5 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-192944_002_benchmark_uuid_cbf.csv
+  run_id=2275 status=ok rows=5 (20.878 s, rss 29 MiB, 0 major faults)
+[3/6] --benchmark --type uuid --filter hybrid_c_512 --p 0.01 --reps 5 --sizing same_m --out /home/debian/bloom/results/raw/20261107-192944_003_benchmark_uuid_hybrid_c_512.csv
+  run_id=2276 status=ok rows=5 (8.638 s, rss 52 MiB, 0 major faults)
+[4/6] --benchmark --type uuid --filter hybrid_c_512 --p 0.01 --reps 5 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-192944_004_benchmark_uuid_hybrid_c_512.csv
+  run_id=2277 status=ok rows=5 (8.042 s, rss 53 MiB, 0 major faults)
+[5/6] --benchmark --type uuid --filter hybrid_c_4096 --p 0.01 --reps 5 --sizing same_m --out /home/debian/bloom/results/raw/20261107-192944_005_benchmark_uuid_hybrid_c_4096.csv
+  run_id=2278 status=ok rows=5 (9.75 s, rss 52 MiB, 0 major faults)
+[6/6] --benchmark --type uuid --filter hybrid_c_4096 --p 0.01 --reps 5 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-192944_006_benchmark_uuid_hybrid_c_4096.csv
+  run_id=2279 status=ok rows=5 (9.923 s, rss 52 MiB, 0 major faults)
+database: /home/debian/bloom/results/bloom.db
+=== 2026-11-07T19:31:03+00:00 pass 3/3 N=10000000 uuid benchmark
+batch 20261107-193103: 6 run(s), protocol 5, commit 30fc9a09
+[1/6] --benchmark --type uuid --filter cbf --p 0.01 --reps 5 --sizing same_m --out /home/debian/bloom/results/raw/20261107-193103_001_benchmark_uuid_cbf.csv
+  run_id=2280 status=ok rows=5 (47.863 s, rss 52 MiB, 0 major faults)
+[2/6] --benchmark --type uuid --filter cbf --p 0.01 --reps 5 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-193103_002_benchmark_uuid_cbf.csv
+  run_id=2281 status=ok rows=5 (48.225 s, rss 52 MiB, 0 major faults)
+[3/6] --benchmark --type uuid --filter hybrid_c_512 --p 0.01 --reps 5 --sizing same_m --out /home/debian/bloom/results/raw/20261107-193103_003_benchmark_uuid_hybrid_c_512.csv
+  run_id=2282 status=ok rows=5 (18.996 s, rss 52 MiB, 0 major faults)
+[4/6] --benchmark --type uuid --filter hybrid_c_512 --p 0.01 --reps 5 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-193103_004_benchmark_uuid_hybrid_c_512.csv
+  run_id=2283 status=ok rows=5 (18.11 s, rss 53 MiB, 0 major faults)
+[5/6] --benchmark --type uuid --filter hybrid_c_4096 --p 0.01 --reps 5 --sizing same_m --out /home/debian/bloom/results/raw/20261107-193103_005_benchmark_uuid_hybrid_c_4096.csv
+  run_id=2284 status=ok rows=5 (21.838 s, rss 52 MiB, 0 major faults)
+[6/6] --benchmark --type uuid --filter hybrid_c_4096 --p 0.01 --reps 5 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-193103_006_benchmark_uuid_hybrid_c_4096.csv
+  run_id=2285 status=ok rows=5 (22.013 s, rss 52 MiB, 0 major faults)
+database: /home/debian/bloom/results/bloom.db
+=== 2026-11-07T19:34:02+00:00 pass 3/3 N=20000000 uuid benchmark
+batch 20261107-193402: 6 run(s), protocol 5, commit 30fc9a09
+[1/6] --benchmark --type uuid --filter cbf --p 0.01 --reps 5 --sizing same_m --out /home/debian/bloom/results/raw/20261107-193402_001_benchmark_uuid_cbf.csv
+  run_id=2286 status=ok rows=5 (102.224 s, rss 97 MiB, 0 major faults)
+[2/6] --benchmark --type uuid --filter cbf --p 0.01 --reps 5 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-193402_002_benchmark_uuid_cbf.csv
+  run_id=2287 status=ok rows=5 (102.929 s, rss 98 MiB, 0 major faults)
+[3/6] --benchmark --type uuid --filter hybrid_c_512 --p 0.01 --reps 5 --sizing same_m --out /home/debian/bloom/results/raw/20261107-193402_003_benchmark_uuid_hybrid_c_512.csv
+  run_id=2288 status=ok rows=5 (40.191 s, rss 98 MiB, 0 major faults)
+[4/6] --benchmark --type uuid --filter hybrid_c_512 --p 0.01 --reps 5 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-193402_004_benchmark_uuid_hybrid_c_512.csv
+  run_id=2289 status=ok rows=5 (36.854 s, rss 101 MiB, 0 major faults)
+[5/6] --benchmark --type uuid --filter hybrid_c_4096 --p 0.01 --reps 5 --sizing same_m --out /home/debian/bloom/results/raw/20261107-193402_005_benchmark_uuid_hybrid_c_4096.csv
+  run_id=2290 status=ok rows=5 (44.442 s, rss 98 MiB, 0 major faults)
+[6/6] --benchmark --type uuid --filter hybrid_c_4096 --p 0.01 --reps 5 --sizing same_fpr --out /home/debian/bloom/results/raw/20261107-193402_006_benchmark_uuid_hybrid_c_4096.csv
+  run_id=2291 status=ok rows=5 (45.408 s, rss 98 MiB, 0 major faults)
+database: /home/debian/bloom/results/bloom.db
+=== 2026-11-07T19:40:19+00:00 finished, 0 step(s) with failures
+##### 2026-11-07T19:40:19+00:00 LABEL=delecao TYPES=uuid NS=1000000 5000000 FILTERS=baseline EXPERIMENTS=benchmark REPS=5 REPEAT=3
+=== 2026-11-07T19:40:19+00:00 pass 1/3 N=1000000 uuid benchmark
+batch 20261107-194019: 1 run(s), protocol 5, commit 30fc9a09
+[1/1] --benchmark --type uuid --filter baseline --p 0.01 --reps 5 --sizing both --out /home/debian/bloom/results/raw/20261107-194019_001_benchmark_uuid_baseline.csv
+  run_id=2292 status=ok rows=5 (5.427 s, rss 121 MiB, 0 major faults)
+database: /home/debian/bloom/results/bloom.db
+=== 2026-11-07T19:40:24+00:00 pass 1/3 N=5000000 uuid benchmark
+batch 20261107-194024: 1 run(s), protocol 5, commit 30fc9a09
+[1/1] --benchmark --type uuid --filter baseline --p 0.01 --reps 5 --sizing both --out /home/debian/bloom/results/raw/20261107-194024_001_benchmark_uuid_baseline.csv
+  run_id=2293 status=ok rows=5 (29.268 s, rss 604 MiB, 0 major faults)
+database: /home/debian/bloom/results/bloom.db
+=== 2026-11-07T19:40:55+00:00 pass 2/3 N=1000000 uuid benchmark
+batch 20261107-194055: 1 run(s), protocol 5, commit 30fc9a09
+[1/1] --benchmark --type uuid --filter baseline --p 0.01 --reps 5 --sizing both --out /home/debian/bloom/results/raw/20261107-194055_001_benchmark_uuid_baseline.csv
+  run_id=2294 status=ok rows=5 (5.472 s, rss 121 MiB, 0 major faults)
+database: /home/debian/bloom/results/bloom.db
+=== 2026-11-07T19:41:00+00:00 pass 2/3 N=5000000 uuid benchmark
+batch 20261107-194100: 1 run(s), protocol 5, commit 30fc9a09
+[1/1] --benchmark --type uuid --filter baseline --p 0.01 --reps 5 --sizing both --out /home/debian/bloom/results/raw/20261107-194100_001_benchmark_uuid_baseline.csv
+  run_id=2295 status=ok rows=5 (29.274 s, rss 604 MiB, 0 major faults)
+database: /home/debian/bloom/results/bloom.db
+=== 2026-11-07T19:41:31+00:00 pass 3/3 N=1000000 uuid benchmark
+batch 20261107-194131: 1 run(s), protocol 5, commit 30fc9a09
+[1/1] --benchmark --type uuid --filter baseline --p 0.01 --reps 5 --sizing both --out /home/debian/bloom/results/raw/20261107-194131_001_benchmark_uuid_baseline.csv
+  run_id=2296 status=ok rows=5 (5.426 s, rss 121 MiB, 0 major faults)
+database: /home/debian/bloom/results/bloom.db
+=== 2026-11-07T19:41:36+00:00 pass 3/3 N=5000000 uuid benchmark
+batch 20261107-194136: 1 run(s), protocol 5, commit 30fc9a09
+[1/1] --benchmark --type uuid --filter baseline --p 0.01 --reps 5 --sizing both --out /home/debian/bloom/results/raw/20261107-194136_001_benchmark_uuid_baseline.csv
+  run_id=2297 status=ok rows=5 (29.264 s, rss 604 MiB, 0 major faults)
+database: /home/debian/bloom/results/bloom.db
+=== 2026-11-07T19:42:06+00:00 finished, 0 step(s) with failures
+##### 2026-11-07T19:42:06+00:00 extra finished, 0 step(s) with failures

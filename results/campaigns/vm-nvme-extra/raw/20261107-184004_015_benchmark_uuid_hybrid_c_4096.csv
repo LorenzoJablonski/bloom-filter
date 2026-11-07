@@ -1,0 +1,2 @@
+type,filter,sizing,rep,n,n_exist,n_inexist,p_target,m,cells,k,mem_bytes,bits_per_key,insert_ms,lookup_exist_ms,lookup_inexist_ms,hash_insert,hash_lookup_exist,hash_lookup_inexist,fn,fp,fpr,fpr_theory,fill_ratio,rss_kb,majflt,minflt,collisions,collision_rate,delete_ms,del_still_present,fn_after_delete
+uuid,hybrid_c_4096,same_m,1,5000000,500000,5000000,0.01,47964774,47965032,7,24035328,38.4565,399.4170,30.2046,271.2959,1.0000,1.0000,1.0000,0,51411,0.010282,0.010192,0.518016,53848,0,278,10153353,0.290096,41.3392,3146,0

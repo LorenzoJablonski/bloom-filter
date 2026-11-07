@@ -185,6 +185,21 @@ def _schema_sql():
     return "\n".join(sql)
 
 
+def connect_readonly(path):
+    """Open an existing database for reading only: no schema script, no migration.
+
+    For analysis: a frozen database (results/campaigns/) must stay byte-identical,
+    so an older schema is read as it is and the columns it lacks read as NULL."""
+    path = Path(path).resolve()
+    con = sqlite3.connect(f"{path.as_uri()}?mode=ro", uri=True)
+    con.row_factory = sqlite3.Row
+    row = con.execute("SELECT value FROM meta WHERE key = 'schema_version'").fetchone()
+    if row is not None and int(row[0]) > SCHEMA_VERSION:
+        raise SystemExit(f"{path}: schema version {row[0]} is newer than this code "
+                         f"({SCHEMA_VERSION}); update the repository")
+    return con
+
+
 def connect(path):
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)

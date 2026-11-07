@@ -8,9 +8,14 @@ uma campanha só entra aqui depois de terminada.
 | pasta | onde | o que tem |
 |---|---|---|
 | `vm-nvme/` | VM Debian 13, 1 GB de RAM, 2 vCPUs fixas, swap e tabelas no NVMe do host | rótulos `oficial` (campanha oficial, 2026-11-06/07, commit c2c52ec, protocolo 4), `teste-vm-nov05` (teste, commit 59a907d) e `pilot` (protocolo 3) |
+| `vm-nvme-extra/` | mesma VM | rótulos `colisoes` e `delecao` (2026-11-07, commit 30fc9a0, protocolo 5): taxa de colisões estruturais e deleção, medidas depois da campanha oficial |
 | `host-preliminar/` | desktop, sem VM | sondagem de 03/11 com 1M UUIDs (protocolo 1), só indicativa |
 
 ## Como consultar
+
+O `analyze.py` abre os bancos só para leitura: consultar, gerar tabelas ou gráficos
+não altera os arquivos daqui, nem migra um schema antigo (colunas que ele não tem
+aparecem como `-`).
 
 ```bash
 DB=results/campaigns/vm-nvme/bloom.db
@@ -29,6 +34,19 @@ make venv
 .venv/bin/python scripts/analyze.py --db $DB bench --label oficial --plot DIR --format pdf png
 .venv/bin/python scripts/analyze.py --db $DB io --label oficial --plot DIR --format pdf png
 ```
+
+Complementar (cada banco tem um só protocolo, então não precisa de `--protocol`):
+
+```bash
+X=results/campaigns/vm-nvme-extra/bloom.db
+python3 scripts/analyze.py --db $X bench --label colisoes --sizing same_fpr --metrics k fill collision_rate
+python3 scripts/analyze.py --db $X bench --label delecao --sizing same_fpr none --metrics delete del_still fn_delete insert
+```
+
+`colisoes`: todos os filtros, tipos e N, 1 repetição (a contagem é determinística).
+`delecao`: CBF e hybrid_c_* em UUID, 1M a 20M, 5 × 3; baseline só em 1M e 5M
+(apagar exige N buscas a mais, horas quando ele pagina). Em `vm-nvme-extra/plots/`
+e `tables/`, um subconjunto por rótulo.
 
 ## Logs de `vm-nvme/logs/`
 
