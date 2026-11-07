@@ -202,8 +202,8 @@ Depois do isolamento (protocolo 3, mesmo desktop, 2 repetições, 1 rodada):
 - ns/op sem limite não mudaram de forma relevante em relação ao protocolo 1.
 - Ruído do desktop: a latência do NVMe subiu de ~50 µs (03/11) para ~86 µs por
   leitura (04/11), igual nos binários antigo e novo alternados, com navegador e
-  outros programas abertos e governor `powersave`. Causa não identificada; as
-  rodadas oficiais precisam de ambiente controlado.
+  outros programas abertos e governor `powersave`. Provável causa: a idade dos dados
+  no SSD (ver "Campanha oficial"); as rodadas oficiais precisam de ambiente controlado.
 
 ## Ressalvas para o texto (anotar, não escrever agora)
 
@@ -263,7 +263,19 @@ logo acima da RAM ou de um limite de operações. Ver também o alerta "HD Seaga
 
 Estimativa total: ~7 h (o baseline de 20M, ~35 min por repetição, ainda não foi
 medido). A VM já tem os dados de 5M e 10M; faltam 1M, 20M e os outros tipos.
-Basta chamar `vm.sh campaign` separadamente com `FILTERS`, `REPS` e `REPEAT`.
+O plano está em `scripts/vm/official.sh`, que confere todos os dados antes de começar:
+`scripts/vm/vm.sh push-code && scripts/vm/vm.sh official`. Dados: `vm.sh data N TIPO`;
+para CPF, CNPJ e URL em 10M e 20M, `vm.sh data N TIPO none` (sem tabelas).
+
+**A latência de leitura depende de quando a tabela foi escrita, não de N.** Medido na VM
+com o controle `none`, T = 1: uma tabela de 1M lia a ~100 µs; reescrita com conteúdo
+idêntico, foi a ~59 µs, com a de 5M, intacta, estável em ~114 µs. Depois de ~40 min, e
+de ~30 min de escrita de outros dados, já estava em 82 µs. O mecanismo não foi confirmado
+(pode ser o cache SLC ou o mapeamento do SSD). Isso explica os ~57 µs do 1M no teste de
+05/11, cuja tabela tinha acabado de ser copiada, e provavelmente a subida de ~50 para
+~86 µs anotada nos resultados preliminares. Na campanha: não escrever dados novos depois
+de começar, iniciar só com as latências estáveis e comparar sempre com o `none` da mesma
+rodada. O efeito muda o tempo de cada leitura, não o número de leituras.
 
 Por que 3 × 1 no baseline que pagina: é ele que levaria o total a ~18 h só em UUID
 (50× a 120× mais lento por operação). Um efeito desse tamanho aparece mesmo com

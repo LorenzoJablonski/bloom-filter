@@ -6,15 +6,16 @@
 #
 #   scripts/vm/vm.sh create                  download the image, create and boot the VM
 #   scripts/vm/vm.sh push-code               send the committed HEAD to the guest and build it
-#   scripts/vm/vm.sh data N [TYPE] [T...]    generate on the host (if missing) and copy to the guest
+#   scripts/vm/vm.sh data N [TYPE] [T...]    generate on the host (if missing) and copy to the guest (T = none: no tables)
 #   scripts/vm/vm.sh campaign [VAR=value...] start scripts/vm/campaign.sh detached in the guest
+#   scripts/vm/vm.sh official [VAR=value...] start the official campaign (scripts/vm/official.sh) detached in the guest
 #   scripts/vm/vm.sh pull                    bring results/ back to data/vm/results/
 #   scripts/vm/vm.sh ssh [command]           shell in the guest
 #   scripts/vm/vm.sh start|stop|status|destroy
 #
 # Settings (environment): VM_DIR VM_NAME VM_RAM_MB SSH_PORT VCPU_PINS EMU_PIN
 #   EXP_GB SWAP_GB DISK_DIR DISK_MODEL DISK_ROTATION HOST_MEM_CAP SEED VALUE_SIZE
-# To test on another disk (the HD): destroy, then create with DISK_DIR on it,
+# To test on another disk (an empty one, see docs/PROGRESS.md): destroy, then create with DISK_DIR on it,
 # DISK_MODEL=<its name> and DISK_ROTATION=<rpm>; both are recorded with the results.
 set -euo pipefail
 
@@ -209,6 +210,7 @@ cmd_data() {
     shift; [ $# -gt 0 ] && shift
     local tables=("$@")
     [ ${#tables[@]} -gt 0 ] || tables=(1 8)
+    [ "${tables[0]}" != none ] || tables=()
     local dir="data/vm/n$n/data"
     local cap=(systemd-run --user --scope -q -p "MemoryMax=$HOST_MEM_CAP")
     make -s -C "$ROOT" all
@@ -242,6 +244,14 @@ cmd_campaign() {
     log "follow with: scripts/vm/vm.sh ssh tail -f campaign.log"
 }
 
+cmd_official() {
+    scp -q -i "$VM_DIR/id_ed25519" -P "$SSH_PORT" -o StrictHostKeyChecking=no \
+        -o UserKnownHostsFile=/dev/null -o LogLevel=ERROR \
+        "$ROOT/scripts/vm/campaign.sh" "$ROOT/scripts/vm/official.sh" "$GUEST:"
+    g "nohup env $* bash official.sh > campaign.log 2>&1 < /dev/null & echo started, pid \$!"
+    log "follow with: scripts/vm/vm.sh ssh tail -f campaign.log"
+}
+
 cmd_pull() {
     mkdir -p "$ROOT/data/vm/results"
     rsync -a -e "ssh ${SSH_OPTS[*]}" "$GUEST:bloom/results/" "$ROOT/data/vm/results/"
@@ -268,11 +278,12 @@ case ${1:-} in
     push-code) cmd_push_code ;;
     data)      shift; cmd_data "$@" ;;
     campaign)  shift; cmd_campaign "$@" ;;
+    official)  shift; cmd_official "$@" ;;
     pull)      cmd_pull ;;
     ssh)       shift; g "$@" ;;
     start)     "${VIRSH[@]}" start "$VM_NAME"; wait_ssh ;;
     stop)      "${VIRSH[@]}" shutdown "$VM_NAME" ;;
     status)    cmd_status ;;
     destroy)   cmd_destroy ;;
-    *)         sed -n '2,18p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; exit 2 ;;
+    *)         sed -n '2,19p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; exit 2 ;;
 esac
