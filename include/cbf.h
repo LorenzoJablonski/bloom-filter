@@ -9,6 +9,10 @@ typedef struct cbf cbf_t;
 cbf_t *cbf_create(size_t m, unsigned k);
 void cbf_destroy(cbf_t *bf);
 void cbf_insert(cbf_t *bf, const bf_key_t *key);
+/* Same writes as cbf_insert, returning how many probed positions were already
+ * non-zero (collisions). For the untimed counting pass only: cbf_insert stays the
+ * measured path. */
+unsigned cbf_insert_counted(cbf_t *bf, const bf_key_t *key);
 void cbf_delete(cbf_t *bf, const bf_key_t *key);
 bf_member_t cbf_lookup(cbf_t *bf, const bf_key_t *key);
 size_t cbf_memory_bytes(const cbf_t *bf);

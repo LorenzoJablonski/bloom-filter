@@ -74,6 +74,11 @@ BENCH_METRICS = {
     "lookup_inexist": ("lookup_inexist_ns_op", "busca neg. (ns/op)", 1, 1),
     "hash_inexist": ("hash_lookup_inexist", "hashes/busca neg.", 1, 2),
     "fill": ("fill_ratio", "ocupação", 1, 3),
+    "collisions": ("collisions", "colisões", 1, 0),
+    "collision_rate": ("collision_rate", "taxa de colisões (%)", 100, 2),
+    "delete": ("delete_ns_op", "deleção (ns/op)", 1, 1),
+    "del_still": ("del_still_present", "deletadas ainda presentes", 1, 0),
+    "fn_delete": ("fn_after_delete", "FN após deleção", 1, 0),
     "mem": ("mem_bytes", "memória (B)", 1, 0),
     "rss": ("rss_kb", "RSS (KiB)", 1, 0),
     "majflt": ("majflt", "page faults maiores", 1, 0),
@@ -150,7 +155,8 @@ def aggregate(con, view, group_cols, metrics, args, extra=()):
         rec["samples"] = len(g["rows"])
         for m in metrics:
             col = m[0]
-            rec[col] = summarize([row[col] for row in g["rows"]])
+            # a column the database predates (older schema) reads as missing
+            rec[col] = summarize([row[col] if col in row.keys() else None for row in g["rows"]])
         out.append(rec)
     return out, len(rows)
 
@@ -358,7 +364,7 @@ def main():
 
     if not Path(args.db).exists():
         raise SystemExit(f"{args.db} não existe; rode scripts/run.py primeiro")
-    con = resultsdb.connect(args.db)
+    con = resultsdb.connect_readonly(args.db)  # analysis never writes, not even a migration
     {"runs": cmd_runs, "bench": cmd_bench, "io": cmd_io, "freeze": cmd_freeze}[args.cmd](con, args)
     return 0
 

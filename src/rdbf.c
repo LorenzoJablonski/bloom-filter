@@ -179,3 +179,15 @@ int rdbf_params(size_t n, double p, bf_sizing_t *out)
     out->k = 1;
     return 1;
 }
+
+/* ---- collision counting (untimed pass; kept apart from the measured insert) ---- */
+
+unsigned rdbf_insert_counted(rdbf_t *bf, const bf_key_t *key)
+{
+    if (!bf || !key || !key->data) return 0;
+    unsigned rho;
+    unsigned long *c = rdbf_cell(bf, key, &rho);
+    unsigned col = (unsigned)((*c >> rho) & 1UL);
+    *c |= 1UL << rho;
+    return col;
+}

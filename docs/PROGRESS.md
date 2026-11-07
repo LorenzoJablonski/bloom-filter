@@ -51,6 +51,19 @@ Feito: campanha oficial na VM (2026-11-06/07, commit c2c52ec, 1786 execuções, 
 falhas, ~8,5 h), resultados em `results/campaigns/vm-nvme/` (rótulo `oficial`).
 Resumo em "Resultados da campanha oficial" abaixo.
 
+Feito também: colisões e deleção (`feature/delete-collisions`, protocolo 5, schema 5;
+rodada de 2026-11-07, commit 30fc9a0, 334 execuções, 0 falhas, ~1 h), em
+`results/campaigns/vm-nvme-extra/`. O TCC1 prometia as duas (4.1 e 4.4.2, métrica 5).
+- Colisão = posição sondada que já estava não nula, contada numa passada não
+  cronometrada; nos filtros de bits bate exatamente com k·n − posições ocupadas.
+- Por que as inserções medidas não mudaram: a contagem fica numa cópia à parte
+  (`<modelo>_insert_counted`). Testar o contador dentro do insert deixou o
+  hybrid_512 6% mais lento, e um teste só por chave, o SBF 9%. Na versão final,
+  objdump mostra `*_insert` e `*_lookup` idênticos ao binário anterior, e o A/B de
+  tempo (4 rodadas × 5 repetições) ficou dentro do IC.
+- Deleção: apaga o Dexist depois das buscas e da contagem de faults (memória,
+  ocupação e FPR lidas antes); confere `del_still_present` e `fn_after_delete`.
+
 Próximos passos:
 - Capítulo de materiais e métodos: a base feita no notebook não está no GitHub
   (conferido em 2026-11-07). Quando chegar, revisar e atualizar conforme o código
@@ -230,6 +243,25 @@ FPR por tipo de chave (alvo 1%): CPF, CNPJ e URL iguais ao UUID em todos os
 filtros e N (SBF 20M: 1,000–1,005%). O desvio do rDBF cresce com N igual em todos os
 tipos (1,01% em 10M, ~1,03% em 20M): é o hash de 32 bits, não a chave. hybrid_512
 fica em ~1,06% em qualquer N e tipo. 0 falsos negativos, 0 erros no I/O.
+
+Colisões (`same_fpr`, % das posições escritas): SBF, CBF e PBF 29,0%; hybrid_4096
+28,9%; hybrid_512 25,0% (k = 6); rDBF 0,5% (1 bit por chave numa matriz de ~104
+bits/chave). Iguais em todos os N e tipos de chave, porque o dimensionamento mantém
+k·n/m constante; batem com a teoria 1 − m(1 − e^(−kn/m))/(kn) (SBF 10M: 29,019%
+previsto, 29,023% medido).
+
+Deleção (UUID, `same_fpr`, ns por chave apagada):
+
+| N | CBF | hybrid_c_512 | hybrid_c_4096 | baseline |
+|---|---|---|---|---|
+| 1M | 145 | 42,4 | 45,4 | 301 |
+| 5M | 223 | 63,8 | 82,3 | 320 |
+| 10M | 257 | 70,8 | 95,2 | – |
+| 20M | 273 | 73,6 | 101 | – |
+
+Apagar custa o mesmo que inserir em cada estrutura. 0 falsos negativos depois de
+apagar, em todas as execuções. ~0,6% das chaves apagadas ainda respondem presente
+(falsos positivos do filtro, menores que 1% porque a ocupação cai depois de apagar).
 
 ## Ressalvas para o texto (anotar, não escrever agora)
 

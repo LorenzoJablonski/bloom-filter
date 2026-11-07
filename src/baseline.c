@@ -64,6 +64,17 @@ bf_member_t baseline_lookup(baseline_t *bl, const bf_key_t *key)
     return found ? BF_PRESENT : BF_ABSENT;
 }
 
+void baseline_remove(baseline_t *bl, const bf_key_t *key)
+{
+    if (!bl || !key || !key->data) return;
+    baseline_entry_t *found = NULL;
+    HASH_FIND(hh, bl->entries, key->data, key->len, found);
+    if (!found) return;
+    HASH_DEL(bl->entries, found);
+    bl->entry_bytes -= sizeof(baseline_entry_t) + found->len;
+    free(found);
+}
+
 size_t baseline_count(const baseline_t *bl)
 {
     return (bl && bl->entries) ? (size_t)HASH_COUNT(bl->entries) : 0;

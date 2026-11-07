@@ -107,3 +107,18 @@ int sbf_params(size_t n, double p, bf_sizing_t *out)
     out->k = best_k;
     return 1;
 }
+
+/* ---- collision counting (untimed pass; kept apart from the measured insert) ---- */
+
+unsigned sbf_insert_counted(sbf_t *bf, const bf_key_t *key)
+{
+    if (!bf || !key || !key->data || bf->m == 0) return 0;
+    unsigned col = 0;
+    for (unsigned i = 0; i < bf->k; i++) {
+        size_t idx = sbf_hash_index(key, i, bf->m);
+        unsigned char bit = (unsigned char)(1u << (idx % 8));
+        col += (bf->bits[idx / 8] & bit) != 0;
+        bf->bits[idx / 8] |= bit;
+    }
+    return col;
+}

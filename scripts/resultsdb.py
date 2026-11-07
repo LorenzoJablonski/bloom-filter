@@ -27,7 +27,7 @@ import json
 import sqlite3
 from pathlib import Path
 
-SCHEMA_VERSION = 4  # 2: memory/paging columns; 3: runs.filter; 4: swap disk (see MIGRATIONS)
+SCHEMA_VERSION = 5  # 2: memory/paging columns; 3: runs.filter; 4: swap disk; 5: collisions, delete (see MIGRATIONS)
 
 # CSV columns exactly as written by src/benchmark.c and src/iobench.c.
 # If the C side changes them, update here and bump BF_PROTOCOL_VERSION.
@@ -40,6 +40,8 @@ BENCH_COLUMNS = [
     ("hash_lookup_inexist", "REAL"), ("fn", "INTEGER"), ("fp", "INTEGER"), ("fpr", "REAL"),
     ("fpr_theory", "REAL"), ("fill_ratio", "REAL"),
     ("rss_kb", "INTEGER"), ("majflt", "INTEGER"), ("minflt", "INTEGER"),
+    ("collisions", "INTEGER"), ("collision_rate", "REAL"), ("delete_ms", "REAL"),
+    ("del_still_present", "INTEGER"), ("fn_after_delete", "INTEGER"),
 ]
 
 IO_COLUMNS = [
@@ -140,6 +142,9 @@ MIGRATIONS = [
     (1, "io_results", "minflt", "INTEGER"),
     (2, "runs", "filter", "TEXT"),
     (3, "runs", "swap_model", "TEXT"), (3, "runs", "swap_rotational", "INTEGER"),
+    (4, "filter_results", "collisions", "INTEGER"), (4, "filter_results", "collision_rate", "REAL"),
+    (4, "filter_results", "delete_ms", "REAL"), (4, "filter_results", "del_still_present", "INTEGER"),
+    (4, "filter_results", "fn_after_delete", "INTEGER"),
 ]
 
 
@@ -168,7 +173,8 @@ def _schema_sql():
         "         r.git_commit, r.git_dirty, r.host, r.started_at, f.*,\n"
         "         1e6 * f.insert_ms / f.n AS insert_ns_op,\n"
         "         1e6 * f.lookup_exist_ms / f.n_exist AS lookup_exist_ns_op,\n"
-        "         1e6 * f.lookup_inexist_ms / f.n_inexist AS lookup_inexist_ns_op\n"
+        "         1e6 * f.lookup_inexist_ms / f.n_inexist AS lookup_inexist_ns_op,\n"
+        "         1e6 * f.delete_ms / f.n_exist AS delete_ns_op\n"
         "  FROM filter_results f JOIN runs r USING (run_id) WHERE r.status = 'ok';",
         "CREATE VIEW IF NOT EXISTS v_io AS\n"
         "  SELECT r.run_id, r.batch_id, r.label, r.config_key, r.env_key, r.protocol,\n"
@@ -177,6 +183,21 @@ def _schema_sql():
         "  FROM io_results i JOIN runs r USING (run_id) WHERE r.status = 'ok';",
     ]
     return "\n".join(sql)
+
+
+def connect_readonly(path):
+    """Open an existing database for reading only: no schema script, no migration.
+
+    For analysis: a frozen database (results/campaigns/) must stay byte-identical,
+    so an older schema is read as it is and the columns it lacks read as NULL."""
+    path = Path(path).resolve()
+    con = sqlite3.connect(f"{path.as_uri()}?mode=ro", uri=True)
+    con.row_factory = sqlite3.Row
+    row = con.execute("SELECT value FROM meta WHERE key = 'schema_version'").fetchone()
+    if row is not None and int(row[0]) > SCHEMA_VERSION:
+        raise SystemExit(f"{path}: schema version {row[0]} is newer than this code "
+                         f"({SCHEMA_VERSION}); update the repository")
+    return con
 
 
 def connect(path):

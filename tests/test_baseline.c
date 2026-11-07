@@ -69,10 +69,39 @@ static void test_key_ownership(void)
     baseline_destroy(bl);
 }
 
+/* remove drops only the given key, updates the footprint and ignores absent keys */
+static void test_remove(void)
+{
+    baseline_t *bl = baseline_create();
+    assert(bl != NULL);
+    char buf[32];
+    for (int i = 0; i < 100; i++) {
+        int len = snprintf(buf, sizeof(buf), "rm-%d", i);
+        bf_key_t k = { buf, (size_t)len };
+        baseline_insert(bl, &k);
+    }
+    size_t before = baseline_memory_bytes(bl);
+    for (int i = 0; i < 50; i++) {
+        int len = snprintf(buf, sizeof(buf), "rm-%d", i);
+        bf_key_t k = { buf, (size_t)len };
+        baseline_remove(bl, &k);
+        baseline_remove(bl, &k); /* second time: absent, no effect */
+    }
+    assert(baseline_count(bl) == 50);
+    assert(baseline_memory_bytes(bl) < before);
+    for (int i = 0; i < 100; i++) {
+        int len = snprintf(buf, sizeof(buf), "rm-%d", i);
+        bf_key_t k = { buf, (size_t)len };
+        assert(baseline_lookup(bl, &k) == (i < 50 ? BF_ABSENT : BF_PRESENT));
+    }
+    baseline_destroy(bl);
+}
+
 int main(void)
 {
     test_basic();
     test_key_ownership();
+    test_remove();
     printf("baseline: all tests passed\n");
     return 0;
 }

@@ -25,6 +25,9 @@ typedef struct bf_ops {
     double (*fpr_theory)(const void *bf, size_t n);  /* expected FPR after n inserts */
     double (*fill_ratio)(const void *bf);            /* fraction of non-zero cells */
     int (*params)(size_t n, double p, bf_sizing_t *out); /* sizing for target FPR p */
+    /* insert that also returns the collisions of this key (probes on positions
+     * already non-zero); untimed counting pass only */
+    unsigned (*insert_counted)(void *bf, const bf_key_t *key);
 } bf_ops_t;
 
 /* Lookup by name; returns NULL when unknown. */

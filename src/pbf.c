@@ -159,3 +159,19 @@ int pbf_params(size_t n, double p, bf_sizing_t *out)
     out->k = best_k;
     return 1;
 }
+
+/* ---- collision counting (untimed pass; kept apart from the measured insert) ---- */
+
+unsigned pbf_insert_counted(pbf_t *bf, const bf_key_t *key)
+{
+    if (!bf || !key || !key->data) return 0;
+    unsigned col = 0;
+    for (unsigned i = 0; i < bf->k; i++) {
+        size_t off = pbf_offset(bf, key, i);
+        unsigned char *byte = &pbf_partition(bf, i)[off / 8];
+        unsigned char bit = (unsigned char)(1u << (off % 8));
+        col += (*byte & bit) != 0;
+        *byte |= bit;
+    }
+    return col;
+}
