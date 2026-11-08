@@ -64,6 +64,43 @@ rodada de 2026-11-07, commit 30fc9a0, 334 execuções, 0 falhas, ~1 h), em
 - Deleção: apaga o Dexist depois das buscas e da contagem de faults (memória,
   ocupação e FPR lidas antes); confere `del_still_present` e `fn_after_delete`.
 
+Feito também: concorrência (`feature/threads`, experimento 3; schema 6, protocolo 5;
+campanha de 2026-11-08 na VM de 6 vCPUs, commit 002a50c, 276 execuções, 0 falhas, ~1h05,
+em `results/campaigns/vm6-nvme/`). Desenho e decisões abaixo; resultados em
+"Resultados da concorrência".
+O TCC1 promete pthreads, mutex nas variantes mutáveis e análise de escalabilidade.
+Decidido com o autor (2026-11-08): foco no PBF e no híbrido, as duas formas de paralelizar.
+- PBF **por partição**: cada thread cuida de uma faixa de partições e vê todas as
+  chaves; sem trava nem atômico, porque partições nunca dividem linha de cache (é o
+  que a seção 3 da proposta diz). Controle: o mesmo PBF dividido por chave, com OR
+  atômico.
+- Híbrido **por chave**: cada thread pega uma fatia das chaves, cada chave escreve num
+  único bloco. Bits: OR atômico. Contadores: trava global contra uma trava por bloco
+  (`lock_waits` conta as vezes em que a trava estava ocupada).
+- Busca: sempre dividida por chave e sem trava, depois de uma barreira.
+- Medida: tempo do trabalho paralelo por lote (lotes de 8 MiB, ~225 mil UUIDs, para a
+  barreira pesar pouco); a aceleração é a média serial ÷ a média com T threads.
+- Correção: o estado final não depende da ordem, então toda estratégia tem de dar
+  exatamente os falsos positivos do serial (conferido em 1M e no `make test`).
+- O código serial não mudou: objdump igual nas inserções, buscas e deleções.
+- As threads são fixadas uma por núcleo físico primeiro. Sem isso, 6 threads no host
+  caíam em 3 núcleos (CPUs 0/1, 2/3, 4/5 são irmãs) e a aceleração parecia menor.
+Primeiro teste no host (1M UUIDs, 6 threads, sem rigor): inserção do PBF por partição
+3,5×, PBF atômico 3,2×, hybrid_c_512 com trava por bloco 3,2×, hybrid_512 atômico
+2,5–2,8×; a trava global **piora** com mais threads (0,24× com 6, ~450 mil esperas);
+busca negativa ~5,2–5,5× em todas. O OR atômico custa caro mesmo com 1 thread
+(hybrid_512: 0,6× do serial).
+Ambiente (decidido com o autor): uma segunda VM igual à primeira, só com 6 vCPUs
+(`scripts/vm/vm6.sh`: CPUs 0, 2, ..., 10, uma por núcleo; QEMU em 1 e 3). Não refazer
+as campanhas: os experimentos 1 e 2 são de uma thread, e o número de vCPUs não muda o
+que medem. Para sustentar isso, `scripts/vm/threads.sh` repete um trecho da campanha
+oficial (rótulo `ponte`: benchmark de sbf, pbf, hybrid_512 e hybrid_c_512, UUID 1M e
+20M, 5 × 3) para comparar com a VM de 2 vCPUs; se não bater, refazer. Campanha
+(`PLAN=threads.sh scripts/vm/vm6.sh official`, rótulo `threads`): UUID 1M e 20M (o PBF
+cabe no L3 de 18 MB em 1M e não cabe em 20M), T = 1, 2, 4 e 6, 5 × 3; ~1h30 estimado.
+Ressalva: as 6 vCPUs ocupam uma CPU de cada núcleo, e o host fica com as irmãs, que
+dividem os mesmos núcleos; mais ruído que na VM de 2 vCPUs.
+
 Próximos passos:
 - Capítulo de materiais e métodos: a base feita no notebook não está no GitHub
   (conferido em 2026-11-07). Quando chegar, revisar e atualizar conforme o código
@@ -262,6 +299,39 @@ Deleção (UUID, `same_fpr`, ns por chave apagada):
 Apagar custa o mesmo que inserir em cada estrutura. 0 falsos negativos depois de
 apagar, em todas as execuções. ~0,6% das chaves apagadas ainda respondem presente
 (falsos positivos do filtro, menores que 1% porque a ocupação cai depois de apagar).
+
+## Resultados da concorrência (VM de 6 vCPUs, UUID)
+
+Ponte: com 1 thread, a VM de 6 vCPUs repete a campanha oficial dentro de ±3,3% em
+inserção e buscas (sbf, pbf, hybrid_512, hybrid_c_512; 1M e 20M), com falsos positivos
+idênticos. As campanhas da VM de 2 vCPUs continuam valendo.
+
+Aceleração na inserção (média serial ÷ média com T threads):
+
+| estrutura · estratégia | 1M, T=6 | 20M, T=2 | 20M, T=4 | 20M, T=6 |
+|---|---|---|---|---|
+| pbf · partition | 3,63 | 1,63 | 3,07 | 3,20 |
+| pbf · atomic | 2,87 | 1,75 | 3,50 | 5,19 |
+| hybrid_512 · atomic | 2,70 | 1,48 | 2,86 | 4,04 |
+| hybrid_4096 · atomic | 2,10 | 1,53 | 2,93 | 4,12 |
+| hybrid_c_512 · lock_shard | 3,18 | 1,18 | 1,98 | 2,35 |
+| hybrid_c_4096 · lock_shard | 2,71 | 1,41 | 1,98 | 2,40 |
+| hybrid_c_* · lock_global | 0,24–0,28 | 0,34–0,38 | 0,36–0,41 | 0,33–0,37 |
+
+- Busca negativa: 5,2–5,5× com 6 threads em 1M e 4,2–5,4× em 20M, sem trava.
+- **A divisão por partição tem um teto estrutural:** com k = 7 partições, a thread mais
+  carregada fica com ⌈7/T⌉ partições, então a aceleração máxima é 7/⌈7/T⌉: 3,5 com T = 4
+  e também com T = 6. Medido: 3,53 e 3,63 (1M), 3,07 e 3,20 (20M). Dividir por chave não
+  tem esse teto: com 20M o PBF atômico chega a 5,19 com 6 threads.
+- **O custo do atômico depende de onde o filtro está:** com 1 thread, o OR atômico
+  deixa o hybrid_512 em 0,61 do serial em 1M (filtro no cache, a instrução atômica pesa)
+  e 0,77 em 20M (o acesso à memória já domina). Por isso o atômico escala melhor em 20M.
+- **Trava global:** mais lenta que o serial com qualquer T (centenas de milhares de
+  esperas em 1M, 6–9 milhões em 20M). **Trava por bloco:** escala (2,4–3,2× com 6), com
+  poucas esperas (~200 no hybrid_c_512; ~2 mil no hybrid_c_4096, que tem 8× menos
+  blocos), pagando ~40 bytes de mutex por bloco (15 MB em 20M para o hybrid_c_512).
+- O sistema convidado mostra L3 de "96 MiB (6 instances)": é a topologia virtual do
+  QEMU. O processador real tem 18 MB de L3 compartilhado, que é o que vale para 1M × 20M.
 
 ## Ressalvas para o texto (anotar, não escrever agora)
 

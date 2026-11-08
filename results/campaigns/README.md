@@ -9,6 +9,7 @@ uma campanha só entra aqui depois de terminada.
 |---|---|---|
 | `vm-nvme/` | VM Debian 13, 1 GB de RAM, 2 vCPUs fixas, swap e tabelas no NVMe do host | rótulos `oficial` (campanha oficial, 2026-11-06/07, commit c2c52ec, protocolo 4), `teste-vm-nov05` (teste, commit 59a907d) e `pilot` (protocolo 3) |
 | `vm-nvme-extra/` | mesma VM | rótulos `colisoes` e `delecao` (2026-11-07, commit 30fc9a0, protocolo 5): taxa de colisões estruturais e deleção, medidas depois da campanha oficial |
+| `vm6-nvme/` | a mesma VM com 6 vCPUs (`scripts/vm/vm6.sh`) | rótulos `threads` (experimento 3, concorrência, 2026-11-08, commit 002a50c, schema 6) e `ponte` (trecho da campanha oficial com 1 thread, para comparar as duas VMs) |
 | `host-preliminar/` | desktop, sem VM | sondagem de 03/11 com 1M UUIDs (protocolo 1), só indicativa |
 
 ## Como consultar
@@ -47,6 +48,21 @@ python3 scripts/analyze.py --db $X bench --label delecao --sizing same_fpr none 
 `delecao`: CBF e hybrid_c_* em UUID, 1M a 20M, 5 × 3; baseline só em 1M e 5M
 (apagar exige N buscas a mais, horas quando ele pagina). Em `vm-nvme-extra/plots/`
 e `tables/`, um subconjunto por rótulo.
+
+Concorrência (`vm6-nvme/`):
+
+```bash
+V=results/campaigns/vm6-nvme/bloom.db
+python3 scripts/analyze.py --db $V threads --label threads
+python3 scripts/analyze.py --db $V bench --label ponte --sizing same_fpr
+```
+
+`threads`: UUID 1M e 20M; sbf (só serial), pbf (serial, partition, atomic), hybrid_512
+e hybrid_4096 (serial, atomic), hybrid_c_512 e hybrid_c_4096 (serial, lock_global,
+lock_shard); T = 1, 2, 4 e 6; 5 × 3. A aceleração é a média serial ÷ a média com T
+threads, sem IC. Os tempos seriais do experimento 3 não se comparam com os do
+benchmark (lotes de 8 MiB em vez de 1 MiB, outro laço); a comparação entre as VMs é a
+`ponte`. Em `vm6-nvme/logs/`, a saída da campanha e o estado do host.
 
 ## Logs de `vm-nvme/logs/`
 

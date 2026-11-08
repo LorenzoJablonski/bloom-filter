@@ -13,6 +13,7 @@ EXPERIMENTS=${EXPERIMENTS:-"benchmark iobench"}
 FILTERS=${FILTERS:-}
 TABLES=${TABLES:-"1 8"}
 NEG=${NEG:-"0.5 0.9"}
+THREADS=${THREADS:-"1 2 4 6"} # threadbench
 EXP=${EXP:-/mnt/exp}
 
 cd "$HOME/bloom" || exit 1
@@ -31,6 +32,7 @@ for r in $(seq 1 "$REPEAT"); do
                 args=(--types "$t" --reps "$REPS" --label "$LABEL")
                 [ -n "$FILTERS" ] && args+=(--filters $FILTERS)
                 [ "$e" = iobench ] && args+=(--tables $TABLES --neg $NEG --store-dir "$EXP/store")
+                [ "$e" = threadbench ] && args+=(--threads $THREADS)
                 python3 scripts/run.py "$e" "${args[@]}" || fails=$((fails + 1))
             done
         done

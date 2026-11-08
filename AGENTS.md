@@ -15,13 +15,15 @@ make sbf          # individual module object (also: cbf, pbf, rdbf, hybrid, base
 make data         # generates datasets: N=2000 TYPES="uuid cpf cnpj url" SEED=42
 make benchmark    # via scripts/run.py -> results/bloom.db, one process per structure x regime: REPS=5 P=0.01 REPEAT=1 LABEL= [ALLOW_DIRTY=1]
 make iobench      # I/O gatekeeper experiment, same flags + TABLES="1 8" NEG="0.5 0.9" QUERIES=10000 STORE_DIR=data/store [CACHED=1]
-python3 scripts/analyze.py runs|bench|io|freeze   # tables (terminal/--csv/--latex) from results/bloom.db
+python3 scripts/run.py threadbench --filters pbf hybrid_512 hybrid_c_512 --threads 1 2 4 6   # concurrency (experiment 3)
+python3 scripts/analyze.py runs|bench|io|threads|freeze   # tables (terminal/--csv/--latex) from results/bloom.db
 make venv         # .venv with matplotlib (requirements.txt; uses uv when available)
 make plots        # figures in results/plots: FORMAT="pdf png" PLOT_ARGS="--label ..." DB=
 make test         # quick invariants via the generic interface (--test)
 make check        # C unit tests in tests/
 make clean        # removes build/ and bloom_app
-scripts/vm/vm.sh  # controlled environment for official runs: create|push-code|data|campaign|pull (see its header)
+scripts/vm/vm.sh  # controlled environment for official runs: create|push-code|data|campaign|official|pull (see its header)
+scripts/vm/vm6.sh # the same VM with 6 vCPUs, for threadbench (only one of the two may run at a time)
 ```
 
 Compiler: GCC with `-std=c99 -Wall -Wextra -O3`. Links pthreads (`-lpthread`).
@@ -52,7 +54,7 @@ Merge order matters — murmurhash is prerequisite for all filters:
 - MurmurHash2 family only: MurmurHash2 (32-bit, seed varies per invocation) for SBF/CBF/PBF/rDBF; MurmurHash64A (64-bit, one call) for the hybrid. Both checked against smhasher verification values in tests/test_murmurhash2.c
 - MurmurHash2 is implemented from scratch (appleby-style), validated against the published reference; seed operates via `murmurhash2(key, len, seed)`
 - Bitwise operations for filter manipulation (no abstractions)
-- No threads yet: the code is single-threaded (Makefile links -lpthread, nothing uses it). The TCC1 promises pthreads with mutexes for the mutable variants (CBF, hybrid); that is `feature/threads`, still to be decided
+- Threads only in experiment 3 (src/threadbench.c); experiments 1 and 2 stay single-threaded. Concurrent inserts are offered through `bf_ops_t.conc` (`bf_conc_t`): PBF by partition range (no lock: partitions never share a cache line) or atomic OR; bit hybrids atomic OR; counting hybrids under a mutex, one global or one per shard (trylock first, failures counted as lock waits). These functions are appended after the serial code, which must keep compiling to the same instructions (objdump). Lookups run after a barrier and take no lock. Every strategy must answer exactly like the serial insert (`make test` checks it); workers are pinned one per physical core first
 - Every structure is exposed through `bf_ops_t` (include/bf.h, src/bf.c); demo, REPL and benchmark iterate the registry — register new filters there
 - Baseline owns copies of its keys; filters never keep key pointers
 - Each filter has `<model>_params(n, p)` (sizing for target FPR by its own formula), registered in `bf_ops_t.params`

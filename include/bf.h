@@ -1,7 +1,9 @@
 #ifndef BF_H
 #define BF_H
 
+#include <pthread.h>
 #include <stddef.h>
+#include <stdint.h>
 #include "common.h"
 
 /*
@@ -9,6 +11,20 @@
  * baseline. Lets demo, REPL and benchmark iterate over all structures without
  * a per-filter switch.
  */
+/*
+ * Concurrent insertion offered by a structure (threadbench); NULL members are
+ * not supported. Lookups need nothing here: once the inserts are done (a barrier
+ * separates the phases) the plain lookup only reads.
+ */
+typedef struct bf_conc {
+    unsigned (*partitions)(const void *bf);  /* > 0: insert_partitions is available */
+    void (*insert_partitions)(void *bf, const bf_key_t *key, unsigned first, unsigned last);
+    void (*insert_atomic)(void *bf, const bf_key_t *key);
+    size_t (*lock_domains)(const void *bf);  /* > 0: insert_locked, one lock per domain */
+    void (*insert_locked)(void *bf, const bf_key_t *key, pthread_mutex_t *locks,
+                          size_t nlocks, uint64_t *waits);
+} bf_conc_t;
+
 typedef struct bf_ops {
     const char *name;
     int exact;               /* 1 = no false positives (deterministic) */
@@ -28,6 +44,7 @@ typedef struct bf_ops {
     /* insert that also returns the collisions of this key (probes on positions
      * already non-zero); untimed counting pass only */
     unsigned (*insert_counted)(void *bf, const bf_key_t *key);
+    const bf_conc_t *conc;  /* NULL: only serial operations */
 } bf_ops_t;
 
 /* Lookup by name; returns NULL when unknown. */

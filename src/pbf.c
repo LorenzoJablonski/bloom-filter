@@ -175,3 +175,31 @@ unsigned pbf_insert_counted(pbf_t *bf, const bf_key_t *key)
     }
     return col;
 }
+
+/* ---- concurrent insertion (threadbench; the measured serial insert is above) ---- */
+
+unsigned pbf_partitions(const pbf_t *bf)
+{
+    return bf ? bf->k : 0;
+}
+
+void pbf_insert_partitions(pbf_t *bf, const bf_key_t *key, unsigned first, unsigned last)
+{
+    if (!bf || !key || !key->data) return;
+    if (last > bf->k) last = bf->k;
+    for (unsigned i = first; i < last; i++) {
+        size_t off = pbf_offset(bf, key, i);
+        pbf_partition(bf, i)[off / 8] |= (unsigned char)(1u << (off % 8));
+    }
+}
+
+void pbf_insert_atomic(pbf_t *bf, const bf_key_t *key)
+{
+    if (!bf || !key || !key->data) return;
+    for (unsigned i = 0; i < bf->k; i++) {
+        size_t off = pbf_offset(bf, key, i);
+        /* relaxed: the phases are separated by a barrier, which orders the memory */
+        __atomic_fetch_or(&pbf_partition(bf, i)[off / 8], (unsigned char)(1u << (off % 8)),
+                          __ATOMIC_RELAXED);
+    }
+}

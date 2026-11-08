@@ -5,9 +5,9 @@ Every bloom_app invocation becomes one row in `runs` (code version, machine,
 storage device, dataset, parameters) plus its CSV rows in filter_results or
 io_results. The raw CSV is kept in results/raw/.
 
-Each structure runs in its own process, once per sizing regime (benchmark) or
-per T x neg_ratio (iobench): nothing a large structure pushes to swap can be
-paid by the next one. Disk tables are built before the grid, in a separate
+Each structure runs in its own process, once per sizing regime (benchmark),
+per T x neg_ratio (iobench) or per strategy x thread count (threadbench):
+nothing a large structure pushes to swap can be paid by the next one. Disk tables are built before the grid, in a separate
 process that is not recorded.
 
 Examples
@@ -15,6 +15,7 @@ Examples
   python3 scripts/run.py iobench --types uuid --tables 1 8 --neg 0.5 0.9 \\
       --store-dir /mnt/hd/store --label hd-T8
   python3 scripts/run.py benchmark --filters sbf baseline --label test
+  python3 scripts/run.py threadbench --filters pbf hybrid_512 hybrid_c_512 --threads 1 2 4 6
 
 --repeat R runs the whole grid R times (outer loop), so repetitions of the
 same configuration are spread over time instead of back to back.
@@ -73,7 +74,7 @@ def now_iso():
 
 def code_info():
     info = sh([str(BINARY), "--info"]) or ""
-    protocol, cc, filters = None, None, []
+    protocol, cc, filters, strategies = None, None, [], {}
     for line in info.splitlines():
         key, _, value = line.partition("=")
         if key == "protocol":
@@ -83,6 +84,9 @@ def code_info():
         elif key == "filter":
             name, exact, delete, fixed_k = value.split(",")
             filters.append((name, int(exact), int(delete), int(fixed_k)))
+        elif key == "threadbench":
+            name, _, names = value.partition(",")
+            strategies[name] = names.split("|")
     if protocol is None:
         raise SystemExit("bloom_app --info failed; is the binary built?")
     status = sh(["git", "status", "--porcelain", "--untracked-files=no"])
@@ -93,7 +97,7 @@ def code_info():
         "git_branch": sh(["git", "rev-parse", "--abbrev-ref", "HEAD"]),
         "git_dirty": None if status is None else int(bool(status)),
         "binary_sha256": sha256_file(BINARY),
-    }, filters
+    }, filters, strategies
 
 
 def cgroup_memory_limit():
@@ -242,9 +246,10 @@ def dataset_info(dtype):
 
 # ---------------------------------------------------------------- grid
 
-def build_jobs(args, filters):
+def build_jobs(args, filters, strategies):
     """List of (params, argv) for one pass over the grid; one structure per job.
-    filters: (name, exact, supports_delete, fixed_k) from bloom_app --info."""
+    filters: (name, exact, supports_delete, fixed_k) from bloom_app --info;
+    strategies: threadbench strategies per filter, also from --info."""
     jobs = []
     names = {f[0] for f in filters}
     unknown = set(args.filters or []) - names - {"none"}
@@ -264,6 +269,22 @@ def build_jobs(args, filters):
                     if args.n:
                         argv += ["--n", str(args.n)]
                     jobs.append((params, argv))
+    elif args.experiment == "threadbench":
+        if args.n:
+            raise SystemExit("threadbench reads a dataset per N (make data N=...); --n is not supported")
+        for t in args.types:
+            for name, *_ in chosen:
+                for strategy in strategies.get(name, []):
+                    if args.strategies and strategy not in args.strategies:
+                        continue
+                    for threads in ([1] if strategy == "serial" else args.threads):
+                        params = {"dataset_type": t, "filter": name, "p_target": args.p,
+                                  "reps": args.reps, "sizing": "same_fpr",
+                                  "threads": threads, "strategy": strategy}
+                        argv = ["--threadbench", "--type", t, "--filter", name,
+                                "--strategy", strategy, "--threads", str(threads),
+                                "--p", repr(args.p), "--reps", str(args.reps)]
+                        jobs.append((params, argv))
     else:
         gatekeepers = [f[0] for f in chosen]
         if not args.filters or "none" in args.filters:
@@ -326,12 +347,19 @@ def main():
     io.add_argument("--value-size", type=int, default=100)
     io.add_argument("--store-dir", default=str(ROOT / "data" / "store"))
     io.add_argument("--cached", action="store_true", help="page cache instead of O_DIRECT")
+
+    tb = sub.add_parser("threadbench", parents=[common], help="concurrency experiment")
+    tb.add_argument("--threads", nargs="+", type=int, default=[1, 2, 4, 6],
+                    help="thread counts (serial always runs with 1)")
+    tb.add_argument("--strategies", nargs="+",
+                    choices=["serial", "partition", "atomic", "lock_global", "lock_shard"],
+                    help="default: every strategy each structure supports")
     args = ap.parse_args()
 
     if subprocess.run(["make", "-s", "all"], cwd=ROOT).returncode != 0:
         raise SystemExit("build failed")
-    code, filters = code_info()
-    jobs = build_jobs(args, filters)
+    code, filters, strategies = code_info()
+    jobs = build_jobs(args, filters, strategies)
     total = len(jobs) * args.repeat
     if args.dry_run:
         for r in range(args.repeat):
@@ -364,8 +392,10 @@ def main():
     for r in range(args.repeat):
         for params, argv in jobs:
             seq += 1
+            tag = (f"_{params['strategy']}_t{params['threads']}"
+                   if args.experiment == "threadbench" else "")
             raw = raw_dir / (f"{batch}_{seq:03d}_{args.experiment}_{params['dataset_type']}_"
-                             f"{params['filter']}.csv")
+                             f"{params['filter']}{tag}.csv")
             cmd = [str(BINARY)] + argv + ["--out", str(raw)]
             print(f"[{seq}/{total}] {shlex.join(cmd[1:])}", file=sys.stderr)
 

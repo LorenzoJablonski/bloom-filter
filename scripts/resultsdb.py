@@ -27,7 +27,7 @@ import json
 import sqlite3
 from pathlib import Path
 
-SCHEMA_VERSION = 5  # 2: memory/paging columns; 3: runs.filter; 4: swap disk; 5: collisions, delete (see MIGRATIONS)
+SCHEMA_VERSION = 6  # 2: memory/paging columns; 3: runs.filter; 4: swap disk; 5: collisions, delete; 6: threadbench (see MIGRATIONS)
 
 # CSV columns exactly as written by src/benchmark.c and src/iobench.c.
 # If the C side changes them, update here and bump BF_PROTOCOL_VERSION.
@@ -55,9 +55,20 @@ IO_COLUMNS = [
     ("rss_kb", "INTEGER"), ("majflt", "INTEGER"), ("minflt", "INTEGER"),
 ]
 
+THREAD_COLUMNS = [
+    ("type", "TEXT"), ("filter", "TEXT"), ("strategy", "TEXT"), ("threads", "INTEGER"),
+    ("rep", "INTEGER"), ("n", "INTEGER"), ("n_exist", "INTEGER"), ("n_inexist", "INTEGER"),
+    ("p_target", "REAL"), ("m", "INTEGER"), ("k", "INTEGER"), ("mem_bytes", "INTEGER"),
+    ("lock_bytes", "INTEGER"), ("insert_ms", "REAL"), ("lookup_exist_ms", "REAL"),
+    ("lookup_inexist_ms", "REAL"), ("fn", "INTEGER"), ("fp", "INTEGER"), ("fpr", "REAL"),
+    ("lock_waits", "INTEGER"), ("rss_kb", "INTEGER"), ("majflt", "INTEGER"), ("minflt", "INTEGER"),
+    ("cpus", "INTEGER"),
+]
+
 RESULT_TABLES = {
     "benchmark": ("filter_results", BENCH_COLUMNS),
     "iobench": ("io_results", IO_COLUMNS),
+    "threadbench": ("thread_results", THREAD_COLUMNS),
 }
 
 # Parameters that define what a run measured (part of config_key).
@@ -90,7 +101,7 @@ RUN_COLUMNS = [
     ("run_id", "INTEGER PRIMARY KEY AUTOINCREMENT"),
     ("batch_id", "TEXT NOT NULL"),      # one run.py invocation
     ("label", "TEXT"),                  # free-form campaign name
-    ("experiment", "TEXT NOT NULL"),    # benchmark | iobench
+    ("experiment", "TEXT NOT NULL"),    # benchmark | iobench | threadbench
     ("status", "TEXT NOT NULL"),        # ok | failed
     ("exit_code", "INTEGER"),
     ("started_at", "TEXT"), ("finished_at", "TEXT"), ("duration_s", "REAL"),
@@ -120,6 +131,7 @@ RUN_COLUMNS = [
     ("n_override", "INTEGER"), ("p_target", "REAL"), ("reps", "INTEGER"), ("sizing", "TEXT"),
     ("tables", "INTEGER"), ("neg_ratio", "REAL"), ("queries", "INTEGER"),
     ("value_size", "INTEGER"), ("direct", "INTEGER"),
+    ("threads", "INTEGER"), ("strategy", "TEXT"),   # threadbench (result columns, not config)
     # resources of the bloom_app process (wait4) and system swap traffic during the run
     ("maxrss_kb", "INTEGER"), ("majflt", "INTEGER"), ("minflt", "INTEGER"),
     ("utime_s", "REAL"), ("stime_s", "REAL"),
@@ -145,6 +157,7 @@ MIGRATIONS = [
     (4, "filter_results", "collisions", "INTEGER"), (4, "filter_results", "collision_rate", "REAL"),
     (4, "filter_results", "delete_ms", "REAL"), (4, "filter_results", "del_still_present", "INTEGER"),
     (4, "filter_results", "fn_after_delete", "INTEGER"),
+    (5, "runs", "threads", "INTEGER"), (5, "runs", "strategy", "TEXT"),
 ]
 
 
@@ -167,6 +180,7 @@ def _schema_sql():
         "  supports_delete INTEGER, fixed_k INTEGER, counting INTEGER, description TEXT\n);",
         _result_ddl("filter_results", BENCH_COLUMNS),
         _result_ddl("io_results", IO_COLUMNS),
+        _result_ddl("thread_results", THREAD_COLUMNS),
         # Joined rows, ready for grouping. Only successful runs.
         "CREATE VIEW IF NOT EXISTS v_bench AS\n"
         "  SELECT r.run_id, r.batch_id, r.label, r.config_key, r.env_key, r.protocol,\n"
@@ -181,6 +195,15 @@ def _schema_sql():
         "         r.git_commit, r.git_dirty, r.host, r.started_at,\n"
         "         r.store_model, r.store_rotational, i.*\n"
         "  FROM io_results i JOIN runs r USING (run_id) WHERE r.status = 'ok';",
+        "CREATE VIEW IF NOT EXISTS v_thread AS\n"
+        "  SELECT r.run_id, r.batch_id, r.label, r.config_key, r.env_key, r.protocol,\n"
+        "         r.git_commit, r.git_dirty, r.host, r.started_at, t.*,\n"
+        "         1e6 * t.insert_ms / t.n AS insert_ns_op,\n"
+        "         1e6 * t.lookup_exist_ms / t.n_exist AS lookup_exist_ns_op,\n"
+        "         1e6 * t.lookup_inexist_ms / t.n_inexist AS lookup_inexist_ns_op,\n"
+        "         t.n / (1e3 * t.insert_ms) AS insert_mops,\n"
+        "         t.n_inexist / (1e3 * t.lookup_inexist_ms) AS lookup_inexist_mops\n"
+        "  FROM thread_results t JOIN runs r USING (run_id) WHERE r.status = 'ok';",
     ]
     return "\n".join(sql)
 
@@ -229,6 +252,7 @@ def _migrate(con, version):
             con.execute(f"ALTER TABLE {table} ADD COLUMN {column} {typ}")
     con.execute("DROP VIEW IF EXISTS v_bench")
     con.execute("DROP VIEW IF EXISTS v_io")
+    con.execute("DROP VIEW IF EXISTS v_thread")
     con.executescript(_schema_sql())
     con.execute("UPDATE meta SET value = ? WHERE key = 'schema_version'", (str(SCHEMA_VERSION),))
     con.commit()

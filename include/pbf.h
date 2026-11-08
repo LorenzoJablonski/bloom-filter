@@ -13,6 +13,17 @@ void pbf_insert(pbf_t *bf, const bf_key_t *key);
  * non-zero (collisions). For the untimed counting pass only: pbf_insert stays the
  * measured path. */
 unsigned pbf_insert_counted(pbf_t *bf, const bf_key_t *key);
+
+/*
+ * Concurrent insertion (threadbench), apart from the measured serial insert.
+ * pbf_insert_partitions sets only the bits of partitions [first, last): threads
+ * that own disjoint partition ranges never write the same byte or cache line,
+ * so they need no lock and no atomic. pbf_insert_atomic splits by key instead
+ * (every thread may write every partition) and uses an atomic OR.
+ */
+unsigned pbf_partitions(const pbf_t *bf);
+void pbf_insert_partitions(pbf_t *bf, const bf_key_t *key, unsigned first, unsigned last);
+void pbf_insert_atomic(pbf_t *bf, const bf_key_t *key);
 bf_member_t pbf_lookup(pbf_t *bf, const bf_key_t *key);
 size_t pbf_memory_bytes(const pbf_t *bf);
 size_t pbf_cells(const pbf_t *bf); /* effective m */
