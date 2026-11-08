@@ -1,0 +1,785 @@
+##### 2026-11-08T06:58:09+00:00 LABEL=threads TYPES=uuid NS=1000000 20000000 EXPERIMENTS=threadbench THREADS=1 2 4 6 FILTERS=sbf pbf hybrid_512 hybrid_4096 hybrid_c_512 hybrid_c_4096 REPS=5 REPEAT=3
+=== 2026-11-08T06:58:09+00:00 pass 1/3 N=1000000 uuid threadbench
+batch 20261108-065810: 38 run(s), protocol 5, commit 002a50cc
+[1/38] --threadbench --type uuid --filter sbf --strategy serial --threads 1 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-065810_001_threadbench_uuid_sbf_serial_t1.csv
+  run_id=1 status=ok rows=5 (1.239 s, rss 32 MiB, 0 major faults)
+[2/38] --threadbench --type uuid --filter pbf --strategy serial --threads 1 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-065810_002_threadbench_uuid_pbf_serial_t1.csv
+  run_id=2 status=ok rows=5 (1.261 s, rss 33 MiB, 0 major faults)
+[3/38] --threadbench --type uuid --filter pbf --strategy partition --threads 1 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-065810_003_threadbench_uuid_pbf_partition_t1.csv
+threadbench: workers on CPUs 0
+  run_id=3 status=ok rows=5 (1.25 s, rss 33 MiB, 0 major faults)
+[4/38] --threadbench --type uuid --filter pbf --strategy partition --threads 2 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-065810_004_threadbench_uuid_pbf_partition_t2.csv
+threadbench: workers on CPUs 0 1
+  run_id=4 status=ok rows=5 (0.848 s, rss 32 MiB, 0 major faults)
+[5/38] --threadbench --type uuid --filter pbf --strategy partition --threads 4 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-065810_005_threadbench_uuid_pbf_partition_t4.csv
+threadbench: workers on CPUs 0 1 2 3
+  run_id=5 status=ok rows=5 (0.594 s, rss 34 MiB, 0 major faults)
+[6/38] --threadbench --type uuid --filter pbf --strategy partition --threads 6 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-065810_006_threadbench_uuid_pbf_partition_t6.csv
+threadbench: workers on CPUs 0 1 2 3 4 5
+  run_id=6 status=ok rows=5 (0.579 s, rss 33 MiB, 0 major faults)
+[7/38] --threadbench --type uuid --filter pbf --strategy atomic --threads 1 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-065810_007_threadbench_uuid_pbf_atomic_t1.csv
+threadbench: workers on CPUs 0
+  run_id=7 status=ok rows=5 (1.299 s, rss 33 MiB, 0 major faults)
+[8/38] --threadbench --type uuid --filter pbf --strategy atomic --threads 2 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-065810_008_threadbench_uuid_pbf_atomic_t2.csv
+threadbench: workers on CPUs 0 1
+  run_id=8 status=ok rows=5 (0.993 s, rss 33 MiB, 0 major faults)
+[9/38] --threadbench --type uuid --filter pbf --strategy atomic --threads 4 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-065810_009_threadbench_uuid_pbf_atomic_t4.csv
+threadbench: workers on CPUs 0 1 2 3
+  run_id=9 status=ok rows=5 (0.752 s, rss 32 MiB, 0 major faults)
+[10/38] --threadbench --type uuid --filter pbf --strategy atomic --threads 6 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-065810_010_threadbench_uuid_pbf_atomic_t6.csv
+threadbench: workers on CPUs 0 1 2 3 4 5
+  run_id=10 status=ok rows=5 (0.835 s, rss 34 MiB, 0 major faults)
+[11/38] --threadbench --type uuid --filter hybrid_512 --strategy serial --threads 1 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-065810_011_threadbench_uuid_hybrid_512_serial_t1.csv
+  run_id=11 status=ok rows=5 (0.922 s, rss 34 MiB, 2 major faults)
+[12/38] --threadbench --type uuid --filter hybrid_512 --strategy atomic --threads 1 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-065810_012_threadbench_uuid_hybrid_512_atomic_t1.csv
+threadbench: workers on CPUs 0
+  run_id=12 status=ok rows=5 (1.001 s, rss 33 MiB, 0 major faults)
+[13/38] --threadbench --type uuid --filter hybrid_512 --strategy atomic --threads 2 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-065810_013_threadbench_uuid_hybrid_512_atomic_t2.csv
+threadbench: workers on CPUs 0 1
+  run_id=13 status=ok rows=5 (0.839 s, rss 32 MiB, 0 major faults)
+[14/38] --threadbench --type uuid --filter hybrid_512 --strategy atomic --threads 4 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-065810_014_threadbench_uuid_hybrid_512_atomic_t4.csv
+threadbench: workers on CPUs 0 1 2 3
+  run_id=14 status=ok rows=5 (0.747 s, rss 32 MiB, 0 major faults)
+[15/38] --threadbench --type uuid --filter hybrid_512 --strategy atomic --threads 6 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-065810_015_threadbench_uuid_hybrid_512_atomic_t6.csv
+threadbench: workers on CPUs 0 1 2 3 4 5
+  run_id=15 status=ok rows=5 (0.706 s, rss 32 MiB, 0 major faults)
+[16/38] --threadbench --type uuid --filter hybrid_4096 --strategy serial --threads 1 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-065810_016_threadbench_uuid_hybrid_4096_serial_t1.csv
+  run_id=16 status=ok rows=5 (0.959 s, rss 33 MiB, 0 major faults)
+[17/38] --threadbench --type uuid --filter hybrid_4096 --strategy atomic --threads 1 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-065810_017_threadbench_uuid_hybrid_4096_atomic_t1.csv
+threadbench: workers on CPUs 0
+  run_id=17 status=ok rows=5 (0.926 s, rss 34 MiB, 0 major faults)
+[18/38] --threadbench --type uuid --filter hybrid_4096 --strategy atomic --threads 2 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-065810_018_threadbench_uuid_hybrid_4096_atomic_t2.csv
+threadbench: workers on CPUs 0 1
+  run_id=18 status=ok rows=5 (0.83 s, rss 33 MiB, 0 major faults)
+[19/38] --threadbench --type uuid --filter hybrid_4096 --strategy atomic --threads 4 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-065810_019_threadbench_uuid_hybrid_4096_atomic_t4.csv
+threadbench: workers on CPUs 0 1 2 3
+  run_id=19 status=ok rows=5 (0.778 s, rss 33 MiB, 0 major faults)
+[20/38] --threadbench --type uuid --filter hybrid_4096 --strategy atomic --threads 6 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-065810_020_threadbench_uuid_hybrid_4096_atomic_t6.csv
+threadbench: workers on CPUs 0 1 2 3 4 5
+  run_id=20 status=ok rows=5 (0.736 s, rss 33 MiB, 0 major faults)
+[21/38] --threadbench --type uuid --filter hybrid_c_512 --strategy serial --threads 1 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-065810_021_threadbench_uuid_hybrid_c_512_serial_t1.csv
+  run_id=21 status=ok rows=5 (1.098 s, rss 36 MiB, 0 major faults)
+[22/38] --threadbench --type uuid --filter hybrid_c_512 --strategy lock_global --threads 1 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-065810_022_threadbench_uuid_hybrid_c_512_lock_global_t1.csv
+threadbench: workers on CPUs 0
+  run_id=22 status=ok rows=5 (0.957 s, rss 37 MiB, 0 major faults)
+[23/38] --threadbench --type uuid --filter hybrid_c_512 --strategy lock_global --threads 2 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-065810_023_threadbench_uuid_hybrid_c_512_lock_global_t2.csv
+threadbench: workers on CPUs 0 1
+  run_id=23 status=ok rows=5 (1.406 s, rss 36 MiB, 0 major faults)
+[24/38] --threadbench --type uuid --filter hybrid_c_512 --strategy lock_global --threads 4 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-065810_024_threadbench_uuid_hybrid_c_512_lock_global_t4.csv
+threadbench: workers on CPUs 0 1 2 3
+  run_id=24 status=ok rows=5 (1.526 s, rss 37 MiB, 0 major faults)
+[25/38] --threadbench --type uuid --filter hybrid_c_512 --strategy lock_global --threads 6 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-065810_025_threadbench_uuid_hybrid_c_512_lock_global_t6.csv
+threadbench: workers on CPUs 0 1 2 3 4 5
+  run_id=25 status=ok rows=5 (1.654 s, rss 37 MiB, 0 major faults)
+[26/38] --threadbench --type uuid --filter hybrid_c_512 --strategy lock_shard --threads 1 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-065810_026_threadbench_uuid_hybrid_c_512_lock_shard_t1.csv
+threadbench: workers on CPUs 0
+  run_id=26 status=ok rows=5 (1.2 s, rss 38 MiB, 0 major faults)
+[27/38] --threadbench --type uuid --filter hybrid_c_512 --strategy lock_shard --threads 2 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-065810_027_threadbench_uuid_hybrid_c_512_lock_shard_t2.csv
+threadbench: workers on CPUs 0 1
+  run_id=27 status=ok rows=5 (0.928 s, rss 37 MiB, 0 major faults)
+[28/38] --threadbench --type uuid --filter hybrid_c_512 --strategy lock_shard --threads 4 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-065810_028_threadbench_uuid_hybrid_c_512_lock_shard_t4.csv
+threadbench: workers on CPUs 0 1 2 3
+  run_id=28 status=ok rows=5 (0.801 s, rss 38 MiB, 0 major faults)
+[29/38] --threadbench --type uuid --filter hybrid_c_512 --strategy lock_shard --threads 6 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-065810_029_threadbench_uuid_hybrid_c_512_lock_shard_t6.csv
+threadbench: workers on CPUs 0 1 2 3 4 5
+  run_id=29 status=ok rows=5 (0.773 s, rss 38 MiB, 0 major faults)
+[30/38] --threadbench --type uuid --filter hybrid_c_4096 --strategy serial --threads 1 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-065810_030_threadbench_uuid_hybrid_c_4096_serial_t1.csv
+  run_id=30 status=ok rows=5 (1.141 s, rss 36 MiB, 0 major faults)
+[31/38] --threadbench --type uuid --filter hybrid_c_4096 --strategy lock_global --threads 1 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-065810_031_threadbench_uuid_hybrid_c_4096_lock_global_t1.csv
+threadbench: workers on CPUs 0
+  run_id=31 status=ok rows=5 (1.212 s, rss 37 MiB, 0 major faults)
+[32/38] --threadbench --type uuid --filter hybrid_c_4096 --strategy lock_global --threads 2 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-065810_032_threadbench_uuid_hybrid_c_4096_lock_global_t2.csv
+threadbench: workers on CPUs 0 1
+  run_id=32 status=ok rows=5 (1.463 s, rss 37 MiB, 0 major faults)
+[33/38] --threadbench --type uuid --filter hybrid_c_4096 --strategy lock_global --threads 4 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-065810_033_threadbench_uuid_hybrid_c_4096_lock_global_t4.csv
+threadbench: workers on CPUs 0 1 2 3
+  run_id=33 status=ok rows=5 (1.512 s, rss 36 MiB, 0 major faults)
+[34/38] --threadbench --type uuid --filter hybrid_c_4096 --strategy lock_global --threads 6 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-065810_034_threadbench_uuid_hybrid_c_4096_lock_global_t6.csv
+threadbench: workers on CPUs 0 1 2 3 4 5
+  run_id=34 status=ok rows=5 (1.628 s, rss 37 MiB, 0 major faults)
+[35/38] --threadbench --type uuid --filter hybrid_c_4096 --strategy lock_shard --threads 1 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-065810_035_threadbench_uuid_hybrid_c_4096_lock_shard_t1.csv
+threadbench: workers on CPUs 0
+  run_id=35 status=ok rows=5 (0.98 s, rss 36 MiB, 0 major faults)
+[36/38] --threadbench --type uuid --filter hybrid_c_4096 --strategy lock_shard --threads 2 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-065810_036_threadbench_uuid_hybrid_c_4096_lock_shard_t2.csv
+threadbench: workers on CPUs 0 1
+  run_id=36 status=ok rows=5 (0.737 s, rss 35 MiB, 0 major faults)
+[37/38] --threadbench --type uuid --filter hybrid_c_4096 --strategy lock_shard --threads 4 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-065810_037_threadbench_uuid_hybrid_c_4096_lock_shard_t4.csv
+threadbench: workers on CPUs 0 1 2 3
+  run_id=37 status=ok rows=5 (0.632 s, rss 35 MiB, 0 major faults)
+[38/38] --threadbench --type uuid --filter hybrid_c_4096 --strategy lock_shard --threads 6 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-065810_038_threadbench_uuid_hybrid_c_4096_lock_shard_t6.csv
+threadbench: workers on CPUs 0 1 2 3 4 5
+  run_id=38 status=ok rows=5 (0.699 s, rss 36 MiB, 0 major faults)
+database: /home/debian/bloom/results/bloom.db
+=== 2026-11-08T06:58:48+00:00 pass 1/3 N=20000000 uuid threadbench
+batch 20261108-065848: 38 run(s), protocol 5, commit 002a50cc
+[1/38] --threadbench --type uuid --filter sbf --strategy serial --threads 1 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-065848_001_threadbench_uuid_sbf_serial_t1.csv
+  run_id=39 status=ok rows=5 (45.195 s, rss 60 MiB, 0 major faults)
+[2/38] --threadbench --type uuid --filter pbf --strategy serial --threads 1 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-065848_002_threadbench_uuid_pbf_serial_t1.csv
+  run_id=40 status=ok rows=5 (42.718 s, rss 60 MiB, 0 major faults)
+[3/38] --threadbench --type uuid --filter pbf --strategy partition --threads 1 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-065848_003_threadbench_uuid_pbf_partition_t1.csv
+threadbench: workers on CPUs 0
+  run_id=41 status=ok rows=5 (42.42 s, rss 60 MiB, 0 major faults)
+[4/38] --threadbench --type uuid --filter pbf --strategy partition --threads 2 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-065848_004_threadbench_uuid_pbf_partition_t2.csv
+threadbench: workers on CPUs 0 1
+  run_id=42 status=ok rows=5 (27.107 s, rss 60 MiB, 0 major faults)
+[5/38] --threadbench --type uuid --filter pbf --strategy partition --threads 4 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-065848_005_threadbench_uuid_pbf_partition_t4.csv
+threadbench: workers on CPUs 0 1 2 3
+  run_id=43 status=ok rows=5 (16.968 s, rss 60 MiB, 0 major faults)
+[6/38] --threadbench --type uuid --filter pbf --strategy partition --threads 6 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-065848_006_threadbench_uuid_pbf_partition_t6.csv
+threadbench: workers on CPUs 0 1 2 3 4 5
+  run_id=44 status=ok rows=5 (15.675 s, rss 60 MiB, 0 major faults)
+[7/38] --threadbench --type uuid --filter pbf --strategy atomic --threads 1 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-065848_007_threadbench_uuid_pbf_atomic_t1.csv
+threadbench: workers on CPUs 0
+  run_id=45 status=ok rows=5 (44.621 s, rss 60 MiB, 0 major faults)
+[8/38] --threadbench --type uuid --filter pbf --strategy atomic --threads 2 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-065848_008_threadbench_uuid_pbf_atomic_t2.csv
+threadbench: workers on CPUs 0 1
+  run_id=46 status=ok rows=5 (25.78 s, rss 60 MiB, 0 major faults)
+[9/38] --threadbench --type uuid --filter pbf --strategy atomic --threads 4 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-065848_009_threadbench_uuid_pbf_atomic_t4.csv
+threadbench: workers on CPUs 0 1 2 3
+  run_id=47 status=ok rows=5 (16.141 s, rss 60 MiB, 0 major faults)
+[10/38] --threadbench --type uuid --filter pbf --strategy atomic --threads 6 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-065848_010_threadbench_uuid_pbf_atomic_t6.csv
+threadbench: workers on CPUs 0 1 2 3 4 5
+  run_id=48 status=ok rows=5 (12.78 s, rss 60 MiB, 0 major faults)
+[11/38] --threadbench --type uuid --filter hybrid_512 --strategy serial --threads 1 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-065848_011_threadbench_uuid_hybrid_512_serial_t1.csv
+  run_id=49 status=ok rows=5 (17.94 s, rss 61 MiB, 0 major faults)
+[12/38] --threadbench --type uuid --filter hybrid_512 --strategy atomic --threads 1 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-065848_012_threadbench_uuid_hybrid_512_atomic_t1.csv
+threadbench: workers on CPUs 0
+  run_id=50 status=ok rows=5 (20.061 s, rss 61 MiB, 0 major faults)
+[13/38] --threadbench --type uuid --filter hybrid_512 --strategy atomic --threads 2 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-065848_013_threadbench_uuid_hybrid_512_atomic_t2.csv
+threadbench: workers on CPUs 0 1
+  run_id=51 status=ok rows=5 (15.483 s, rss 61 MiB, 0 major faults)
+[14/38] --threadbench --type uuid --filter hybrid_512 --strategy atomic --threads 4 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-065848_014_threadbench_uuid_hybrid_512_atomic_t4.csv
+threadbench: workers on CPUs 0 1 2 3
+  run_id=52 status=ok rows=5 (10.791 s, rss 61 MiB, 0 major faults)
+[15/38] --threadbench --type uuid --filter hybrid_512 --strategy atomic --threads 6 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-065848_015_threadbench_uuid_hybrid_512_atomic_t6.csv
+threadbench: workers on CPUs 0 1 2 3 4 5
+  run_id=53 status=ok rows=5 (10.028 s, rss 61 MiB, 0 major faults)
+[16/38] --threadbench --type uuid --filter hybrid_4096 --strategy serial --threads 1 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-065848_016_threadbench_uuid_hybrid_4096_serial_t1.csv
+  run_id=54 status=ok rows=5 (21.254 s, rss 60 MiB, 0 major faults)
+[17/38] --threadbench --type uuid --filter hybrid_4096 --strategy atomic --threads 1 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-065848_017_threadbench_uuid_hybrid_4096_atomic_t1.csv
+threadbench: workers on CPUs 0
+  run_id=55 status=ok rows=5 (22.93 s, rss 60 MiB, 0 major faults)
+[18/38] --threadbench --type uuid --filter hybrid_4096 --strategy atomic --threads 2 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-065848_018_threadbench_uuid_hybrid_4096_atomic_t2.csv
+threadbench: workers on CPUs 0 1
+  run_id=56 status=ok rows=5 (16.848 s, rss 60 MiB, 0 major faults)
+[19/38] --threadbench --type uuid --filter hybrid_4096 --strategy atomic --threads 4 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-065848_019_threadbench_uuid_hybrid_4096_atomic_t4.csv
+threadbench: workers on CPUs 0 1 2 3
+  run_id=57 status=ok rows=5 (14.493 s, rss 60 MiB, 0 major faults)
+[20/38] --threadbench --type uuid --filter hybrid_4096 --strategy atomic --threads 6 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-065848_020_threadbench_uuid_hybrid_4096_atomic_t6.csv
+threadbench: workers on CPUs 0 1 2 3 4 5
+  run_id=58 status=ok rows=5 (13.972 s, rss 60 MiB, 0 major faults)
+[21/38] --threadbench --type uuid --filter hybrid_c_512 --strategy serial --threads 1 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-065848_021_threadbench_uuid_hybrid_c_512_serial_t1.csv
+  run_id=59 status=ok rows=5 (25.584 s, rss 132 MiB, 0 major faults)
+[22/38] --threadbench --type uuid --filter hybrid_c_512 --strategy lock_global --threads 1 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-065848_022_threadbench_uuid_hybrid_c_512_lock_global_t1.csv
+threadbench: workers on CPUs 0
+  run_id=60 status=ok rows=5 (28.269 s, rss 132 MiB, 0 major faults)
+[23/38] --threadbench --type uuid --filter hybrid_c_512 --strategy lock_global --threads 2 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-065848_023_threadbench_uuid_hybrid_c_512_lock_global_t2.csv
+threadbench: workers on CPUs 0 1
+  run_id=61 status=ok rows=5 (37.473 s, rss 132 MiB, 0 major faults)
+[24/38] --threadbench --type uuid --filter hybrid_c_512 --strategy lock_global --threads 4 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-065848_024_threadbench_uuid_hybrid_c_512_lock_global_t4.csv
+threadbench: workers on CPUs 0 1 2 3
+  run_id=62 status=ok rows=5 (34.008 s, rss 132 MiB, 0 major faults)
+[25/38] --threadbench --type uuid --filter hybrid_c_512 --strategy lock_global --threads 6 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-065848_025_threadbench_uuid_hybrid_c_512_lock_global_t6.csv
+threadbench: workers on CPUs 0 1 2 3 4 5
+  run_id=63 status=ok rows=5 (34.883 s, rss 132 MiB, 0 major faults)
+[26/38] --threadbench --type uuid --filter hybrid_c_512 --strategy lock_shard --threads 1 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-065848_026_threadbench_uuid_hybrid_c_512_lock_shard_t1.csv
+threadbench: workers on CPUs 0
+  run_id=64 status=ok rows=5 (28.76 s, rss 147 MiB, 0 major faults)
+[27/38] --threadbench --type uuid --filter hybrid_c_512 --strategy lock_shard --threads 2 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-065848_027_threadbench_uuid_hybrid_c_512_lock_shard_t2.csv
+threadbench: workers on CPUs 0 1
+  run_id=65 status=ok rows=5 (18.794 s, rss 146 MiB, 0 major faults)
+[28/38] --threadbench --type uuid --filter hybrid_c_512 --strategy lock_shard --threads 4 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-065848_028_threadbench_uuid_hybrid_c_512_lock_shard_t4.csv
+threadbench: workers on CPUs 0 1 2 3
+  run_id=66 status=ok rows=5 (13.141 s, rss 146 MiB, 0 major faults)
+[29/38] --threadbench --type uuid --filter hybrid_c_512 --strategy lock_shard --threads 6 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-065848_029_threadbench_uuid_hybrid_c_512_lock_shard_t6.csv
+threadbench: workers on CPUs 0 1 2 3 4 5
+  run_id=67 status=ok rows=5 (13.7 s, rss 146 MiB, 0 major faults)
+[30/38] --threadbench --type uuid --filter hybrid_c_4096 --strategy serial --threads 1 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-065848_030_threadbench_uuid_hybrid_c_4096_serial_t1.csv
+  run_id=68 status=ok rows=5 (29.287 s, rss 129 MiB, 0 major faults)
+[31/38] --threadbench --type uuid --filter hybrid_c_4096 --strategy lock_global --threads 1 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-065848_031_threadbench_uuid_hybrid_c_4096_lock_global_t1.csv
+threadbench: workers on CPUs 0
+  run_id=69 status=ok rows=5 (31.233 s, rss 129 MiB, 0 major faults)
+[32/38] --threadbench --type uuid --filter hybrid_c_4096 --strategy lock_global --threads 2 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-065848_032_threadbench_uuid_hybrid_c_4096_lock_global_t2.csv
+threadbench: workers on CPUs 0 1
+  run_id=70 status=ok rows=5 (42.933 s, rss 129 MiB, 0 major faults)
+[33/38] --threadbench --type uuid --filter hybrid_c_4096 --strategy lock_global --threads 4 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-065848_033_threadbench_uuid_hybrid_c_4096_lock_global_t4.csv
+threadbench: workers on CPUs 0 1 2 3
+  run_id=71 status=ok rows=5 (38.682 s, rss 129 MiB, 0 major faults)
+[34/38] --threadbench --type uuid --filter hybrid_c_4096 --strategy lock_global --threads 6 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-065848_034_threadbench_uuid_hybrid_c_4096_lock_global_t6.csv
+threadbench: workers on CPUs 0 1 2 3 4 5
+  run_id=72 status=ok rows=5 (40.421 s, rss 130 MiB, 0 major faults)
+[35/38] --threadbench --type uuid --filter hybrid_c_4096 --strategy lock_shard --threads 1 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-065848_035_threadbench_uuid_hybrid_c_4096_lock_shard_t1.csv
+threadbench: workers on CPUs 0
+  run_id=73 status=ok rows=5 (31.526 s, rss 131 MiB, 0 major faults)
+[36/38] --threadbench --type uuid --filter hybrid_c_4096 --strategy lock_shard --threads 2 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-065848_036_threadbench_uuid_hybrid_c_4096_lock_shard_t2.csv
+threadbench: workers on CPUs 0 1
+  run_id=74 status=ok rows=5 (21.065 s, rss 131 MiB, 0 major faults)
+[37/38] --threadbench --type uuid --filter hybrid_c_4096 --strategy lock_shard --threads 4 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-065848_037_threadbench_uuid_hybrid_c_4096_lock_shard_t4.csv
+threadbench: workers on CPUs 0 1 2 3
+  run_id=75 status=ok rows=5 (15.659 s, rss 131 MiB, 0 major faults)
+[38/38] --threadbench --type uuid --filter hybrid_c_4096 --strategy lock_shard --threads 6 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-065848_038_threadbench_uuid_hybrid_c_4096_lock_shard_t6.csv
+threadbench: workers on CPUs 0 1 2 3 4 5
+  run_id=76 status=ok rows=5 (15.703 s, rss 131 MiB, 0 major faults)
+database: /home/debian/bloom/results/bloom.db
+=== 2026-11-08T07:14:47+00:00 pass 2/3 N=1000000 uuid threadbench
+batch 20261108-071447: 38 run(s), protocol 5, commit 002a50cc
+[1/38] --threadbench --type uuid --filter sbf --strategy serial --threads 1 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-071447_001_threadbench_uuid_sbf_serial_t1.csv
+  run_id=77 status=ok rows=5 (1.27 s, rss 33 MiB, 0 major faults)
+[2/38] --threadbench --type uuid --filter pbf --strategy serial --threads 1 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-071447_002_threadbench_uuid_pbf_serial_t1.csv
+  run_id=78 status=ok rows=5 (1.265 s, rss 34 MiB, 0 major faults)
+[3/38] --threadbench --type uuid --filter pbf --strategy partition --threads 1 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-071447_003_threadbench_uuid_pbf_partition_t1.csv
+threadbench: workers on CPUs 0
+  run_id=79 status=ok rows=5 (1.235 s, rss 34 MiB, 0 major faults)
+[4/38] --threadbench --type uuid --filter pbf --strategy partition --threads 2 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-071447_004_threadbench_uuid_pbf_partition_t2.csv
+threadbench: workers on CPUs 0 1
+  run_id=80 status=ok rows=5 (0.802 s, rss 33 MiB, 0 major faults)
+[5/38] --threadbench --type uuid --filter pbf --strategy partition --threads 4 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-071447_005_threadbench_uuid_pbf_partition_t4.csv
+threadbench: workers on CPUs 0 1 2 3
+  run_id=81 status=ok rows=5 (0.636 s, rss 32 MiB, 0 major faults)
+[6/38] --threadbench --type uuid --filter pbf --strategy partition --threads 6 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-071447_006_threadbench_uuid_pbf_partition_t6.csv
+threadbench: workers on CPUs 0 1 2 3 4 5
+  run_id=82 status=ok rows=5 (0.766 s, rss 34 MiB, 0 major faults)
+[7/38] --threadbench --type uuid --filter pbf --strategy atomic --threads 1 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-071447_007_threadbench_uuid_pbf_atomic_t1.csv
+threadbench: workers on CPUs 0
+  run_id=83 status=ok rows=5 (1.521 s, rss 32 MiB, 0 major faults)
+[8/38] --threadbench --type uuid --filter pbf --strategy atomic --threads 2 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-071447_008_threadbench_uuid_pbf_atomic_t2.csv
+threadbench: workers on CPUs 0 1
+  run_id=84 status=ok rows=5 (1.183 s, rss 33 MiB, 0 major faults)
+[9/38] --threadbench --type uuid --filter pbf --strategy atomic --threads 4 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-071447_009_threadbench_uuid_pbf_atomic_t4.csv
+threadbench: workers on CPUs 0 1 2 3
+  run_id=85 status=ok rows=5 (0.889 s, rss 33 MiB, 0 major faults)
+[10/38] --threadbench --type uuid --filter pbf --strategy atomic --threads 6 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-071447_010_threadbench_uuid_pbf_atomic_t6.csv
+threadbench: workers on CPUs 0 1 2 3 4 5
+  run_id=86 status=ok rows=5 (0.783 s, rss 34 MiB, 0 major faults)
+[11/38] --threadbench --type uuid --filter hybrid_512 --strategy serial --threads 1 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-071447_011_threadbench_uuid_hybrid_512_serial_t1.csv
+  run_id=87 status=ok rows=5 (0.919 s, rss 32 MiB, 0 major faults)
+[12/38] --threadbench --type uuid --filter hybrid_512 --strategy atomic --threads 1 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-071447_012_threadbench_uuid_hybrid_512_atomic_t1.csv
+threadbench: workers on CPUs 0
+  run_id=88 status=ok rows=5 (0.993 s, rss 34 MiB, 0 major faults)
+[13/38] --threadbench --type uuid --filter hybrid_512 --strategy atomic --threads 2 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-071447_013_threadbench_uuid_hybrid_512_atomic_t2.csv
+threadbench: workers on CPUs 0 1
+  run_id=89 status=ok rows=5 (0.829 s, rss 32 MiB, 0 major faults)
+[14/38] --threadbench --type uuid --filter hybrid_512 --strategy atomic --threads 4 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-071447_014_threadbench_uuid_hybrid_512_atomic_t4.csv
+threadbench: workers on CPUs 0 1 2 3
+  run_id=90 status=ok rows=5 (0.744 s, rss 32 MiB, 0 major faults)
+[15/38] --threadbench --type uuid --filter hybrid_512 --strategy atomic --threads 6 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-071447_015_threadbench_uuid_hybrid_512_atomic_t6.csv
+threadbench: workers on CPUs 0 1 2 3 4 5
+  run_id=91 status=ok rows=5 (0.708 s, rss 34 MiB, 0 major faults)
+[16/38] --threadbench --type uuid --filter hybrid_4096 --strategy serial --threads 1 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-071447_016_threadbench_uuid_hybrid_4096_serial_t1.csv
+  run_id=92 status=ok rows=5 (0.974 s, rss 34 MiB, 0 major faults)
+[17/38] --threadbench --type uuid --filter hybrid_4096 --strategy atomic --threads 1 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-071447_017_threadbench_uuid_hybrid_4096_atomic_t1.csv
+threadbench: workers on CPUs 0
+  run_id=93 status=ok rows=5 (1.061 s, rss 33 MiB, 0 major faults)
+[18/38] --threadbench --type uuid --filter hybrid_4096 --strategy atomic --threads 2 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-071447_018_threadbench_uuid_hybrid_4096_atomic_t2.csv
+threadbench: workers on CPUs 0 1
+  run_id=94 status=ok rows=5 (0.885 s, rss 34 MiB, 0 major faults)
+[19/38] --threadbench --type uuid --filter hybrid_4096 --strategy atomic --threads 4 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-071447_019_threadbench_uuid_hybrid_4096_atomic_t4.csv
+threadbench: workers on CPUs 0 1 2 3
+  run_id=95 status=ok rows=5 (0.77 s, rss 33 MiB, 0 major faults)
+[20/38] --threadbench --type uuid --filter hybrid_4096 --strategy atomic --threads 6 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-071447_020_threadbench_uuid_hybrid_4096_atomic_t6.csv
+threadbench: workers on CPUs 0 1 2 3 4 5
+  run_id=96 status=ok rows=5 (0.738 s, rss 34 MiB, 0 major faults)
+[21/38] --threadbench --type uuid --filter hybrid_c_512 --strategy serial --threads 1 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-071447_021_threadbench_uuid_hybrid_c_512_serial_t1.csv
+  run_id=97 status=ok rows=5 (1.087 s, rss 36 MiB, 0 major faults)
+[22/38] --threadbench --type uuid --filter hybrid_c_512 --strategy lock_global --threads 1 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-071447_022_threadbench_uuid_hybrid_c_512_lock_global_t1.csv
+threadbench: workers on CPUs 0
+  run_id=98 status=ok rows=5 (1.056 s, rss 37 MiB, 0 major faults)
+[23/38] --threadbench --type uuid --filter hybrid_c_512 --strategy lock_global --threads 2 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-071447_023_threadbench_uuid_hybrid_c_512_lock_global_t2.csv
+threadbench: workers on CPUs 0 1
+  run_id=99 status=ok rows=5 (1.276 s, rss 36 MiB, 0 major faults)
+[24/38] --threadbench --type uuid --filter hybrid_c_512 --strategy lock_global --threads 4 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-071447_024_threadbench_uuid_hybrid_c_512_lock_global_t4.csv
+threadbench: workers on CPUs 0 1 2 3
+  run_id=100 status=ok rows=5 (1.376 s, rss 36 MiB, 0 major faults)
+[25/38] --threadbench --type uuid --filter hybrid_c_512 --strategy lock_global --threads 6 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-071447_025_threadbench_uuid_hybrid_c_512_lock_global_t6.csv
+threadbench: workers on CPUs 0 1 2 3 4 5
+  run_id=101 status=ok rows=5 (1.43 s, rss 37 MiB, 0 major faults)
+[26/38] --threadbench --type uuid --filter hybrid_c_512 --strategy lock_shard --threads 1 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-071447_026_threadbench_uuid_hybrid_c_512_lock_shard_t1.csv
+threadbench: workers on CPUs 0
+  run_id=102 status=ok rows=5 (0.999 s, rss 37 MiB, 0 major faults)
+[27/38] --threadbench --type uuid --filter hybrid_c_512 --strategy lock_shard --threads 2 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-071447_027_threadbench_uuid_hybrid_c_512_lock_shard_t2.csv
+threadbench: workers on CPUs 0 1
+  run_id=103 status=ok rows=5 (0.864 s, rss 37 MiB, 0 major faults)
+[28/38] --threadbench --type uuid --filter hybrid_c_512 --strategy lock_shard --threads 4 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-071447_028_threadbench_uuid_hybrid_c_512_lock_shard_t4.csv
+threadbench: workers on CPUs 0 1 2 3
+  run_id=104 status=ok rows=5 (0.771 s, rss 37 MiB, 0 major faults)
+[29/38] --threadbench --type uuid --filter hybrid_c_512 --strategy lock_shard --threads 6 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-071447_029_threadbench_uuid_hybrid_c_512_lock_shard_t6.csv
+threadbench: workers on CPUs 0 1 2 3 4 5
+  run_id=105 status=ok rows=5 (0.542 s, rss 38 MiB, 0 major faults)
+[30/38] --threadbench --type uuid --filter hybrid_c_4096 --strategy serial --threads 1 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-071447_030_threadbench_uuid_hybrid_c_4096_serial_t1.csv
+  run_id=106 status=ok rows=5 (1.12 s, rss 36 MiB, 0 major faults)
+[31/38] --threadbench --type uuid --filter hybrid_c_4096 --strategy lock_global --threads 1 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-071447_031_threadbench_uuid_hybrid_c_4096_lock_global_t1.csv
+threadbench: workers on CPUs 0
+  run_id=107 status=ok rows=5 (1.196 s, rss 37 MiB, 0 major faults)
+[32/38] --threadbench --type uuid --filter hybrid_c_4096 --strategy lock_global --threads 2 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-071447_032_threadbench_uuid_hybrid_c_4096_lock_global_t2.csv
+threadbench: workers on CPUs 0 1
+  run_id=108 status=ok rows=5 (1.582 s, rss 37 MiB, 0 major faults)
+[33/38] --threadbench --type uuid --filter hybrid_c_4096 --strategy lock_global --threads 4 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-071447_033_threadbench_uuid_hybrid_c_4096_lock_global_t4.csv
+threadbench: workers on CPUs 0 1 2 3
+  run_id=109 status=ok rows=5 (1.523 s, rss 37 MiB, 0 major faults)
+[34/38] --threadbench --type uuid --filter hybrid_c_4096 --strategy lock_global --threads 6 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-071447_034_threadbench_uuid_hybrid_c_4096_lock_global_t6.csv
+threadbench: workers on CPUs 0 1 2 3 4 5
+  run_id=110 status=ok rows=5 (1.677 s, rss 36 MiB, 0 major faults)
+[35/38] --threadbench --type uuid --filter hybrid_c_4096 --strategy lock_shard --threads 1 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-071447_035_threadbench_uuid_hybrid_c_4096_lock_shard_t1.csv
+threadbench: workers on CPUs 0
+  run_id=111 status=ok rows=5 (1.04 s, rss 37 MiB, 0 major faults)
+[36/38] --threadbench --type uuid --filter hybrid_c_4096 --strategy lock_shard --threads 2 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-071447_036_threadbench_uuid_hybrid_c_4096_lock_shard_t2.csv
+threadbench: workers on CPUs 0 1
+  run_id=112 status=ok rows=5 (0.839 s, rss 35 MiB, 0 major faults)
+[37/38] --threadbench --type uuid --filter hybrid_c_4096 --strategy lock_shard --threads 4 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-071447_037_threadbench_uuid_hybrid_c_4096_lock_shard_t4.csv
+threadbench: workers on CPUs 0 1 2 3
+  run_id=113 status=ok rows=5 (0.83 s, rss 37 MiB, 0 major faults)
+[38/38] --threadbench --type uuid --filter hybrid_c_4096 --strategy lock_shard --threads 6 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-071447_038_threadbench_uuid_hybrid_c_4096_lock_shard_t6.csv
+threadbench: workers on CPUs 0 1 2 3 4 5
+  run_id=114 status=ok rows=5 (0.775 s, rss 36 MiB, 0 major faults)
+database: /home/debian/bloom/results/bloom.db
+=== 2026-11-08T07:15:26+00:00 pass 2/3 N=20000000 uuid threadbench
+batch 20261108-071526: 38 run(s), protocol 5, commit 002a50cc
+[1/38] --threadbench --type uuid --filter sbf --strategy serial --threads 1 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-071526_001_threadbench_uuid_sbf_serial_t1.csv
+  run_id=115 status=ok rows=5 (42.996 s, rss 60 MiB, 0 major faults)
+[2/38] --threadbench --type uuid --filter pbf --strategy serial --threads 1 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-071526_002_threadbench_uuid_pbf_serial_t1.csv
+  run_id=116 status=ok rows=5 (42.184 s, rss 60 MiB, 0 major faults)
+[3/38] --threadbench --type uuid --filter pbf --strategy partition --threads 1 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-071526_003_threadbench_uuid_pbf_partition_t1.csv
+threadbench: workers on CPUs 0
+  run_id=117 status=ok rows=5 (42.98 s, rss 60 MiB, 0 major faults)
+[4/38] --threadbench --type uuid --filter pbf --strategy partition --threads 2 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-071526_004_threadbench_uuid_pbf_partition_t2.csv
+threadbench: workers on CPUs 0 1
+  run_id=118 status=ok rows=5 (27.33 s, rss 60 MiB, 0 major faults)
+[5/38] --threadbench --type uuid --filter pbf --strategy partition --threads 4 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-071526_005_threadbench_uuid_pbf_partition_t4.csv
+threadbench: workers on CPUs 0 1 2 3
+  run_id=119 status=ok rows=5 (17.478 s, rss 60 MiB, 0 major faults)
+[6/38] --threadbench --type uuid --filter pbf --strategy partition --threads 6 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-071526_006_threadbench_uuid_pbf_partition_t6.csv
+threadbench: workers on CPUs 0 1 2 3 4 5
+  run_id=120 status=ok rows=5 (16.089 s, rss 60 MiB, 0 major faults)
+[7/38] --threadbench --type uuid --filter pbf --strategy atomic --threads 1 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-071526_007_threadbench_uuid_pbf_atomic_t1.csv
+threadbench: workers on CPUs 0
+  run_id=121 status=ok rows=5 (45.642 s, rss 60 MiB, 0 major faults)
+[8/38] --threadbench --type uuid --filter pbf --strategy atomic --threads 2 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-071526_008_threadbench_uuid_pbf_atomic_t2.csv
+threadbench: workers on CPUs 0 1
+  run_id=122 status=ok rows=5 (26.663 s, rss 60 MiB, 0 major faults)
+[9/38] --threadbench --type uuid --filter pbf --strategy atomic --threads 4 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-071526_009_threadbench_uuid_pbf_atomic_t4.csv
+threadbench: workers on CPUs 0 1 2 3
+  run_id=123 status=ok rows=5 (16.461 s, rss 60 MiB, 0 major faults)
+[10/38] --threadbench --type uuid --filter pbf --strategy atomic --threads 6 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-071526_010_threadbench_uuid_pbf_atomic_t6.csv
+threadbench: workers on CPUs 0 1 2 3 4 5
+  run_id=124 status=ok rows=5 (12.616 s, rss 60 MiB, 0 major faults)
+[11/38] --threadbench --type uuid --filter hybrid_512 --strategy serial --threads 1 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-071526_011_threadbench_uuid_hybrid_512_serial_t1.csv
+  run_id=125 status=ok rows=5 (17.231 s, rss 61 MiB, 0 major faults)
+[12/38] --threadbench --type uuid --filter hybrid_512 --strategy atomic --threads 1 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-071526_012_threadbench_uuid_hybrid_512_atomic_t1.csv
+threadbench: workers on CPUs 0
+  run_id=126 status=ok rows=5 (19.771 s, rss 61 MiB, 0 major faults)
+[13/38] --threadbench --type uuid --filter hybrid_512 --strategy atomic --threads 2 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-071526_013_threadbench_uuid_hybrid_512_atomic_t2.csv
+threadbench: workers on CPUs 0 1
+  run_id=127 status=ok rows=5 (15.556 s, rss 61 MiB, 0 major faults)
+[14/38] --threadbench --type uuid --filter hybrid_512 --strategy atomic --threads 4 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-071526_014_threadbench_uuid_hybrid_512_atomic_t4.csv
+threadbench: workers on CPUs 0 1 2 3
+  run_id=128 status=ok rows=5 (12.605 s, rss 61 MiB, 0 major faults)
+[15/38] --threadbench --type uuid --filter hybrid_512 --strategy atomic --threads 6 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-071526_015_threadbench_uuid_hybrid_512_atomic_t6.csv
+threadbench: workers on CPUs 0 1 2 3 4 5
+  run_id=129 status=ok rows=5 (9.936 s, rss 61 MiB, 0 major faults)
+[16/38] --threadbench --type uuid --filter hybrid_4096 --strategy serial --threads 1 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-071526_016_threadbench_uuid_hybrid_4096_serial_t1.csv
+  run_id=130 status=ok rows=5 (20.768 s, rss 60 MiB, 0 major faults)
+[17/38] --threadbench --type uuid --filter hybrid_4096 --strategy atomic --threads 1 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-071526_017_threadbench_uuid_hybrid_4096_atomic_t1.csv
+threadbench: workers on CPUs 0
+  run_id=131 status=ok rows=5 (22.722 s, rss 60 MiB, 0 major faults)
+[18/38] --threadbench --type uuid --filter hybrid_4096 --strategy atomic --threads 2 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-071526_018_threadbench_uuid_hybrid_4096_atomic_t2.csv
+threadbench: workers on CPUs 0 1
+  run_id=132 status=ok rows=5 (14.429 s, rss 60 MiB, 0 major faults)
+[19/38] --threadbench --type uuid --filter hybrid_4096 --strategy atomic --threads 4 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-071526_019_threadbench_uuid_hybrid_4096_atomic_t4.csv
+threadbench: workers on CPUs 0 1 2 3
+  run_id=133 status=ok rows=5 (10.603 s, rss 60 MiB, 0 major faults)
+[20/38] --threadbench --type uuid --filter hybrid_4096 --strategy atomic --threads 6 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-071526_020_threadbench_uuid_hybrid_4096_atomic_t6.csv
+threadbench: workers on CPUs 0 1 2 3 4 5
+  run_id=134 status=ok rows=5 (9.537 s, rss 60 MiB, 0 major faults)
+[21/38] --threadbench --type uuid --filter hybrid_c_512 --strategy serial --threads 1 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-071526_021_threadbench_uuid_hybrid_c_512_serial_t1.csv
+  run_id=135 status=ok rows=5 (23.155 s, rss 132 MiB, 0 major faults)
+[22/38] --threadbench --type uuid --filter hybrid_c_512 --strategy lock_global --threads 1 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-071526_022_threadbench_uuid_hybrid_c_512_lock_global_t1.csv
+threadbench: workers on CPUs 0
+  run_id=136 status=ok rows=5 (26.734 s, rss 132 MiB, 0 major faults)
+[23/38] --threadbench --type uuid --filter hybrid_c_512 --strategy lock_global --threads 2 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-071526_023_threadbench_uuid_hybrid_c_512_lock_global_t2.csv
+threadbench: workers on CPUs 0 1
+  run_id=137 status=ok rows=5 (38.167 s, rss 132 MiB, 0 major faults)
+[24/38] --threadbench --type uuid --filter hybrid_c_512 --strategy lock_global --threads 4 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-071526_024_threadbench_uuid_hybrid_c_512_lock_global_t4.csv
+threadbench: workers on CPUs 0 1 2 3
+  run_id=138 status=ok rows=5 (33.247 s, rss 132 MiB, 0 major faults)
+[25/38] --threadbench --type uuid --filter hybrid_c_512 --strategy lock_global --threads 6 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-071526_025_threadbench_uuid_hybrid_c_512_lock_global_t6.csv
+threadbench: workers on CPUs 0 1 2 3 4 5
+  run_id=139 status=ok rows=5 (35.108 s, rss 132 MiB, 0 major faults)
+[26/38] --threadbench --type uuid --filter hybrid_c_512 --strategy lock_shard --threads 1 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-071526_026_threadbench_uuid_hybrid_c_512_lock_shard_t1.csv
+threadbench: workers on CPUs 0
+  run_id=140 status=ok rows=5 (28.603 s, rss 147 MiB, 0 major faults)
+[27/38] --threadbench --type uuid --filter hybrid_c_512 --strategy lock_shard --threads 2 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-071526_027_threadbench_uuid_hybrid_c_512_lock_shard_t2.csv
+threadbench: workers on CPUs 0 1
+  run_id=141 status=ok rows=5 (18.535 s, rss 146 MiB, 0 major faults)
+[28/38] --threadbench --type uuid --filter hybrid_c_512 --strategy lock_shard --threads 4 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-071526_028_threadbench_uuid_hybrid_c_512_lock_shard_t4.csv
+threadbench: workers on CPUs 0 1 2 3
+  run_id=142 status=ok rows=5 (13.198 s, rss 146 MiB, 0 major faults)
+[29/38] --threadbench --type uuid --filter hybrid_c_512 --strategy lock_shard --threads 6 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-071526_029_threadbench_uuid_hybrid_c_512_lock_shard_t6.csv
+threadbench: workers on CPUs 0 1 2 3 4 5
+  run_id=143 status=ok rows=5 (12.977 s, rss 146 MiB, 0 major faults)
+[30/38] --threadbench --type uuid --filter hybrid_c_4096 --strategy serial --threads 1 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-071526_030_threadbench_uuid_hybrid_c_4096_serial_t1.csv
+  run_id=144 status=ok rows=5 (28.825 s, rss 129 MiB, 0 major faults)
+[31/38] --threadbench --type uuid --filter hybrid_c_4096 --strategy lock_global --threads 1 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-071526_031_threadbench_uuid_hybrid_c_4096_lock_global_t1.csv
+threadbench: workers on CPUs 0
+  run_id=145 status=ok rows=5 (31.517 s, rss 130 MiB, 0 major faults)
+[32/38] --threadbench --type uuid --filter hybrid_c_4096 --strategy lock_global --threads 2 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-071526_032_threadbench_uuid_hybrid_c_4096_lock_global_t2.csv
+threadbench: workers on CPUs 0 1
+  run_id=146 status=ok rows=5 (43.588 s, rss 129 MiB, 0 major faults)
+[33/38] --threadbench --type uuid --filter hybrid_c_4096 --strategy lock_global --threads 4 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-071526_033_threadbench_uuid_hybrid_c_4096_lock_global_t4.csv
+threadbench: workers on CPUs 0 1 2 3
+  run_id=147 status=ok rows=5 (38.479 s, rss 129 MiB, 0 major faults)
+[34/38] --threadbench --type uuid --filter hybrid_c_4096 --strategy lock_global --threads 6 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-071526_034_threadbench_uuid_hybrid_c_4096_lock_global_t6.csv
+threadbench: workers on CPUs 0 1 2 3 4 5
+  run_id=148 status=ok rows=5 (40.682 s, rss 129 MiB, 0 major faults)
+[35/38] --threadbench --type uuid --filter hybrid_c_4096 --strategy lock_shard --threads 1 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-071526_035_threadbench_uuid_hybrid_c_4096_lock_shard_t1.csv
+threadbench: workers on CPUs 0
+  run_id=149 status=ok rows=5 (31.71 s, rss 131 MiB, 0 major faults)
+[36/38] --threadbench --type uuid --filter hybrid_c_4096 --strategy lock_shard --threads 2 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-071526_036_threadbench_uuid_hybrid_c_4096_lock_shard_t2.csv
+threadbench: workers on CPUs 0 1
+  run_id=150 status=ok rows=5 (21.006 s, rss 131 MiB, 0 major faults)
+[37/38] --threadbench --type uuid --filter hybrid_c_4096 --strategy lock_shard --threads 4 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-071526_037_threadbench_uuid_hybrid_c_4096_lock_shard_t4.csv
+threadbench: workers on CPUs 0 1 2 3
+  run_id=151 status=ok rows=5 (17.244 s, rss 131 MiB, 0 major faults)
+[38/38] --threadbench --type uuid --filter hybrid_c_4096 --strategy lock_shard --threads 6 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-071526_038_threadbench_uuid_hybrid_c_4096_lock_shard_t6.csv
+threadbench: workers on CPUs 0 1 2 3 4 5
+  run_id=152 status=ok rows=5 (16.249 s, rss 131 MiB, 0 major faults)
+database: /home/debian/bloom/results/bloom.db
+=== 2026-11-08T07:31:13+00:00 pass 3/3 N=1000000 uuid threadbench
+batch 20261108-073113: 38 run(s), protocol 5, commit 002a50cc
+[1/38] --threadbench --type uuid --filter sbf --strategy serial --threads 1 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-073113_001_threadbench_uuid_sbf_serial_t1.csv
+  run_id=153 status=ok rows=5 (1.236 s, rss 32 MiB, 0 major faults)
+[2/38] --threadbench --type uuid --filter pbf --strategy serial --threads 1 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-073113_002_threadbench_uuid_pbf_serial_t1.csv
+  run_id=154 status=ok rows=5 (1.24 s, rss 33 MiB, 0 major faults)
+[3/38] --threadbench --type uuid --filter pbf --strategy partition --threads 1 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-073113_003_threadbench_uuid_pbf_partition_t1.csv
+threadbench: workers on CPUs 0
+  run_id=155 status=ok rows=5 (1.216 s, rss 34 MiB, 0 major faults)
+[4/38] --threadbench --type uuid --filter pbf --strategy partition --threads 2 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-073113_004_threadbench_uuid_pbf_partition_t2.csv
+threadbench: workers on CPUs 0 1
+  run_id=156 status=ok rows=5 (0.805 s, rss 32 MiB, 0 major faults)
+[5/38] --threadbench --type uuid --filter pbf --strategy partition --threads 4 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-073113_005_threadbench_uuid_pbf_partition_t4.csv
+threadbench: workers on CPUs 0 1 2 3
+  run_id=157 status=ok rows=5 (0.558 s, rss 33 MiB, 0 major faults)
+[6/38] --threadbench --type uuid --filter pbf --strategy partition --threads 6 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-073113_006_threadbench_uuid_pbf_partition_t6.csv
+threadbench: workers on CPUs 0 1 2 3 4 5
+  run_id=158 status=ok rows=5 (0.546 s, rss 33 MiB, 0 major faults)
+[7/38] --threadbench --type uuid --filter pbf --strategy atomic --threads 1 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-073113_007_threadbench_uuid_pbf_atomic_t1.csv
+threadbench: workers on CPUs 0
+  run_id=159 status=ok rows=5 (1.318 s, rss 33 MiB, 0 major faults)
+[8/38] --threadbench --type uuid --filter pbf --strategy atomic --threads 2 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-073113_008_threadbench_uuid_pbf_atomic_t2.csv
+threadbench: workers on CPUs 0 1
+  run_id=160 status=ok rows=5 (0.996 s, rss 33 MiB, 0 major faults)
+[9/38] --threadbench --type uuid --filter pbf --strategy atomic --threads 4 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-073113_009_threadbench_uuid_pbf_atomic_t4.csv
+threadbench: workers on CPUs 0 1 2 3
+  run_id=161 status=ok rows=5 (0.694 s, rss 33 MiB, 0 major faults)
+[10/38] --threadbench --type uuid --filter pbf --strategy atomic --threads 6 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-073113_010_threadbench_uuid_pbf_atomic_t6.csv
+threadbench: workers on CPUs 0 1 2 3 4 5
+  run_id=162 status=ok rows=5 (0.764 s, rss 34 MiB, 0 major faults)
+[11/38] --threadbench --type uuid --filter hybrid_512 --strategy serial --threads 1 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-073113_011_threadbench_uuid_hybrid_512_serial_t1.csv
+  run_id=163 status=ok rows=5 (0.91 s, rss 34 MiB, 0 major faults)
+[12/38] --threadbench --type uuid --filter hybrid_512 --strategy atomic --threads 1 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-073113_012_threadbench_uuid_hybrid_512_atomic_t1.csv
+threadbench: workers on CPUs 0
+  run_id=164 status=ok rows=5 (0.987 s, rss 32 MiB, 0 major faults)
+[13/38] --threadbench --type uuid --filter hybrid_512 --strategy atomic --threads 2 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-073113_013_threadbench_uuid_hybrid_512_atomic_t2.csv
+threadbench: workers on CPUs 0 1
+  run_id=165 status=ok rows=5 (0.839 s, rss 34 MiB, 0 major faults)
+[14/38] --threadbench --type uuid --filter hybrid_512 --strategy atomic --threads 4 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-073113_014_threadbench_uuid_hybrid_512_atomic_t4.csv
+threadbench: workers on CPUs 0 1 2 3
+  run_id=166 status=ok rows=5 (0.741 s, rss 32 MiB, 0 major faults)
+[15/38] --threadbench --type uuid --filter hybrid_512 --strategy atomic --threads 6 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-073113_015_threadbench_uuid_hybrid_512_atomic_t6.csv
+threadbench: workers on CPUs 0 1 2 3 4 5
+  run_id=167 status=ok rows=5 (0.708 s, rss 32 MiB, 0 major faults)
+[16/38] --threadbench --type uuid --filter hybrid_4096 --strategy serial --threads 1 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-073113_016_threadbench_uuid_hybrid_4096_serial_t1.csv
+  run_id=168 status=ok rows=5 (0.971 s, rss 33 MiB, 0 major faults)
+[17/38] --threadbench --type uuid --filter hybrid_4096 --strategy atomic --threads 1 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-073113_017_threadbench_uuid_hybrid_4096_atomic_t1.csv
+threadbench: workers on CPUs 0
+  run_id=169 status=ok rows=5 (1.073 s, rss 33 MiB, 0 major faults)
+[18/38] --threadbench --type uuid --filter hybrid_4096 --strategy atomic --threads 2 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-073113_018_threadbench_uuid_hybrid_4096_atomic_t2.csv
+threadbench: workers on CPUs 0 1
+  run_id=170 status=ok rows=5 (0.89 s, rss 33 MiB, 0 major faults)
+[19/38] --threadbench --type uuid --filter hybrid_4096 --strategy atomic --threads 4 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-073113_019_threadbench_uuid_hybrid_4096_atomic_t4.csv
+threadbench: workers on CPUs 0 1 2 3
+  run_id=171 status=ok rows=5 (0.785 s, rss 33 MiB, 0 major faults)
+[20/38] --threadbench --type uuid --filter hybrid_4096 --strategy atomic --threads 6 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-073113_020_threadbench_uuid_hybrid_4096_atomic_t6.csv
+threadbench: workers on CPUs 0 1 2 3 4 5
+  run_id=172 status=ok rows=5 (0.742 s, rss 32 MiB, 0 major faults)
+[21/38] --threadbench --type uuid --filter hybrid_c_512 --strategy serial --threads 1 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-073113_021_threadbench_uuid_hybrid_c_512_serial_t1.csv
+  run_id=173 status=ok rows=5 (1.095 s, rss 37 MiB, 0 major faults)
+[22/38] --threadbench --type uuid --filter hybrid_c_512 --strategy lock_global --threads 1 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-073113_022_threadbench_uuid_hybrid_c_512_lock_global_t1.csv
+threadbench: workers on CPUs 0
+  run_id=174 status=ok rows=5 (1.15 s, rss 36 MiB, 0 major faults)
+[23/38] --threadbench --type uuid --filter hybrid_c_512 --strategy lock_global --threads 2 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-073113_023_threadbench_uuid_hybrid_c_512_lock_global_t2.csv
+threadbench: workers on CPUs 0 1
+  run_id=175 status=ok rows=5 (1.465 s, rss 36 MiB, 0 major faults)
+[24/38] --threadbench --type uuid --filter hybrid_c_512 --strategy lock_global --threads 4 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-073113_024_threadbench_uuid_hybrid_c_512_lock_global_t4.csv
+threadbench: workers on CPUs 0 1 2 3
+  run_id=176 status=ok rows=5 (1.552 s, rss 37 MiB, 0 major faults)
+[25/38] --threadbench --type uuid --filter hybrid_c_512 --strategy lock_global --threads 6 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-073113_025_threadbench_uuid_hybrid_c_512_lock_global_t6.csv
+threadbench: workers on CPUs 0 1 2 3 4 5
+  run_id=177 status=ok rows=5 (1.673 s, rss 37 MiB, 0 major faults)
+[26/38] --threadbench --type uuid --filter hybrid_c_512 --strategy lock_shard --threads 1 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-073113_026_threadbench_uuid_hybrid_c_512_lock_shard_t1.csv
+threadbench: workers on CPUs 0
+  run_id=178 status=ok rows=5 (1.205 s, rss 37 MiB, 0 major faults)
+[27/38] --threadbench --type uuid --filter hybrid_c_512 --strategy lock_shard --threads 2 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-073113_027_threadbench_uuid_hybrid_c_512_lock_shard_t2.csv
+threadbench: workers on CPUs 0 1
+  run_id=179 status=ok rows=5 (0.932 s, rss 37 MiB, 0 major faults)
+[28/38] --threadbench --type uuid --filter hybrid_c_512 --strategy lock_shard --threads 4 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-073113_028_threadbench_uuid_hybrid_c_512_lock_shard_t4.csv
+threadbench: workers on CPUs 0 1 2 3
+  run_id=180 status=ok rows=5 (0.811 s, rss 37 MiB, 0 major faults)
+[29/38] --threadbench --type uuid --filter hybrid_c_512 --strategy lock_shard --threads 6 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-073113_029_threadbench_uuid_hybrid_c_512_lock_shard_t6.csv
+threadbench: workers on CPUs 0 1 2 3 4 5
+  run_id=181 status=ok rows=5 (0.563 s, rss 38 MiB, 0 major faults)
+[30/38] --threadbench --type uuid --filter hybrid_c_4096 --strategy serial --threads 1 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-073113_030_threadbench_uuid_hybrid_c_4096_serial_t1.csv
+  run_id=182 status=ok rows=5 (1.048 s, rss 35 MiB, 0 major faults)
+[31/38] --threadbench --type uuid --filter hybrid_c_4096 --strategy lock_global --threads 1 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-073113_031_threadbench_uuid_hybrid_c_4096_lock_global_t1.csv
+threadbench: workers on CPUs 0
+  run_id=183 status=ok rows=5 (1.19 s, rss 36 MiB, 0 major faults)
+[32/38] --threadbench --type uuid --filter hybrid_c_4096 --strategy lock_global --threads 2 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-073113_032_threadbench_uuid_hybrid_c_4096_lock_global_t2.csv
+threadbench: workers on CPUs 0 1
+  run_id=184 status=ok rows=5 (1.547 s, rss 36 MiB, 0 major faults)
+[33/38] --threadbench --type uuid --filter hybrid_c_4096 --strategy lock_global --threads 4 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-073113_033_threadbench_uuid_hybrid_c_4096_lock_global_t4.csv
+threadbench: workers on CPUs 0 1 2 3
+  run_id=185 status=ok rows=5 (1.725 s, rss 35 MiB, 0 major faults)
+[34/38] --threadbench --type uuid --filter hybrid_c_4096 --strategy lock_global --threads 6 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-073113_034_threadbench_uuid_hybrid_c_4096_lock_global_t6.csv
+threadbench: workers on CPUs 0 1 2 3 4 5
+  run_id=186 status=ok rows=5 (1.878 s, rss 36 MiB, 0 major faults)
+[35/38] --threadbench --type uuid --filter hybrid_c_4096 --strategy lock_shard --threads 1 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-073113_035_threadbench_uuid_hybrid_c_4096_lock_shard_t1.csv
+threadbench: workers on CPUs 0
+  run_id=187 status=ok rows=5 (1.192 s, rss 37 MiB, 0 major faults)
+[36/38] --threadbench --type uuid --filter hybrid_c_4096 --strategy lock_shard --threads 2 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-073113_036_threadbench_uuid_hybrid_c_4096_lock_shard_t2.csv
+threadbench: workers on CPUs 0 1
+  run_id=188 status=ok rows=5 (0.986 s, rss 36 MiB, 0 major faults)
+[37/38] --threadbench --type uuid --filter hybrid_c_4096 --strategy lock_shard --threads 4 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-073113_037_threadbench_uuid_hybrid_c_4096_lock_shard_t4.csv
+threadbench: workers on CPUs 0 1 2 3
+  run_id=189 status=ok rows=5 (0.843 s, rss 36 MiB, 0 major faults)
+[38/38] --threadbench --type uuid --filter hybrid_c_4096 --strategy lock_shard --threads 6 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-073113_038_threadbench_uuid_hybrid_c_4096_lock_shard_t6.csv
+threadbench: workers on CPUs 0 1 2 3 4 5
+  run_id=190 status=ok rows=5 (0.788 s, rss 37 MiB, 0 major faults)
+database: /home/debian/bloom/results/bloom.db
+=== 2026-11-08T07:31:53+00:00 pass 3/3 N=20000000 uuid threadbench
+batch 20261108-073153: 38 run(s), protocol 5, commit 002a50cc
+[1/38] --threadbench --type uuid --filter sbf --strategy serial --threads 1 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-073153_001_threadbench_uuid_sbf_serial_t1.csv
+  run_id=191 status=ok rows=5 (44.073 s, rss 60 MiB, 0 major faults)
+[2/38] --threadbench --type uuid --filter pbf --strategy serial --threads 1 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-073153_002_threadbench_uuid_pbf_serial_t1.csv
+  run_id=192 status=ok rows=5 (41.977 s, rss 60 MiB, 0 major faults)
+[3/38] --threadbench --type uuid --filter pbf --strategy partition --threads 1 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-073153_003_threadbench_uuid_pbf_partition_t1.csv
+threadbench: workers on CPUs 0
+  run_id=193 status=ok rows=5 (42.625 s, rss 60 MiB, 0 major faults)
+[4/38] --threadbench --type uuid --filter pbf --strategy partition --threads 2 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-073153_004_threadbench_uuid_pbf_partition_t2.csv
+threadbench: workers on CPUs 0 1
+  run_id=194 status=ok rows=5 (27.091 s, rss 60 MiB, 0 major faults)
+[5/38] --threadbench --type uuid --filter pbf --strategy partition --threads 4 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-073153_005_threadbench_uuid_pbf_partition_t4.csv
+threadbench: workers on CPUs 0 1 2 3
+  run_id=195 status=ok rows=5 (17.204 s, rss 60 MiB, 0 major faults)
+[6/38] --threadbench --type uuid --filter pbf --strategy partition --threads 6 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-073153_006_threadbench_uuid_pbf_partition_t6.csv
+threadbench: workers on CPUs 0 1 2 3 4 5
+  run_id=196 status=ok rows=5 (16.178 s, rss 60 MiB, 0 major faults)
+[7/38] --threadbench --type uuid --filter pbf --strategy atomic --threads 1 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-073153_007_threadbench_uuid_pbf_atomic_t1.csv
+threadbench: workers on CPUs 0
+  run_id=197 status=ok rows=5 (44.842 s, rss 60 MiB, 0 major faults)
+[8/38] --threadbench --type uuid --filter pbf --strategy atomic --threads 2 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-073153_008_threadbench_uuid_pbf_atomic_t2.csv
+threadbench: workers on CPUs 0 1
+  run_id=198 status=ok rows=5 (26.192 s, rss 60 MiB, 0 major faults)
+[9/38] --threadbench --type uuid --filter pbf --strategy atomic --threads 4 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-073153_009_threadbench_uuid_pbf_atomic_t4.csv
+threadbench: workers on CPUs 0 1 2 3
+  run_id=199 status=ok rows=5 (16.576 s, rss 60 MiB, 0 major faults)
+[10/38] --threadbench --type uuid --filter pbf --strategy atomic --threads 6 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-073153_010_threadbench_uuid_pbf_atomic_t6.csv
+threadbench: workers on CPUs 0 1 2 3 4 5
+  run_id=200 status=ok rows=5 (12.972 s, rss 60 MiB, 0 major faults)
+[11/38] --threadbench --type uuid --filter hybrid_512 --strategy serial --threads 1 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-073153_011_threadbench_uuid_hybrid_512_serial_t1.csv
+  run_id=201 status=ok rows=5 (17.88 s, rss 61 MiB, 0 major faults)
+[12/38] --threadbench --type uuid --filter hybrid_512 --strategy atomic --threads 1 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-073153_012_threadbench_uuid_hybrid_512_atomic_t1.csv
+threadbench: workers on CPUs 0
+  run_id=202 status=ok rows=5 (19.825 s, rss 61 MiB, 0 major faults)
+[13/38] --threadbench --type uuid --filter hybrid_512 --strategy atomic --threads 2 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-073153_013_threadbench_uuid_hybrid_512_atomic_t2.csv
+threadbench: workers on CPUs 0 1
+  run_id=203 status=ok rows=5 (13.209 s, rss 61 MiB, 0 major faults)
+[14/38] --threadbench --type uuid --filter hybrid_512 --strategy atomic --threads 4 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-073153_014_threadbench_uuid_hybrid_512_atomic_t4.csv
+threadbench: workers on CPUs 0 1 2 3
+  run_id=204 status=ok rows=5 (12.219 s, rss 61 MiB, 0 major faults)
+[15/38] --threadbench --type uuid --filter hybrid_512 --strategy atomic --threads 6 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-073153_015_threadbench_uuid_hybrid_512_atomic_t6.csv
+threadbench: workers on CPUs 0 1 2 3 4 5
+  run_id=205 status=ok rows=5 (10.026 s, rss 61 MiB, 0 major faults)
+[16/38] --threadbench --type uuid --filter hybrid_4096 --strategy serial --threads 1 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-073153_016_threadbench_uuid_hybrid_4096_serial_t1.csv
+  run_id=206 status=ok rows=5 (22.275 s, rss 60 MiB, 0 major faults)
+[17/38] --threadbench --type uuid --filter hybrid_4096 --strategy atomic --threads 1 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-073153_017_threadbench_uuid_hybrid_4096_atomic_t1.csv
+threadbench: workers on CPUs 0
+  run_id=207 status=ok rows=5 (23.449 s, rss 60 MiB, 0 major faults)
+[18/38] --threadbench --type uuid --filter hybrid_4096 --strategy atomic --threads 2 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-073153_018_threadbench_uuid_hybrid_4096_atomic_t2.csv
+threadbench: workers on CPUs 0 1
+  run_id=208 status=ok rows=5 (14.541 s, rss 60 MiB, 0 major faults)
+[19/38] --threadbench --type uuid --filter hybrid_4096 --strategy atomic --threads 4 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-073153_019_threadbench_uuid_hybrid_4096_atomic_t4.csv
+threadbench: workers on CPUs 0 1 2 3
+  run_id=209 status=ok rows=5 (10.792 s, rss 60 MiB, 0 major faults)
+[20/38] --threadbench --type uuid --filter hybrid_4096 --strategy atomic --threads 6 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-073153_020_threadbench_uuid_hybrid_4096_atomic_t6.csv
+threadbench: workers on CPUs 0 1 2 3 4 5
+  run_id=210 status=ok rows=5 (9.662 s, rss 60 MiB, 0 major faults)
+[21/38] --threadbench --type uuid --filter hybrid_c_512 --strategy serial --threads 1 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-073153_021_threadbench_uuid_hybrid_c_512_serial_t1.csv
+  run_id=211 status=ok rows=5 (24.861 s, rss 132 MiB, 0 major faults)
+[22/38] --threadbench --type uuid --filter hybrid_c_512 --strategy lock_global --threads 1 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-073153_022_threadbench_uuid_hybrid_c_512_lock_global_t1.csv
+threadbench: workers on CPUs 0
+  run_id=212 status=ok rows=5 (27.324 s, rss 132 MiB, 0 major faults)
+[23/38] --threadbench --type uuid --filter hybrid_c_512 --strategy lock_global --threads 2 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-073153_023_threadbench_uuid_hybrid_c_512_lock_global_t2.csv
+threadbench: workers on CPUs 0 1
+  run_id=213 status=ok rows=5 (37.566 s, rss 132 MiB, 0 major faults)
+[24/38] --threadbench --type uuid --filter hybrid_c_512 --strategy lock_global --threads 4 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-073153_024_threadbench_uuid_hybrid_c_512_lock_global_t4.csv
+threadbench: workers on CPUs 0 1 2 3
+  run_id=214 status=ok rows=5 (34.328 s, rss 132 MiB, 0 major faults)
+[25/38] --threadbench --type uuid --filter hybrid_c_512 --strategy lock_global --threads 6 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-073153_025_threadbench_uuid_hybrid_c_512_lock_global_t6.csv
+threadbench: workers on CPUs 0 1 2 3 4 5
+  run_id=215 status=ok rows=5 (35.362 s, rss 132 MiB, 0 major faults)
+[26/38] --threadbench --type uuid --filter hybrid_c_512 --strategy lock_shard --threads 1 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-073153_026_threadbench_uuid_hybrid_c_512_lock_shard_t1.csv
+threadbench: workers on CPUs 0
+  run_id=216 status=ok rows=5 (29.615 s, rss 147 MiB, 0 major faults)
+[27/38] --threadbench --type uuid --filter hybrid_c_512 --strategy lock_shard --threads 2 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-073153_027_threadbench_uuid_hybrid_c_512_lock_shard_t2.csv
+threadbench: workers on CPUs 0 1
+  run_id=217 status=ok rows=5 (18.875 s, rss 147 MiB, 0 major faults)
+[28/38] --threadbench --type uuid --filter hybrid_c_512 --strategy lock_shard --threads 4 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-073153_028_threadbench_uuid_hybrid_c_512_lock_shard_t4.csv
+threadbench: workers on CPUs 0 1 2 3
+  run_id=218 status=ok rows=5 (13.327 s, rss 147 MiB, 0 major faults)
+[29/38] --threadbench --type uuid --filter hybrid_c_512 --strategy lock_shard --threads 6 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-073153_029_threadbench_uuid_hybrid_c_512_lock_shard_t6.csv
+threadbench: workers on CPUs 0 1 2 3 4 5
+  run_id=219 status=ok rows=5 (13.741 s, rss 147 MiB, 0 major faults)
+[30/38] --threadbench --type uuid --filter hybrid_c_4096 --strategy serial --threads 1 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-073153_030_threadbench_uuid_hybrid_c_4096_serial_t1.csv
+  run_id=220 status=ok rows=5 (29.426 s, rss 129 MiB, 0 major faults)
+[31/38] --threadbench --type uuid --filter hybrid_c_4096 --strategy lock_global --threads 1 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-073153_031_threadbench_uuid_hybrid_c_4096_lock_global_t1.csv
+threadbench: workers on CPUs 0
+  run_id=221 status=ok rows=5 (31.488 s, rss 129 MiB, 0 major faults)
+[32/38] --threadbench --type uuid --filter hybrid_c_4096 --strategy lock_global --threads 2 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-073153_032_threadbench_uuid_hybrid_c_4096_lock_global_t2.csv
+threadbench: workers on CPUs 0 1
+  run_id=222 status=ok rows=5 (42.829 s, rss 129 MiB, 0 major faults)
+[33/38] --threadbench --type uuid --filter hybrid_c_4096 --strategy lock_global --threads 4 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-073153_033_threadbench_uuid_hybrid_c_4096_lock_global_t4.csv
+threadbench: workers on CPUs 0 1 2 3
+  run_id=223 status=ok rows=5 (38.421 s, rss 129 MiB, 0 major faults)
+[34/38] --threadbench --type uuid --filter hybrid_c_4096 --strategy lock_global --threads 6 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-073153_034_threadbench_uuid_hybrid_c_4096_lock_global_t6.csv
+threadbench: workers on CPUs 0 1 2 3 4 5
+  run_id=224 status=ok rows=5 (40.803 s, rss 129 MiB, 0 major faults)
+[35/38] --threadbench --type uuid --filter hybrid_c_4096 --strategy lock_shard --threads 1 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-073153_035_threadbench_uuid_hybrid_c_4096_lock_shard_t1.csv
+threadbench: workers on CPUs 0
+  run_id=225 status=ok rows=5 (31.827 s, rss 131 MiB, 0 major faults)
+[36/38] --threadbench --type uuid --filter hybrid_c_4096 --strategy lock_shard --threads 2 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-073153_036_threadbench_uuid_hybrid_c_4096_lock_shard_t2.csv
+threadbench: workers on CPUs 0 1
+  run_id=226 status=ok rows=5 (20.745 s, rss 131 MiB, 0 major faults)
+[37/38] --threadbench --type uuid --filter hybrid_c_4096 --strategy lock_shard --threads 4 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-073153_037_threadbench_uuid_hybrid_c_4096_lock_shard_t4.csv
+threadbench: workers on CPUs 0 1 2 3
+  run_id=227 status=ok rows=5 (15.836 s, rss 131 MiB, 0 major faults)
+[38/38] --threadbench --type uuid --filter hybrid_c_4096 --strategy lock_shard --threads 6 --p 0.01 --reps 5 --out /home/debian/bloom/results/raw/20261108-073153_038_threadbench_uuid_hybrid_c_4096_lock_shard_t6.csv
+threadbench: workers on CPUs 0 1 2 3 4 5
+  run_id=228 status=ok rows=5 (13.793 s, rss 131 MiB, 0 major faults)
+database: /home/debian/bloom/results/bloom.db
+=== 2026-11-08T07:47:41+00:00 finished, 0 step(s) with failures
+##### 2026-11-08T07:47:41+00:00 LABEL=ponte TYPES=uuid NS=1000000 20000000 EXPERIMENTS=benchmark FILTERS=sbf pbf hybrid_512 hybrid_c_512 REPS=5 REPEAT=3
+=== 2026-11-08T07:47:41+00:00 pass 1/3 N=1000000 uuid benchmark
+batch 20261108-074741: 8 run(s), protocol 5, commit 002a50cc
+[1/8] --benchmark --type uuid --filter sbf --p 0.01 --reps 5 --sizing same_m --out /home/debian/bloom/results/raw/20261108-074741_001_benchmark_uuid_sbf.csv
+  run_id=229 status=ok rows=5 (1.23 s, rss 22 MiB, 0 major faults)
+[2/8] --benchmark --type uuid --filter sbf --p 0.01 --reps 5 --sizing same_fpr --out /home/debian/bloom/results/raw/20261108-074741_002_benchmark_uuid_sbf.csv
+  run_id=230 status=ok rows=5 (1.337 s, rss 22 MiB, 0 major faults)
+[3/8] --benchmark --type uuid --filter pbf --p 0.01 --reps 5 --sizing same_m --out /home/debian/bloom/results/raw/20261108-074741_003_benchmark_uuid_pbf.csv
+  run_id=231 status=ok rows=5 (1.309 s, rss 22 MiB, 0 major faults)
+[4/8] --benchmark --type uuid --filter pbf --p 0.01 --reps 5 --sizing same_fpr --out /home/debian/bloom/results/raw/20261108-074741_004_benchmark_uuid_pbf.csv
+  run_id=232 status=ok rows=5 (1.333 s, rss 22 MiB, 0 major faults)
+[5/8] --benchmark --type uuid --filter hybrid_512 --p 0.01 --reps 5 --sizing same_m --out /home/debian/bloom/results/raw/20261108-074741_005_benchmark_uuid_hybrid_512.csv
+  run_id=233 status=ok rows=5 (0.698 s, rss 22 MiB, 0 major faults)
+[6/8] --benchmark --type uuid --filter hybrid_512 --p 0.01 --reps 5 --sizing same_fpr --out /home/debian/bloom/results/raw/20261108-074741_006_benchmark_uuid_hybrid_512.csv
+  run_id=234 status=ok rows=5 (0.728 s, rss 22 MiB, 0 major faults)
+[7/8] --benchmark --type uuid --filter hybrid_c_512 --p 0.01 --reps 5 --sizing same_m --out /home/debian/bloom/results/raw/20261108-074741_007_benchmark_uuid_hybrid_c_512.csv
+  run_id=235 status=ok rows=5 (1.272 s, rss 22 MiB, 0 major faults)
+[8/8] --benchmark --type uuid --filter hybrid_c_512 --p 0.01 --reps 5 --sizing same_fpr --out /home/debian/bloom/results/raw/20261108-074741_008_benchmark_uuid_hybrid_c_512.csv
+  run_id=236 status=ok rows=5 (1.236 s, rss 22 MiB, 0 major faults)
+database: /home/debian/bloom/results/bloom.db
+=== 2026-11-08T07:47:50+00:00 pass 1/3 N=20000000 uuid benchmark
+batch 20261108-074750: 8 run(s), protocol 5, commit 002a50cc
+[1/8] --benchmark --type uuid --filter sbf --p 0.01 --reps 5 --sizing same_m --out /home/debian/bloom/results/raw/20261108-074750_001_benchmark_uuid_sbf.csv
+  run_id=237 status=ok rows=5 (47.644 s, rss 29 MiB, 0 major faults)
+[2/8] --benchmark --type uuid --filter sbf --p 0.01 --reps 5 --sizing same_fpr --out /home/debian/bloom/results/raw/20261108-074750_002_benchmark_uuid_sbf.csv
+  run_id=238 status=ok rows=5 (48.04 s, rss 29 MiB, 0 major faults)
+[3/8] --benchmark --type uuid --filter pbf --p 0.01 --reps 5 --sizing same_m --out /home/debian/bloom/results/raw/20261108-074750_003_benchmark_uuid_pbf.csv
+  run_id=239 status=ok rows=5 (46.661 s, rss 52 MiB, 0 major faults)
+[4/8] --benchmark --type uuid --filter pbf --p 0.01 --reps 5 --sizing same_fpr --out /home/debian/bloom/results/raw/20261108-074750_004_benchmark_uuid_pbf.csv
+  run_id=240 status=ok rows=5 (45.118 s, rss 52 MiB, 0 major faults)
+[5/8] --benchmark --type uuid --filter hybrid_512 --p 0.01 --reps 5 --sizing same_m --out /home/debian/bloom/results/raw/20261108-074750_005_benchmark_uuid_hybrid_512.csv
+  run_id=241 status=ok rows=5 (18.646 s, rss 52 MiB, 0 major faults)
+[6/8] --benchmark --type uuid --filter hybrid_512 --p 0.01 --reps 5 --sizing same_fpr --out /home/debian/bloom/results/raw/20261108-074750_006_benchmark_uuid_hybrid_512.csv
+  run_id=242 status=ok rows=5 (18.738 s, rss 53 MiB, 0 major faults)
+[7/8] --benchmark --type uuid --filter hybrid_c_512 --p 0.01 --reps 5 --sizing same_m --out /home/debian/bloom/results/raw/20261108-074750_007_benchmark_uuid_hybrid_c_512.csv
+  run_id=243 status=ok rows=5 (40.026 s, rss 98 MiB, 0 major faults)
+[8/8] --benchmark --type uuid --filter hybrid_c_512 --p 0.01 --reps 5 --sizing same_fpr --out /home/debian/bloom/results/raw/20261108-074750_008_benchmark_uuid_hybrid_c_512.csv
+  run_id=244 status=ok rows=5 (37.458 s, rss 101 MiB, 0 major faults)
+database: /home/debian/bloom/results/bloom.db
+=== 2026-11-08T07:52:57+00:00 pass 2/3 N=1000000 uuid benchmark
+batch 20261108-075257: 8 run(s), protocol 5, commit 002a50cc
+[1/8] --benchmark --type uuid --filter sbf --p 0.01 --reps 5 --sizing same_m --out /home/debian/bloom/results/raw/20261108-075257_001_benchmark_uuid_sbf.csv
+  run_id=245 status=ok rows=5 (1.258 s, rss 22 MiB, 0 major faults)
+[2/8] --benchmark --type uuid --filter sbf --p 0.01 --reps 5 --sizing same_fpr --out /home/debian/bloom/results/raw/20261108-075257_002_benchmark_uuid_sbf.csv
+  run_id=246 status=ok rows=5 (1.323 s, rss 22 MiB, 0 major faults)
+[3/8] --benchmark --type uuid --filter pbf --p 0.01 --reps 5 --sizing same_m --out /home/debian/bloom/results/raw/20261108-075257_003_benchmark_uuid_pbf.csv
+  run_id=247 status=ok rows=5 (1.335 s, rss 22 MiB, 0 major faults)
+[4/8] --benchmark --type uuid --filter pbf --p 0.01 --reps 5 --sizing same_fpr --out /home/debian/bloom/results/raw/20261108-075257_004_benchmark_uuid_pbf.csv
+  run_id=248 status=ok rows=5 (1.349 s, rss 22 MiB, 0 major faults)
+[5/8] --benchmark --type uuid --filter hybrid_512 --p 0.01 --reps 5 --sizing same_m --out /home/debian/bloom/results/raw/20261108-075257_005_benchmark_uuid_hybrid_512.csv
+  run_id=249 status=ok rows=5 (0.693 s, rss 22 MiB, 0 major faults)
+[6/8] --benchmark --type uuid --filter hybrid_512 --p 0.01 --reps 5 --sizing same_fpr --out /home/debian/bloom/results/raw/20261108-075257_006_benchmark_uuid_hybrid_512.csv
+  run_id=250 status=ok rows=5 (0.731 s, rss 22 MiB, 0 major faults)
+[7/8] --benchmark --type uuid --filter hybrid_c_512 --p 0.01 --reps 5 --sizing same_m --out /home/debian/bloom/results/raw/20261108-075257_007_benchmark_uuid_hybrid_c_512.csv
+  run_id=251 status=ok rows=5 (1.23 s, rss 22 MiB, 0 major faults)
+[8/8] --benchmark --type uuid --filter hybrid_c_512 --p 0.01 --reps 5 --sizing same_fpr --out /home/debian/bloom/results/raw/20261108-075257_008_benchmark_uuid_hybrid_c_512.csv
+  run_id=252 status=ok rows=5 (1.237 s, rss 22 MiB, 0 major faults)
+database: /home/debian/bloom/results/bloom.db
+=== 2026-11-08T07:53:06+00:00 pass 2/3 N=20000000 uuid benchmark
+batch 20261108-075306: 8 run(s), protocol 5, commit 002a50cc
+[1/8] --benchmark --type uuid --filter sbf --p 0.01 --reps 5 --sizing same_m --out /home/debian/bloom/results/raw/20261108-075306_001_benchmark_uuid_sbf.csv
+  run_id=253 status=ok rows=5 (46.466 s, rss 29 MiB, 0 major faults)
+[2/8] --benchmark --type uuid --filter sbf --p 0.01 --reps 5 --sizing same_fpr --out /home/debian/bloom/results/raw/20261108-075306_002_benchmark_uuid_sbf.csv
+  run_id=254 status=ok rows=5 (47.599 s, rss 29 MiB, 0 major faults)
+[3/8] --benchmark --type uuid --filter pbf --p 0.01 --reps 5 --sizing same_m --out /home/debian/bloom/results/raw/20261108-075306_003_benchmark_uuid_pbf.csv
+  run_id=255 status=ok rows=5 (44.495 s, rss 52 MiB, 0 major faults)
+[4/8] --benchmark --type uuid --filter pbf --p 0.01 --reps 5 --sizing same_fpr --out /home/debian/bloom/results/raw/20261108-075306_004_benchmark_uuid_pbf.csv
+  run_id=256 status=ok rows=5 (44.069 s, rss 52 MiB, 0 major faults)
+[5/8] --benchmark --type uuid --filter hybrid_512 --p 0.01 --reps 5 --sizing same_m --out /home/debian/bloom/results/raw/20261108-075306_005_benchmark_uuid_hybrid_512.csv
+  run_id=257 status=ok rows=5 (18.24 s, rss 52 MiB, 0 major faults)
+[6/8] --benchmark --type uuid --filter hybrid_512 --p 0.01 --reps 5 --sizing same_fpr --out /home/debian/bloom/results/raw/20261108-075306_006_benchmark_uuid_hybrid_512.csv
+  run_id=258 status=ok rows=5 (18.484 s, rss 53 MiB, 0 major faults)
+[7/8] --benchmark --type uuid --filter hybrid_c_512 --p 0.01 --reps 5 --sizing same_m --out /home/debian/bloom/results/raw/20261108-075306_007_benchmark_uuid_hybrid_c_512.csv
+  run_id=259 status=ok rows=5 (39.59 s, rss 98 MiB, 0 major faults)
+[8/8] --benchmark --type uuid --filter hybrid_c_512 --p 0.01 --reps 5 --sizing same_fpr --out /home/debian/bloom/results/raw/20261108-075306_008_benchmark_uuid_hybrid_c_512.csv
+  run_id=260 status=ok rows=5 (36.362 s, rss 101 MiB, 0 major faults)
+database: /home/debian/bloom/results/bloom.db
+=== 2026-11-08T07:58:06+00:00 pass 3/3 N=1000000 uuid benchmark
+batch 20261108-075806: 8 run(s), protocol 5, commit 002a50cc
+[1/8] --benchmark --type uuid --filter sbf --p 0.01 --reps 5 --sizing same_m --out /home/debian/bloom/results/raw/20261108-075806_001_benchmark_uuid_sbf.csv
+  run_id=261 status=ok rows=5 (1.251 s, rss 22 MiB, 0 major faults)
+[2/8] --benchmark --type uuid --filter sbf --p 0.01 --reps 5 --sizing same_fpr --out /home/debian/bloom/results/raw/20261108-075806_002_benchmark_uuid_sbf.csv
+  run_id=262 status=ok rows=5 (1.323 s, rss 22 MiB, 0 major faults)
+[3/8] --benchmark --type uuid --filter pbf --p 0.01 --reps 5 --sizing same_m --out /home/debian/bloom/results/raw/20261108-075806_003_benchmark_uuid_pbf.csv
+  run_id=263 status=ok rows=5 (1.319 s, rss 22 MiB, 0 major faults)
+[4/8] --benchmark --type uuid --filter pbf --p 0.01 --reps 5 --sizing same_fpr --out /home/debian/bloom/results/raw/20261108-075806_004_benchmark_uuid_pbf.csv
+  run_id=264 status=ok rows=5 (1.332 s, rss 22 MiB, 0 major faults)
+[5/8] --benchmark --type uuid --filter hybrid_512 --p 0.01 --reps 5 --sizing same_m --out /home/debian/bloom/results/raw/20261108-075806_005_benchmark_uuid_hybrid_512.csv
+  run_id=265 status=ok rows=5 (0.698 s, rss 22 MiB, 0 major faults)
+[6/8] --benchmark --type uuid --filter hybrid_512 --p 0.01 --reps 5 --sizing same_fpr --out /home/debian/bloom/results/raw/20261108-075806_006_benchmark_uuid_hybrid_512.csv
+  run_id=266 status=ok rows=5 (0.734 s, rss 22 MiB, 0 major faults)
+[7/8] --benchmark --type uuid --filter hybrid_c_512 --p 0.01 --reps 5 --sizing same_m --out /home/debian/bloom/results/raw/20261108-075806_007_benchmark_uuid_hybrid_c_512.csv
+  run_id=267 status=ok rows=5 (1.242 s, rss 22 MiB, 0 major faults)
+[8/8] --benchmark --type uuid --filter hybrid_c_512 --p 0.01 --reps 5 --sizing same_fpr --out /home/debian/bloom/results/raw/20261108-075806_008_benchmark_uuid_hybrid_c_512.csv
+  run_id=268 status=ok rows=5 (1.257 s, rss 22 MiB, 0 major faults)
+database: /home/debian/bloom/results/bloom.db
+=== 2026-11-08T07:58:15+00:00 pass 3/3 N=20000000 uuid benchmark
+batch 20261108-075815: 8 run(s), protocol 5, commit 002a50cc
+[1/8] --benchmark --type uuid --filter sbf --p 0.01 --reps 5 --sizing same_m --out /home/debian/bloom/results/raw/20261108-075815_001_benchmark_uuid_sbf.csv
+  run_id=269 status=ok rows=5 (46.923 s, rss 29 MiB, 0 major faults)
+[2/8] --benchmark --type uuid --filter sbf --p 0.01 --reps 5 --sizing same_fpr --out /home/debian/bloom/results/raw/20261108-075815_002_benchmark_uuid_sbf.csv
+  run_id=270 status=ok rows=5 (47.908 s, rss 29 MiB, 0 major faults)
+[3/8] --benchmark --type uuid --filter pbf --p 0.01 --reps 5 --sizing same_m --out /home/debian/bloom/results/raw/20261108-075815_003_benchmark_uuid_pbf.csv
+  run_id=271 status=ok rows=5 (45.259 s, rss 51 MiB, 0 major faults)
+[4/8] --benchmark --type uuid --filter pbf --p 0.01 --reps 5 --sizing same_fpr --out /home/debian/bloom/results/raw/20261108-075815_004_benchmark_uuid_pbf.csv
+  run_id=272 status=ok rows=5 (45.123 s, rss 52 MiB, 0 major faults)
+[5/8] --benchmark --type uuid --filter hybrid_512 --p 0.01 --reps 5 --sizing same_m --out /home/debian/bloom/results/raw/20261108-075815_005_benchmark_uuid_hybrid_512.csv
+  run_id=273 status=ok rows=5 (18.979 s, rss 52 MiB, 0 major faults)
+[6/8] --benchmark --type uuid --filter hybrid_512 --p 0.01 --reps 5 --sizing same_fpr --out /home/debian/bloom/results/raw/20261108-075815_006_benchmark_uuid_hybrid_512.csv
+  run_id=274 status=ok rows=5 (19.03 s, rss 53 MiB, 0 major faults)
+[7/8] --benchmark --type uuid --filter hybrid_c_512 --p 0.01 --reps 5 --sizing same_m --out /home/debian/bloom/results/raw/20261108-075815_007_benchmark_uuid_hybrid_c_512.csv
+  run_id=275 status=ok rows=5 (39.983 s, rss 98 MiB, 0 major faults)
+[8/8] --benchmark --type uuid --filter hybrid_c_512 --p 0.01 --reps 5 --sizing same_fpr --out /home/debian/bloom/results/raw/20261108-075815_008_benchmark_uuid_hybrid_c_512.csv
+  run_id=276 status=ok rows=5 (36.952 s, rss 101 MiB, 0 major faults)
+database: /home/debian/bloom/results/bloom.db
+=== 2026-11-08T08:03:19+00:00 finished, 0 step(s) with failures
+##### 2026-11-08T08:03:19+00:00 threads finished, 0 step(s) with failures
