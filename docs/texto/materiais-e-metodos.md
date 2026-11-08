@@ -93,10 +93,11 @@ para o swap do host (campo `VmSwap` em `/proc/<pid>/status`).
 
 **Disco das rodadas:**
 - Campanhas oficial e complementar: o SSD NVMe do host.
-- Variante em HD: **decisão em aberto [PREENCHER]**. Exige um disco vazio
-  dedicado ao experimento. Os scripts já aceitam outro disco
-  (`DISK_DIR`, `DISK_MODEL`, `DISK_ROTATION`), e o modelo é registrado com os
-  resultados.
+- Variante em HD: **não realizada nesta etapa** **[PROPOSTA]**. Exige um disco
+  vazio dedicado, e o único HD disponível guarda arquivos que não podem ser
+  arriscados. Os scripts já aceitam outro disco (`DISK_DIR`, `DISK_MODEL`,
+  `DISK_ROTATION`), e o modelo é registrado com os resultados; fica como trabalho
+  futuro (seção 3.11).
 
 Por que uma VM:
 - **Ambiente limpo e repetível**, sem a interferência do desktop gráfico. No
@@ -109,7 +110,7 @@ Por que uma VM:
   um servidor de dados.
 - **Disco trocável.** A mesma VM pode usar um SSD ou um HD para as tabelas e o
   swap, o que permite mostrar como o ganho do filtro depende do custo de cada
-  leitura. A campanha confirmada é no SSD; o HD está em aberto.
+  leitura. As campanhas rodaram no SSD; o HD ficou como trabalho futuro.
 
 ### 2.2 Linguagens, compilador e bibliotecas
 
@@ -228,9 +229,9 @@ proposta.
 - Rodadas oficiais: **N = 1, 5, 10 e 20 milhões**. Cada N é um dataset próprio,
   gerado com a mesma semente.
 
-  Por que esse eixo: na VM de 1 GB, a tabela exata (baseline) ocupa ~540 MB com
-  5 milhões de chaves e ~1,1 GB com 10 milhões, ou seja, passa da RAM entre 5 e
-  10 milhões. O SBF fica em ~12 MB com 10 milhões. Os dois N menores mostram o
+  Por que esse eixo: na VM de 1 GB, a tabela exata (baseline) ocupa 563 MB com
+  5 milhões de chaves, 1,13 GB com 10 milhões e 2,27 GB com 20 milhões (medido),
+  ou seja, passa da RAM entre 5 e 10 milhões. O SBF fica em 12 MB com 10 milhões. Os dois N menores mostram o
   regime em que tudo cabe na memória, e os dois maiores o regime em que a
   estrutura exata pagina.
 - **Custos medidos (UUID)**, todos lineares em N:
@@ -329,8 +330,9 @@ de uma constante **[PROPOSTA]**. A posição é `h mod m` (no PBF, `h mod s`).
   - Este detalhe não está explícito no artigo. Um teste unitário confirma que
     todas as células e todos os 61 bits são alcançados.
 - **Escolha de X e Y:** o par de primos distintos (e diferentes de 61) de
-  **menor produto** que atende ao tamanho pedido. Uma escolha ingênua, como "o
-  próximo primo depois de √m", desperdiçava ~6% de memória.
+  **menor produto** que atende ao tamanho pedido, para que o arredondamento a
+  primos desperdice o mínimo de memória (em vez de, por exemplo, tomar o próximo
+  primo depois de √m para os dois lados).
 - Cada chave liga **exatamente 1 bit**, então k = 1. FPR teórica:
   `1 − (1 − 1/M)^n`, com M = X·Y·61. Para a mesma FPR, o rDBF gasta muito mais
   memória que o SBF (≈ n/p bits contra ≈ 1,44·log₂(1/p)·n), em troca de 1 hash e
@@ -342,9 +344,11 @@ de uma constante **[PROPOSTA]**. A posição é `h mod m` (no PBF, `h mod s`).
   - **Afirmação do artigo:** o robustBF fala em ~1,382 bits por elemento com FPR
     quase nula. Com 1 bit por chave, a fórmula dá FPR ≈ 52% nesse tamanho. Os
     números medidos aqui batem com a fórmula.
-  - **Limite do hash de 32 bits:** o espaço X·Y·61 deve ficar bem abaixo de 2³².
-    Com 10 milhões de chaves e p = 1% (≈10⁹ bits), o viés estimado eleva a FPR em
-    ~1% relativo (1,004% contra 0,995%): desprezível, mas vale citar.
+  - **Limite do hash de 32 bits:** a posição vem de `h mod (X·Y·61)` com h de 32
+    bits, e o espaço X·Y·61 cresce com n (≈10⁹ bits com 10M e ≈2·10⁹ com 20M, perto
+    de 2³² ≈ 4,3·10⁹). Medido: FPR de 1,01% com 10M e ~1,03% com 20M para alvo de
+    1%, **igual nos quatro tipos de chave**, o que aponta o hash de 32 bits, e não
+    as chaves, como causa. Pequeno, mas vale citar.
 
 #### Híbrido — proposta deste trabalho (`src/hybrid.c`)
 
@@ -449,7 +453,7 @@ Procedimento para cada **estrutura × regime**:
    execução.
 
 2. **Chaves lidas em lotes.** O processo não carrega o dataset na RAM. As chaves
-   são lidas do arquivo em lotes, por um buffer fixo de 1 MiB (≈27 mil UUIDs), e
+   são lidas do arquivo em lotes, por um buffer fixo de 1 MiB (≈28 mil UUIDs), e
    as partes já lidas são retiradas do cache de páginas do sistema
    (`posix_fadvise`).
    - Com isso, a memória do processo é basicamente a estrutura medida; se algo
@@ -636,7 +640,7 @@ diferentes.
 | fração de consultas negativas | 0,5; 0,9 | I/O |
 | consultas por repetição (Q) | 10 000 | I/O |
 | modo de leitura | O_DIRECT | I/O |
-| dispositivo | SSD NVMe; HD **[PREENCHER: em aberto]** | ambos (swap) e I/O (tabelas) |
+| dispositivo | SSD NVMe (HD não realizado, seção 3.11) | ambos (swap) e I/O (tabelas) |
 | RAM disponível | 1 GB (VM) | ambos |
 
 **Campanha oficial** (protocolo 4, executada de 06 a 07/11/2026 no NVMe, rótulo
@@ -672,8 +676,8 @@ rótulos `colisoes` e `delecao`; ~1 h, 334 execuções, 0 falhas):
 
 Justificativas da grade:
 - **Baseline paginando com 3 × 1.** Quando ela pagina, cada operação fica de 50
-  a 120 vezes mais lenta (no piloto, com 10M, a inserção foi de ~350 para
-  ~16 400 ns/op, e cada falta de página custou ~80 µs). Com 5 × 3, só a UUID
+  a 120 vezes mais lenta (no piloto, a inserção foi de ~350 ns/op com 5M para
+  ~16 400 ns/op com 10M, e cada falta de página custou ~80 µs). Com 5 × 3, só a UUID
   levaria ~18 h. Um efeito desse tamanho aparece mesmo com um intervalo de
   confiança largo.
   - Por que não 2 repetições: com n = 2 o IC multiplica o desvio por
@@ -913,8 +917,10 @@ o código de schema 5, o arquivo versionado era migrado no próprio lugar.
   cada tabela foi escrita (seção 3.5). Por isso as comparações são sempre entre
   estruturas no mesmo tipo e N, nunca entre N. Contagens de leitura e FPR não
   são afetadas.
-- **Deleção com cobertura parcial.** Medida só para UUID, e a baseline só em 1M
-  e 5M (seção 3.6). Apaga-se o Dexist (10% do Dins) de uma vez, depois das
+- **Deleção com cobertura parcial.** Com repetições, medida só para UUID, e a
+  baseline só em 1M e 5M (seção 3.6). Para CPF, CNPJ e URL há uma repetição de
+  cada, vinda da rodada `colisoes` (os filtros com remoção apagam o Dexist em toda
+  execução), também com 0 falsos negativos. Apaga-se o Dexist (10% do Dins) de uma vez, depois das
   inserções, e não intercalado com elas.
 - **O modelo de I/O é simplificado:** um nível, sem compactação, um bloco por
   consulta e índice sempre na RAM. Ele isola o efeito do filtro, mas não é um
@@ -931,11 +937,11 @@ o código de schema 5, o arquivo versionado era migrado no próprio lugar.
   Mitigado por verificação: o log do host registrou `VmSwap: 0 kB` para o QEMU
   no início e no fim da campanha oficial (`vm-nvme/logs/oficial-host.log`). São
   só dois instantes, não uma medição contínua.
-- **HD.** O experimento em disco rotacional depende de um disco vazio dedicado;
-  ainda em aberto. Num HD, cada falta de página custa ~10 ms (contra ~80 µs no
+- **HD.** O experimento em disco rotacional não foi feito: depende de um disco
+  vazio dedicado, que não estava disponível. Num HD, cada falta de página custa ~10 ms (contra ~80 µs no
   NVMe), e a baseline com 10M passaria de ~19 h por repetição, então precisaria
   de um N logo acima da RAM ou de um limite de operações.
-- **Hash de 32 bits no rDBF:** viés desprezível até ~10⁹ bits (seção 3.2).
+- **Hash de 32 bits no rDBF:** a FPR sobe de 1,00% para ~1,03% com 20M (seção 3.2); com N bem maiores o efeito cresceria.
 
 ---
 
@@ -975,9 +981,11 @@ Já conhecido (dos bancos congelados e dos logs):
 - [x] QEMU sem swap no host no início e no fim da campanha oficial.
 - [x] Deleção e colisões medidas.
 
+- [x] Python 3.13.5 na VM. vCPUs fixadas nos processadores lógicos 8 e 10 (núcleos
+      físicos distintos do i5-12500, cujos pares de threads são 8/9 e 10/11) e o
+      QEMU em 6–7. Conferido na VM em 07/11 (`virsh vcpupin`, `emulatorpin`); nada
+      disso é registrado no banco, então citar como configuração do script.
+- [x] HD: não realizado nesta etapa (seções 2.1 e 3.11).
+
 Ainda falta:
-- [ ] Versão do Python na VM (não é registrada no banco).
-- [ ] Confirmar os núcleos físicos usados nas vCPUs (o padrão do script é
-      `VCPU_PINS="8 10"`, `EMU_PIN=6-7`; não fica registrado no banco).
-- [ ] Decidir sobre o experimento em HD (disco vazio dedicado).
 - [ ] Decidir se o experimento com threads entra.
