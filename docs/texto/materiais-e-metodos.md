@@ -4,22 +4,27 @@ Material de apoio para redigir o capítulo. Não é o texto final: cada seção
 explica **o que** foi usado ou feito, **como** e **por quê**, para ser reescrito
 em prosa acadêmica. Os detalhes vêm do código, que é a fonte da verdade.
 
-Base: branch `develop` (commit `0085143`, de 07/11/2026), **protocolo
-experimental 5** e schema 5 do banco.
+Base: branch `develop` (commit `586c450`, de 08/11/2026), **protocolo
+experimental 5** e schema 6 do banco.
 
-Os resultados vêm de duas campanhas na VM, ambas concluídas e congeladas em
+Os resultados vêm de três campanhas, todas concluídas e congeladas em
 `results/campaigns/`:
 
 | campanha | rótulo | protocolo | commit | execuções | falhas | duração | pasta |
 |---|---|---|---|---|---|---|---|
 | oficial | `oficial` | 4 | `c2c52ec` | 1786 | 0 | ~8,5 h (06–07/11) | `vm-nvme/` |
 | complementar | `colisoes`, `delecao` | 5 | `30fc9a0` | 334 | 0 | ~1 h (07/11) | `vm-nvme-extra/` |
+| concorrência | `threads`, `ponte` | 5 | `002a50c` | 276 | 0 | ~1 h (08/11) | `vm6-nvme/` |
 
 A campanha oficial mede memória, tempos, FPR e I/O. A complementar mede o que
-o protocolo 5 acrescentou: colisões estruturais e deleção (seções 3.4 e 3.7).
+o protocolo 5 acrescentou: colisões estruturais e deleção (seções 3.4 e 3.8).
 O protocolo 5 **só acrescenta medições**: a inserção e a busca cronometradas
 são o mesmo código de máquina do protocolo 4 (seção 3.4). Mesmo assim, as duas
-campanhas nunca são agrupadas numa mesma estatística (seção 3.9).
+campanhas nunca são agrupadas numa mesma estatística (seção 3.10).
+
+A campanha de concorrência roda o experimento 3 numa segunda VM, igual à primeira
+mas com 6 vCPUs (seções 2.1 e 3.6). O rótulo `ponte` repete ali um trecho da campanha
+oficial com uma thread, para mostrar que as duas VMs medem o mesmo.
 
 Marcadores usados:
 - **[PROPOSTA]**: onde o desenvolvimento se afastou do TCC I. O capítulo deve
@@ -38,13 +43,15 @@ Marcadores usados:
 - Todas foram implementadas do zero, na mesma linguagem, com a mesma interface
   e o mesmo protocolo de medição. Assim as diferenças medidas vêm da estrutura,
   e não da implementação ou do ambiente.
-- São dois experimentos:
+- São três experimentos:
   1. **Benchmark em memória**: custo de memória, tempo de inserção e de consulta,
      e taxa de falsos positivos de cada estrutura.
   2. **Experimento de I/O**: cada filtro como "porteiro" (*gatekeeper*) na frente
      de tabelas gravadas em disco, medindo quantas leituras de disco ele evita e
      o efeito disso na latência das consultas. É a parte que liga o trabalho ao
      título, "otimização de I/O".
+  3. **Concorrência**: inserção e consulta com várias threads no PBF e no
+     híbrido, medindo quanto cada uma escala e quanto custa a sincronização.
 
 ---
 
@@ -91,13 +98,29 @@ Ressalva: no modo sessão do libvirt não é possível travar a RAM da VM na mem
 do host. Durante as rodadas é preciso conferir que o processo do QEMU não foi
 para o swap do host (campo `VmSwap` em `/proc/<pid>/status`).
 
+**Segunda VM, para a concorrência** (`scripts/vm/vm6.sh`): a mesma imagem, RAM,
+discos e preparação, mudando **só o número de vCPUs: 6**, uma em cada núcleo físico
+do i5-12500 (processadores lógicos 0, 2, 4, 6, 8 e 10), com as threads do QEMU em 1 e
+3. Com 2 vCPUs não haveria escalabilidade para medir.
+- Por que não refazer as campanhas na VM nova: os experimentos 1 e 2 são de uma
+  thread, e o número de vCPUs não muda o que eles medem (desempenho de um núcleo,
+  RAM de 1 GB, disco).
+- Para sustentar isso, a etapa `ponte` repetiu na VM nova o benchmark de sbf, pbf,
+  hybrid_512 e hybrid_c_512 (UUID, 1M e 20M, 5 × 3): os tempos ficaram a no máximo
+  ±3,3% da campanha oficial, com falsos positivos idênticos.
+- As duas VMs não rodam ao mesmo tempo, porque ambas usam os núcleos 8 e 10.
+- Ressalva: com 6 vCPUs, os processos do host ficam com as CPUs irmãs, que dividem
+  os mesmos núcleos físicos; há mais ruído possível que na VM de 2 vCPUs.
+- O convidado mostra "L3 de 96 MiB (6 instâncias)", que é a topologia virtual do
+  QEMU. O processador real tem **18 MB de L3 compartilhado**, e é esse que conta.
+
 **Disco das rodadas:**
 - Campanhas oficial e complementar: o SSD NVMe do host.
 - Variante em HD: **não realizada nesta etapa** **[PROPOSTA]**. Exige um disco
   vazio dedicado, e o único HD disponível guarda arquivos que não podem ser
   arriscados. Os scripts já aceitam outro disco (`DISK_DIR`, `DISK_MODEL`,
   `DISK_ROTATION`), e o modelo é registrado com os resultados; fica como trabalho
-  futuro (seção 3.11).
+  futuro (seção 3.12).
 
 Por que uma VM:
 - **Ambiente limpo e repetível**, sem a interferência do desktop gráfico. No
@@ -114,7 +137,7 @@ Por que uma VM:
 
 ### 2.2 Linguagens, compilador e bibliotecas
 
-**C (padrão C99)**: todas as estruturas e os dois experimentos.
+**C (padrão C99)**: todas as estruturas e os três experimentos.
 - O nome correto do padrão é ISO/IEC 9899:1999 (C99). "ANSI C" costuma designar
   o C89, então vale corrigir no texto **[PROPOSTA]**.
 - As justificativas da proposta continuam válidas:
@@ -126,7 +149,12 @@ Por que uma VM:
 - O código usa algumas interfaces POSIX/Linux além do C99:
   - `clock_gettime`, `posix_memalign`, `pread`;
   - `O_DIRECT`, `posix_fadvise`, `getrusage`;
-  - os arquivos `/proc/self/io` e `/proc/self/statm`.
+  - os arquivos `/proc/self/io` e `/proc/self/statm`;
+  - no experimento 3, POSIX Threads (`pthread_create`, barreiras e mutexes) e a
+    fixação de threads em CPUs (`pthread_setaffinity_np`, `sched_getaffinity`,
+    extensões GNU).
+- O OR atômico usa a função embutida do GCC `__atomic_fetch_or`, uma extensão do
+  compilador, já que o C99 não tem atômicos (eles vieram no C11).
 
 **GCC** com `-std=c99 -Wall -Wextra -O3`:
 - `-O3` é a otimização máxima de desempenho prevista na proposta.
@@ -158,11 +186,11 @@ resultados, tabelas e gráficos.
   de confiança).
 
 **SQLite**: banco de resultados num único arquivo (`results/bloom.db`), sem
-servidor (seção 3.8).
+servidor (seção 3.9).
 
 **Git**, com o fluxo Git Flow (`main`, `develop` e `feature/*`):
 - Além de versionar o código, o git é um instrumento de rastreabilidade.
-- Toda execução registra o commit exato do código que rodou (seção 3.8).
+- Toda execução registra o commit exato do código que rodou (seção 3.9).
 
 **Ferramentas do Linux**, usadas para registrar o ambiente de cada execução:
 - `findmnt` e `lsblk` identificam o sistema de arquivos e o disco físico por
@@ -208,7 +236,7 @@ da seção 4.3.1 da proposta; CPF e CNPJ são duas variantes do mesmo grupo.
     execução do Python.
 - Cada dataset grava um `meta.json` com as sementes e as contagens.
 - Cada execução registra um **hash SHA-256 do conteúdo** dos arquivos usados
-  (seção 3.8).
+  (seção 3.9).
 
 **Partição** (`scripts/partition.py`): segue o protocolo da seção 4.3.2 da
 proposta.
@@ -267,7 +295,7 @@ proposta.
 - `--info`: versão do protocolo e lista de filtros, lida pelo orquestrador.
 
 **Testes unitários em C** (`tests/`, rodados com `make check`): um arquivo por
-módulo. Ver a seção 3.10.
+módulo. Ver a seção 3.11.
 
 **Regras gerais da implementação:**
 - Os filtros nunca guardam ponteiros para as chaves, só bits ou contadores.
@@ -627,7 +655,67 @@ latência absoluta é. Na campanha oficial, por exemplo, o `none` com 20M (738 �
 ficou mais rápido que com 10M (882 µs): eram tabelas escritas em momentos
 diferentes.
 
-### 3.6 Variáveis independentes
+### 3.6 Experimento 3 — concorrência (`src/threadbench.c`)
+
+**Pergunta.** Como a inserção e a consulta escalam com T threads, e quanto custa
+sincronizar as estruturas mutáveis? A proposta (seção 4) prevê POSIX Threads,
+distribuição das operações entre os núcleos, mutex nas variantes mutáveis e análise
+de escalabilidade. O foco é o **PBF e o híbrido**, que representam as duas formas de
+dividir o trabalho:
+
+| estrutura | estratégia | como as threads dividem o trabalho | sincronização |
+|---|---|---|---|
+| todas | `serial` | sem threads: a inserção e a busca comuns (referência) | nenhuma |
+| PBF | `partition` | **por partição**: cada thread fica com uma faixa das k partições e vê todas as chaves | nenhuma: partições nunca dividem linha de cache |
+| PBF | `atomic` | **por chave**: cada thread fica com uma fatia das chaves (controle) | OR atômico |
+| hybrid_512, hybrid_4096 | `atomic` | por chave; cada chave escreve num único bloco | OR atômico |
+| hybrid_c_512, hybrid_c_4096 | `lock_global` | por chave | um mutex para o filtro inteiro |
+| hybrid_c_512, hybrid_c_4096 | `lock_shard` | por chave | **um mutex por bloco** (como o híbrido foi desenhado) |
+
+- A divisão por partição é a ideia da seção 3 da proposta ("intervalos de memória
+  fisicamente separados… sem disputar o mesmo segmento"). Ela tem um limite: a
+  thread mais carregada fica com ⌈k/T⌉ partições, então a aceleração ideal é
+  k/⌈k/T⌉ (com k = 7: 1,75 com T = 2 e 3,5 com T = 4 ou 6).
+- Os contadores de 4 bits precisam de trava: dois contadores dividem um byte, e um
+  OR atômico não basta para incrementar com saturação.
+- **Busca:** sempre dividida por chave e **sem trava**. Ela só começa depois que
+  todas as inserções terminaram (há uma barreira entre as fases), então a estrutura
+  só é lida.
+- As operações concorrentes ficam na interface (`bf_ops_t.conc`), em funções
+  separadas, depois do código serial.
+
+**Procedimento** (um processo por estrutura × estratégia × T):
+1. O processo principal lê as chaves em lotes, como nos outros experimentos, mas de
+   **8 MiB (~225 mil UUIDs)**. Lotes maiores fazem as duas barreiras por lote pesarem
+   pouco no tempo, mesmo com muitas threads.
+2. Para cada lote, libera as T threads por uma barreira (`pthread_barrier`), espera
+   todas numa segunda barreira e soma o tempo entre as duas. A leitura do arquivo
+   fica fora do tempo.
+3. Fases de cada repetição: inserir todo o Dins; consultar o Dexist; consultar o
+   Dinexist. Repetição 0 de aquecimento, dimensionamento `same_fpr`.
+4. **Threads fixadas**, uma por núcleo físico primeiro (lendo
+   `thread_siblings_list`), depois as irmãs. Sem isso, num teste no host, 6 threads
+   ficaram nas CPUs 0 a 5, que são só 3 núcleos, e a aceleração parecia menor.
+5. **Trava:** `pthread_mutex_trylock` primeiro; se a trava está ocupada, conta uma
+   espera (`lock_waits`) e então bloqueia. As travas por bloco ocupam ~40 bytes cada
+   (`lock_bytes`, contado à parte da memória do filtro).
+
+**Correção.** O estado final de um filtro de bits ou de contadores com saturação não
+depende da ordem das inserções (OR e incremento saturado são comutativos). Então
+toda estratégia tem de dar **exatamente os mesmos falsos positivos** da inserção
+serial, e nenhum falso negativo. Isso vale nas 1140 amostras da campanha e é
+conferido no `make test` (seção 3.11).
+
+**O código serial não mudou.** As funções concorrentes foram acrescentadas depois do
+código serial, e as inserções, buscas e deleções seriais compilam para as mesmas
+instruções de antes (`objdump`). Os experimentos 1 e 2 não são afetados.
+
+**Aceleração** = média serial ÷ média com T threads, da mesma estrutura, na mesma
+campanha e máquina. É uma razão de médias, sem intervalo de confiança. Os tempos
+seriais do experimento 3 **não se comparam** com os do experimento 1 (lotes de outro
+tamanho, outro laço); a comparação entre as VMs é a etapa `ponte`.
+
+### 3.7 Variáveis independentes
 
 | variável | valores | onde |
 |---|---|---|
@@ -640,8 +728,11 @@ diferentes.
 | fração de consultas negativas | 0,5; 0,9 | I/O |
 | consultas por repetição (Q) | 10 000 | I/O |
 | modo de leitura | O_DIRECT | I/O |
-| dispositivo | SSD NVMe (HD não realizado, seção 3.11) | ambos (swap) e I/O (tabelas) |
-| RAM disponível | 1 GB (VM) | ambos |
+| dispositivo | SSD NVMe (HD não realizado, seção 3.12) | ambos (swap) e I/O (tabelas) |
+| RAM disponível | 1 GB (VM) | todos |
+| vCPUs | 2 (experimentos 1 e 2); 6 (experimento 3) | — |
+| threads (T) | 1, 2, 4, 6 | concorrência |
+| estratégia | serial, partition, atomic, lock_global, lock_shard | concorrência |
 
 **Campanha oficial** (protocolo 4, executada de 06 a 07/11/2026 no NVMe, rótulo
 `oficial`). Cada linha diz quantas repetições gravadas há por execução (R) e
@@ -691,7 +782,19 @@ Justificativas da grade:
   - O texto deve declarar que a baseline paginando e o I/O em 10M e 20M só
     existem para UUID.
 
-### 3.7 Variáveis dependentes (métricas)
+**Campanha de concorrência** (08/11/2026, VM de 6 vCPUs, `scripts/vm/threads.sh`;
+~1 h, 276 execuções, 0 falhas):
+
+| rótulo | tipo | N | estruturas e estratégias | T | R × rodadas |
+|---|---|---|---|---|---|
+| `threads` | UUID | 1M e 20M | sbf (serial); pbf (serial, partition, atomic); hybrid_512 e hybrid_4096 (serial, atomic); hybrid_c_512 e hybrid_c_4096 (serial, lock_global, lock_shard) | 1, 2, 4, 6 | 5 × 3 |
+| `ponte` | UUID | 1M e 20M | benchmark de sbf, pbf, hybrid_512, hybrid_c_512 (as duas VMs) | 1 | 5 × 3 |
+
+Por que 1M e 20M: o PBF ocupa 1,2 MB em 1M e cabe no cache; em 20M ocupa 24 MB e
+passa dos 18 MB de L3. Assim aparece a escalabilidade limitada pela CPU e pela
+memória.
+
+### 3.8 Variáveis dependentes (métricas)
 
 **Benchmark** (uma linha por estrutura × regime × repetição):
 
@@ -750,10 +853,18 @@ escrevem na mesma posição.
 - erros (deve ser 0);
 - RSS e faltas de página durante as consultas.
 
+**Experimento de concorrência** (uma linha por estrutura × estratégia × T × repetição):
+- tempo de inserção do Dins e de consulta do Dexist e do Dinexist, com T threads
+  (→ ns por operação e milhões de operações por segundo);
+- **aceleração** (derivada na análise, seção 3.6);
+- falsos negativos e falsos positivos (validação: iguais ao serial);
+- `lock_waits` (esperas pela trava, a disputa entre threads) e `lock_bytes`;
+- RSS, faltas de página e número de CPUs disponíveis.
+
 O `pread` com `O_DIRECT` não gera falta de página. Por isso, faltas maiores
 nesse trecho significam que o próprio porteiro foi paginado.
 
-### 3.8 Orquestração, registro e rastreabilidade
+### 3.9 Orquestração, registro e rastreabilidade
 
 **Orquestrador** (`scripts/run.py`). Executa a grade de parâmetros: um processo
 por estrutura × regime no benchmark, ou por estrutura × T × neg no I/O.
@@ -811,7 +922,7 @@ por estrutura × regime no benchmark, ou por estrutura × T × neg no I/O.
   executável distingue o mesmo commit compilado com outro compilador ou outras
   opções.
 
-### 3.9 Análise estatística e apresentação (`scripts/analyze.py`, `scripts/plots.py`)
+### 3.10 Análise estatística e apresentação (`scripts/analyze.py`, `scripts/plots.py`)
 
 **Grupos.** Uma linha de resultado por tipo × N × regime × estrutura no benchmark,
 ou por tipo × N × disco × modo × T × neg × porteiro no I/O, sempre dentro do mesmo
@@ -866,7 +977,7 @@ vazias. Só o `run.py`, que grava execuções novas, cria ou migra o schema.
 Isso foi uma correção: antes, só de consultar um banco congelado de schema 4 com
 o código de schema 5, o arquivo versionado era migrado no próprio lugar.
 
-### 3.10 Validação da implementação
+### 3.11 Validação da implementação
 
 - **Hashes:** valores oficiais de verificação do SMHasher para as duas funções.
 - **Testes unitários por estrutura** (`make check`):
@@ -885,6 +996,9 @@ o código de schema 5, o arquivo versionado era migrado no próprio lugar.
     continua sendo encontrada;
   - apagar metade das chaves não gera falso negativo nas restantes, e na
     baseline as apagadas somem.
+- **Concorrência** (`make test`): cada estratégia, com 3 threads, responde a 40 mil
+  consultas exatamente como a inserção serial; na campanha, falsos positivos iguais
+  ao serial nas 1140 amostras.
 - **Em todo experimento:**
   - o benchmark registra os falsos negativos, que devem ser 0, antes e depois
     da deleção;
@@ -892,13 +1006,17 @@ o código de schema 5, o arquivo versionado era migrado no próprio lugar.
     ser 0;
   - o protocolo de partição verifica as suas invariantes antes de gravar.
 
-### 3.11 Limitações e ameaças à validade (para a discussão)
+### 3.12 Limitações e ameaças à validade (para a discussão)
 
 - **Dados sintéticos.** Os geradores imitam formato e entropia, não a
   distribuição de dados reais. Por exemplo, os CPFs são uniformes, sem a
   concentração regional mencionada na proposta.
-- **Uma linha de execução só.** O paralelismo com pthreads, previsto na proposta,
-  foi adiado para depois das rodadas principais **[PROPOSTA]**.
+- **Concorrência só em parte da grade.** Experimentos 1 e 2 são de uma thread; o
+  experimento 3 cobre PBF e híbrido, em UUID, com 1M e 20M. Inserção e busca são
+  medidas em fases separadas, sem uma carga mista de leitura e escrita simultâneas.
+  O CBF não entrou (foco do autor no PBF e no híbrido) **[PROPOSTA]**.
+- **Ruído da VM de 6 vCPUs.** As CPUs irmãs, que dividem os núcleos com as vCPUs,
+  ficam com o host; a aceleração não tem intervalo de confiança (razão de médias).
 - **Modelo em escala reduzida.** A VM tem 1 GB de RAM, e as proporções
   reproduzem as de um sistema de big data, não os tamanhos:
   - baseline ÷ RAM vai de 0,1× (1M) a 2,3× (20M);
@@ -918,7 +1036,7 @@ o código de schema 5, o arquivo versionado era migrado no próprio lugar.
   estruturas no mesmo tipo e N, nunca entre N. Contagens de leitura e FPR não
   são afetadas.
 - **Deleção com cobertura parcial.** Com repetições, medida só para UUID, e a
-  baseline só em 1M e 5M (seção 3.6). Para CPF, CNPJ e URL há uma repetição de
+  baseline só em 1M e 5M (seção 3.7). Para CPF, CNPJ e URL há uma repetição de
   cada, vinda da rodada `colisoes` (os filtros com remoção apagam o Dexist em toda
   execução), também com 0 falsos negativos. Apaga-se o Dexist (10% do Dins) de uma vez, depois das
   inserções, e não intercalado com elas.
@@ -932,7 +1050,7 @@ o código de schema 5, o arquivo versionado era migrado no próprio lugar.
   dias, com os mesmos binários.
 - **Cobertura desigual da grade.** A baseline paginando e o I/O em 10M e 20M só
   existem para UUID, e a baseline paginando tem 3 repetições de uma só rodada
-  (seção 3.6).
+  (seção 3.7).
 - **RAM da VM não travada no host.** O modo sessão do libvirt não permite.
   Mitigado por verificação: o log do host registrou `VmSwap: 0 kB` para o QEMU
   no início e no fim da campanha oficial (`vm-nvme/logs/oficial-host.log`). São
@@ -960,7 +1078,7 @@ o código de schema 5, o arquivo versionado era migrado no próprio lugar.
 | Avaliar a deleção | deleção cronometrada e conferida no CBF, nos híbridos com contadores e na baseline (protocolo 5) | completa a promessa da seção 4.1 da proposta; a baseline dá a referência exata |
 | Memória em KB/MB | bytes alocados, bits/chave, RSS e faltas de página | bits/chave compara estruturas; RSS e faltas mostram a paginação |
 | Pandas, NumPy, Matplotlib | biblioteca padrão do Python + SQLite; Matplotlib opcional | menos dependências; o banco organiza muitas execuções |
-| pthreads com mutexes | adiado | prioridade às rodadas em escala; o híbrido já foi desenhado para uma trava por bloco |
+| pthreads com mutexes | experimento 3 no PBF (por partição, sem trava; e por chave, atômico) e no híbrido (atômico; trava global × trava por bloco), numa VM igual com 6 vCPUs | compara as duas formas de paralelizar e mostra o custo da trava; uma segunda VM evita refazer as campanhas de uma thread (etapa `ponte`) |
 | — | um processo por estrutura e chaves lidas em lotes | sem isso, a paginação de uma estrutura era cobrada da seguinte |
 | — | amostra nova de consultas a cada repetição no I/O | uma amostra repetida ficava na RAM e escondia a paginação |
 | Testes na máquina de desenvolvimento | VM dedicada, configurada por script (1 GB, vCPUs fixas, swap em disco) | ambiente controlado e repetível, com RAM pequena de verdade |
@@ -980,12 +1098,14 @@ Já conhecido (dos bancos congelados e dos logs):
       `results/campaigns/vm-nvme-extra/`.
 - [x] QEMU sem swap no host no início e no fim da campanha oficial.
 - [x] Deleção e colisões medidas.
+- [x] Concorrência medida: VM de 6 vCPUs, commit `002a50c`, em
+      `results/campaigns/vm6-nvme/`; ponte dentro de ±3,3% da campanha oficial.
 
 - [x] Python 3.13.5 na VM. vCPUs fixadas nos processadores lógicos 8 e 10 (núcleos
       físicos distintos do i5-12500, cujos pares de threads são 8/9 e 10/11) e o
       QEMU em 6–7. Conferido na VM em 07/11 (`virsh vcpupin`, `emulatorpin`); nada
       disso é registrado no banco, então citar como configuração do script.
-- [x] HD: não realizado nesta etapa (seções 2.1 e 3.11).
+- [x] HD: não realizado nesta etapa (seções 2.1 e 3.12).
 
-Ainda falta:
-- [ ] Decidir se o experimento com threads entra.
+Nada mais em aberto no método. O que resta é a redação em prosa e a escolha das
+figuras (ver `docs/texto/resultados.md`).
