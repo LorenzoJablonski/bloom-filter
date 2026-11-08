@@ -1,7 +1,9 @@
 #ifndef HYBRID_H
 #define HYBRID_H
 
+#include <pthread.h>
 #include <stddef.h>
+#include <stdint.h>
 #include "common.h"
 
 /*
@@ -26,6 +28,20 @@ void hybrid_insert(hybrid_t *bf, const bf_key_t *key);
  * non-zero (collisions). For the untimed counting pass only: hybrid_insert stays the
  * measured path. */
 unsigned hybrid_insert_counted(hybrid_t *bf, const bf_key_t *key);
+
+/*
+ * Concurrent insertion (threadbench), apart from the measured serial insert.
+ * Threads split the keys; each key writes inside one shard.
+ * - hybrid_insert_atomic: bit variants only, atomic OR, no lock.
+ * - hybrid_insert_locked: takes locks[shard % nlocks] around the key's writes
+ *   (nlocks = 1: one global lock; nlocks = hybrid_shard_count: one per shard).
+ *   It tries the lock first; when it is taken, *waits is incremented before
+ *   blocking, which counts lock contention.
+ */
+size_t hybrid_shard_count(const hybrid_t *bf);
+void hybrid_insert_atomic(hybrid_t *bf, const bf_key_t *key);
+void hybrid_insert_locked(hybrid_t *bf, const bf_key_t *key, pthread_mutex_t *locks,
+                          size_t nlocks, uint64_t *waits);
 bf_member_t hybrid_lookup(hybrid_t *bf, const bf_key_t *key);
 int hybrid_delete(hybrid_t *bf, const bf_key_t *key); /* 0 when not counting */
 

@@ -1,5 +1,6 @@
 #define _POSIX_C_SOURCE 200809L
 
+#include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -15,6 +16,7 @@
 #include "bf.h"
 #include "benchmark.h"
 #include "iobench.h"
+#include "threadbench.h"
 
 /* ------------------------------------------------------------------ */
 /* helpers                                                            */
@@ -161,6 +163,90 @@ static int demo(void)
 /* --test : invariantes rápidas, exit code p/ make test              */
 /* ------------------------------------------------------------------ */
 
+/* insercao concorrente para o teste: cada thread faz uma fatia das chaves
+ * (atomic, lock_*) ou uma faixa de particoes de todas as chaves (partition) */
+typedef struct {
+    const bf_ops_t *op;
+    void *bf;
+    bf_key_t *keys;
+    size_t n;
+    int mode; /* 0 partition, 1 atomic, 2 locked */
+    unsigned id, threads, parts;
+    pthread_mutex_t *locks;
+    size_t nlocks;
+    uint64_t waits;
+} conc_job_t;
+
+static void *conc_worker(void *arg)
+{
+    conc_job_t *j = (conc_job_t *)arg;
+    const bf_conc_t *c = j->op->conc;
+    size_t lo = j->n * j->id / j->threads, hi = j->n * (j->id + 1) / j->threads;
+    if (j->mode == 0) {
+        unsigned a = j->parts * j->id / j->threads, b = j->parts * (j->id + 1) / j->threads;
+        for (size_t i = 0; i < j->n; i++) c->insert_partitions(j->bf, &j->keys[i], a, b);
+    } else if (j->mode == 1) {
+        for (size_t i = lo; i < hi; i++) c->insert_atomic(j->bf, &j->keys[i]);
+    } else {
+        for (size_t i = lo; i < hi; i++) c->insert_locked(j->bf, &j->keys[i], j->locks, j->nlocks, &j->waits);
+    }
+    return NULL;
+}
+
+/* Every concurrent strategy must leave the filter answering exactly like the
+ * serial insert (the final state does not depend on the order). Returns 1 if ok. */
+static int test_concurrency(void)
+{
+    enum { N = 20000, PROBE = 40000, T = 3 };
+    static char text[PROBE][24];
+    static bf_key_t keys[PROBE];
+    for (int i = 0; i < PROBE; i++) {
+        int len = snprintf(text[i], sizeof(text[i]), "conc-%d", i);
+        keys[i].data = text[i];
+        keys[i].len = (size_t)len;
+    }
+    size_t nops = 0;
+    const bf_ops_t *ops = bf_ops_all(&nops);
+    int ok = 1;
+    for (size_t i = 0; i < nops; i++) {
+        const bf_conc_t *c = ops[i].conc;
+        if (!c) continue;
+        bf_sizing_t sz;
+        if (!ops[i].params(N, 0.01, &sz)) { ok = 0; continue; }
+        void *ref = ops[i].create(sz.m, sz.k);
+        for (int k = 0; k < N; k++) ops[i].insert(ref, &keys[k]);
+        for (int mode = 0; mode < 4; mode++) { /* 0 partition, 1 atomic, 2 lock_global, 3 lock_shard */
+            if (mode == 0 && !c->insert_partitions) continue;
+            if (mode == 1 && !c->insert_atomic) continue;
+            if (mode >= 2 && !c->insert_locked) continue;
+            void *bf = ops[i].create(sz.m, sz.k);
+            conc_job_t jobs[T];
+            pthread_t th[T];
+            size_t nlocks = mode == 2 ? 1 : (mode == 3 ? c->lock_domains(bf) : 0);
+            pthread_mutex_t *locks = nlocks ? (pthread_mutex_t *)malloc(nlocks * sizeof(*locks)) : NULL;
+            for (size_t l = 0; l < nlocks; l++) pthread_mutex_init(&locks[l], NULL);
+            for (unsigned t = 0; t < T; t++) {
+                jobs[t] = (conc_job_t){ &ops[i], bf, keys, N, mode < 2 ? mode : 2, t, T,
+                                        mode == 0 ? c->partitions(bf) : 0, locks, nlocks, 0 };
+                pthread_create(&th[t], NULL, conc_worker, &jobs[t]);
+            }
+            for (unsigned t = 0; t < T; t++) pthread_join(th[t], NULL);
+            int diff = 0;
+            for (int k = 0; k < PROBE; k++)
+                diff += ops[i].lookup(bf, &keys[k]) != ops[i].lookup(ref, &keys[k]);
+            static const char *const names[] = { "partition", "atomic", "lock_global", "lock_shard" };
+            printf("test: %s %s (%d threads) respostas diferentes do serial=%d\n", ops[i].name,
+                   names[mode], T, diff);
+            if (diff) ok = 0;
+            for (size_t l = 0; l < nlocks; l++) pthread_mutex_destroy(&locks[l]);
+            free(locks);
+            ops[i].destroy(bf);
+        }
+        ops[i].destroy(ref);
+    }
+    return ok;
+}
+
 static int run_test(void)
 {
     /* SBF/PBF/rDBF/baseline: todo insertado e PRESENT (FN=0) */
@@ -245,6 +331,8 @@ static int run_test(void)
         if (fn != 0 || (ops[i].exact && left != 0)) ok = 0;
         ops[i].destroy(bf);
     }
+
+    if (!test_concurrency()) ok = 0;
 
     /* CBF: delete de metade nao gera FN nos restantes */
     {
@@ -494,6 +582,12 @@ static int print_info(void)
         printf("filter=%s,%d,%d,%u\n", all[i].name, all[i].exact, all[i].supports_delete,
                all[i].fixed_k);
     }
+    /* threadbench=name,strategy|strategy|... */
+    for (size_t i = 0; i < count; i++) {
+        char list[128];
+        threadbench_strategies(all[i].name, list, sizeof(list));
+        if (list[0]) printf("threadbench=%s,%s\n", all[i].name, list);
+    }
     return 0;
 }
 
@@ -507,6 +601,7 @@ int main(int argc, char **argv)
     unsigned reps = 5;
     unsigned sizing = SIZING_BOTH;
     iobench_cfg_t io = { NULL, 0, 0.01, 1, 0.5, 10000, 5, 1, 100, "data/store", NULL, NULL, 0 };
+    threadbench_cfg_t tb = { NULL, NULL, NULL, 1, 0.01, 5, NULL };
     const char *out_path = NULL;
 
     for (int i = 1; i < argc; i++) {
@@ -516,6 +611,9 @@ int main(int argc, char **argv)
         else if (strcmp(argv[i], "--demo") == 0) mode = "demo";
         else if (strcmp(argv[i], "--benchmark") == 0) mode = "benchmark";
         else if (strcmp(argv[i], "--iobench") == 0) mode = "iobench";
+        else if (strcmp(argv[i], "--threadbench") == 0) mode = "threadbench";
+        else if (strcmp(argv[i], "--threads") == 0 && i + 1 < argc) tb.threads = (unsigned)atoi(argv[++i]);
+        else if (strcmp(argv[i], "--strategy") == 0 && i + 1 < argc) tb.strategy = argv[++i];
         else if (strcmp(argv[i], "--tables") == 0 && i + 1 < argc) io.tables = (unsigned)atoi(argv[++i]);
         else if (strcmp(argv[i], "--neg") == 0 && i + 1 < argc) io.neg_ratio = atof(argv[++i]);
         else if (strcmp(argv[i], "--queries") == 0 && i + 1 < argc) io.queries = (size_t)atol(argv[++i]);
@@ -541,6 +639,8 @@ int main(int argc, char **argv)
             printf("         bloom_app --iobench [--type T] [--n N] [--p P] [--reps R] [--tables T] [--neg 0..1]\n"
                    "                     [--queries Q] [--value-size B] [--store-dir DIR] [--cached] [--filter NAME|none]\n"
                    "                     [--build-store] [--out FILE]\n");
+            printf("         bloom_app --threadbench --filter NAME --strategy serial|partition|atomic|lock_global|lock_shard\n"
+                   "                     [--threads T] [--type T] [--p P] [--reps R] [--out FILE]\n");
             printf("         bloom_app --info   (protocol version, compiler, registered filters)\n");
             printf("filtros: sbf cbf pbf rdbf hybrid_512 hybrid_4096 hybrid_c_512 hybrid_c_4096 baseline\n");
             printf("tipos  : uuid cpf cnpj url\n");
@@ -553,6 +653,15 @@ int main(int argc, char **argv)
     if (strcmp(mode, "test") == 0) return run_test();
     if (strcmp(mode, "benchmark") == 0) {
         return benchmark_run(type, n_override, p_target, reps, sizing, filter, out_path);
+    }
+    if (strcmp(mode, "threadbench") == 0) {
+        if (n_override) { fprintf(stderr, "--threadbench: use a dataset per N (make data N=...), not --n\n"); return 2; }
+        tb.type = type;
+        tb.filter = filter;
+        tb.p_target = p_target;
+        tb.reps = reps;
+        tb.out_path = out_path;
+        return threadbench_run(&tb);
     }
     if (strcmp(mode, "iobench") == 0) {
         io.type = type;

@@ -333,3 +333,42 @@ unsigned hybrid_insert_counted(hybrid_t *bf, const bf_key_t *key)
     }
     return col;
 }
+
+/* ---- concurrent insertion (threadbench; the measured serial insert is above) ---- */
+
+size_t hybrid_shard_count(const hybrid_t *bf)
+{
+    return bf ? bf->shards : 0;
+}
+
+void hybrid_insert_atomic(hybrid_t *bf, const bf_key_t *key)
+{
+    if (!bf || !key || !key->data || bf->counting) return; /* counters need a lock */
+    probe_t p = hybrid_probe(bf, key);
+    for (unsigned i = 0; i < bf->k; i++, probe_next(bf, &p)) {
+        /* relaxed: the phases are separated by a barrier, which orders the memory */
+        __atomic_fetch_or(&p.shard[p.g / 8], (unsigned char)(1u << (p.g % 8)), __ATOMIC_RELAXED);
+    }
+}
+
+void hybrid_insert_locked(hybrid_t *bf, const bf_key_t *key, pthread_mutex_t *locks,
+                          size_t nlocks, uint64_t *waits)
+{
+    if (!bf || !key || !key->data || !locks || nlocks == 0) return;
+    probe_t p = hybrid_probe(bf, key);
+    size_t shard = (size_t)(p.shard - bf->mem) / bf->stride;
+    pthread_mutex_t *mx = &locks[shard % nlocks];
+    if (pthread_mutex_trylock(mx) != 0) {
+        if (waits) (*waits)++;
+        pthread_mutex_lock(mx);
+    }
+    for (unsigned i = 0; i < bf->k; i++, probe_next(bf, &p)) {
+        if (bf->counting) {
+            unsigned v = cnt_get(p.shard, p.g);
+            if (v < HYBRID_COUNTER_MAX) cnt_set(p.shard, p.g, v + 1);
+        } else {
+            p.shard[p.g / 8] |= (unsigned char)(1u << (p.g % 8));
+        }
+    }
+    pthread_mutex_unlock(mx);
+}

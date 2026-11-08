@@ -263,3 +263,48 @@ def io(records, metrics, outdir, formats):
         paths += _save(fig, outdir, _slug("io", typ, f"n{n}", model, "direct" if direct else "cached",
                                           f"T{tables}", tag), formats)
     return paths
+
+
+# ------------------------------------------------------------------ threads
+
+def threads(records, metrics, outdir, formats):
+    """One figure per (type, N): speedup over the serial run against the number of
+    threads, a line per structure x strategy, for insert and negative lookup; the
+    diagonal is the ideal (linear) speedup."""
+    plt.rcParams.update(STYLE)
+    outdir = Path(outdir)
+    paths = []
+    panels = [("speedup_insert", "aceleração · inserção"),
+              ("speedup_lookup", "aceleração · busca negativa")]
+    groups = {}
+    for r in records:
+        if r["strategy"] == "serial":
+            continue
+        groups.setdefault((r["type"], r["n"], r["env_key"]), []).append(r)
+    for (typ, n, env), recs in sorted(groups.items(), key=lambda kv: (kv[0][0], kv[0][1])):
+        lines = {}
+        for r in recs:
+            lines.setdefault((r["filter"], r["strategy"]), []).append(r)
+        tmax = max(r["threads"] for r in recs)
+        fig, axes = plt.subplots(1, len(panels), squeeze=False, figsize=(3.6 * len(panels), 3.2))
+        for ax, (col, title) in zip(axes.flat, panels):
+            ax.plot([1, tmax], [1, tmax], color=INK_2, linewidth=0.8, linestyle="--",
+                    label="ideal (linear)")
+            for i, ((flt, strat), rs) in enumerate(sorted(lines.items())):
+                rs = sorted(rs, key=lambda r: r["threads"])
+                xs = [r["threads"] for r in rs if r[col]["mean"] is not None]
+                ys = [r[col]["mean"] for r in rs if r[col]["mean"] is not None]
+                ax.plot(xs, ys, marker="o", markersize=3, linewidth=1.2,
+                        color=SERIES[i % len(SERIES)], label=f"{flt} · {strat}")
+            ax.axhline(1.0, color=GRID, linewidth=0.8)
+            ax.set_xticks(sorted({r["threads"] for r in recs}))
+            ax.set_xlabel("threads")
+            ax.set_title(title, loc="left", color=INK)
+        handles, labels = axes.flat[0].get_legend_handles_labels()
+        fig.legend(handles, labels, loc="lower center", ncol=3, fontsize=7,
+                   bbox_to_anchor=(0.5, -0.12))
+        fig.suptitle(f"{typ} · N = {n:,} · média serial ÷ média com T threads".replace(",", "."),
+                     x=0.01, ha="left", color=INK)
+        fig.tight_layout(rect=(0, 0, 1, 0.95))
+        paths += _save(fig, outdir, _slug("threads", typ, f"n{n}", env[:8]), formats)
+    return paths

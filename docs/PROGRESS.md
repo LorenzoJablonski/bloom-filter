@@ -64,6 +64,40 @@ rodada de 2026-11-07, commit 30fc9a0, 334 execuções, 0 falhas, ~1 h), em
 - Deleção: apaga o Dexist depois das buscas e da contagem de faults (memória,
   ocupação e FPR lidas antes); confere `del_still_present` e `fn_after_delete`.
 
+Em andamento: `feature/threads` (experimento 3, concorrência; schema 6, protocolo 5).
+O TCC1 promete pthreads, mutex nas variantes mutáveis e análise de escalabilidade.
+Decidido com o autor (2026-11-08): foco no PBF e no híbrido, as duas formas de paralelizar.
+- PBF **por partição**: cada thread cuida de uma faixa de partições e vê todas as
+  chaves; sem trava nem atômico, porque partições nunca dividem linha de cache (é o
+  que a seção 3 da proposta diz). Controle: o mesmo PBF dividido por chave, com OR
+  atômico.
+- Híbrido **por chave**: cada thread pega uma fatia das chaves, cada chave escreve num
+  único bloco. Bits: OR atômico. Contadores: trava global contra uma trava por bloco
+  (`lock_waits` conta as vezes em que a trava estava ocupada).
+- Busca: sempre dividida por chave e sem trava, depois de uma barreira.
+- Medida: tempo do trabalho paralelo por lote (lotes de 8 MiB, ~225 mil UUIDs, para a
+  barreira pesar pouco); a aceleração é a média serial ÷ a média com T threads.
+- Correção: o estado final não depende da ordem, então toda estratégia tem de dar
+  exatamente os falsos positivos do serial (conferido em 1M e no `make test`).
+- O código serial não mudou: objdump igual nas inserções, buscas e deleções.
+- As threads são fixadas uma por núcleo físico primeiro. Sem isso, 6 threads no host
+  caíam em 3 núcleos (CPUs 0/1, 2/3, 4/5 são irmãs) e a aceleração parecia menor.
+Primeiro teste no host (1M UUIDs, 6 threads, sem rigor): inserção do PBF por partição
+3,5×, PBF atômico 3,2×, hybrid_c_512 com trava por bloco 3,2×, hybrid_512 atômico
+2,5–2,8×; a trava global **piora** com mais threads (0,24× com 6, ~450 mil esperas);
+busca negativa ~5,2–5,5× em todas. O OR atômico custa caro mesmo com 1 thread
+(hybrid_512: 0,6× do serial).
+Ambiente (decidido com o autor): uma segunda VM igual à primeira, só com 6 vCPUs
+(`scripts/vm/vm6.sh`: CPUs 0, 2, ..., 10, uma por núcleo; QEMU em 1 e 3). Não refazer
+as campanhas: os experimentos 1 e 2 são de uma thread, e o número de vCPUs não muda o
+que medem. Para sustentar isso, `scripts/vm/threads.sh` repete um trecho da campanha
+oficial (rótulo `ponte`: benchmark de sbf, pbf, hybrid_512 e hybrid_c_512, UUID 1M e
+20M, 5 × 3) para comparar com a VM de 2 vCPUs; se não bater, refazer. Campanha
+(`PLAN=threads.sh scripts/vm/vm6.sh official`, rótulo `threads`): UUID 1M e 20M (o PBF
+cabe no L3 de 18 MB em 1M e não cabe em 20M), T = 1, 2, 4 e 6, 5 × 3; ~1h30 estimado.
+Ressalva: as 6 vCPUs ocupam uma CPU de cada núcleo, e o host fica com as irmãs, que
+dividem os mesmos núcleos; mais ruído que na VM de 2 vCPUs.
+
 Próximos passos:
 - Capítulo de materiais e métodos: a base feita no notebook não está no GitHub
   (conferido em 2026-11-07). Quando chegar, revisar e atualizar conforme o código

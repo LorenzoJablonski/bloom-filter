@@ -37,6 +37,10 @@ static void *pbf_ad_create(size_t m, unsigned k) { return pbf_create(m, k); }
 static void pbf_ad_destroy(void *bf) { pbf_destroy((pbf_t *)bf); }
 static void pbf_ad_insert(void *bf, const bf_key_t *k) { pbf_insert((pbf_t *)bf, k); }
 static unsigned pbf_ad_insert_counted(void *bf, const bf_key_t *k) { return pbf_insert_counted((pbf_t *)bf, k); }
+static unsigned pbf_ad_partitions(const void *bf) { return pbf_partitions((const pbf_t *)bf); }
+static void pbf_ad_insert_partitions(void *bf, const bf_key_t *k, unsigned a, unsigned b) { pbf_insert_partitions((pbf_t *)bf, k, a, b); }
+static void pbf_ad_insert_atomic(void *bf, const bf_key_t *k) { pbf_insert_atomic((pbf_t *)bf, k); }
+static const bf_conc_t pbf_conc = { pbf_ad_partitions, pbf_ad_insert_partitions, pbf_ad_insert_atomic, NULL, NULL };
 static bf_member_t pbf_ad_lookup(void *bf, const bf_key_t *k) { return pbf_lookup((pbf_t *)bf, k); }
 static size_t pbf_ad_memory(const void *bf) { return pbf_memory_bytes((const pbf_t *)bf); }
 static size_t pbf_ad_cells(const void *bf) { return pbf_cells((const pbf_t *)bf); }
@@ -58,6 +62,11 @@ static double rdbf_ad_fill(const void *bf) { return rdbf_fill_ratio((const rdbf_
 static void hybrid_ad_destroy(void *bf) { hybrid_destroy((hybrid_t *)bf); }
 static void hybrid_ad_insert(void *bf, const bf_key_t *k) { hybrid_insert((hybrid_t *)bf, k); }
 static unsigned hybrid_ad_insert_counted(void *bf, const bf_key_t *k) { return hybrid_insert_counted((hybrid_t *)bf, k); }
+static void hybrid_ad_insert_atomic(void *bf, const bf_key_t *k) { hybrid_insert_atomic((hybrid_t *)bf, k); }
+static size_t hybrid_ad_shards(const void *bf) { return hybrid_shard_count((const hybrid_t *)bf); }
+static void hybrid_ad_insert_locked(void *bf, const bf_key_t *k, pthread_mutex_t *l, size_t nl, uint64_t *w) { hybrid_insert_locked((hybrid_t *)bf, k, l, nl, w); }
+static const bf_conc_t hybrid_bits_conc = { NULL, NULL, hybrid_ad_insert_atomic, NULL, NULL };
+static const bf_conc_t hybrid_count_conc = { NULL, NULL, NULL, hybrid_ad_shards, hybrid_ad_insert_locked };
 static bf_member_t hybrid_ad_lookup(void *bf, const bf_key_t *k) { return hybrid_lookup((hybrid_t *)bf, k); }
 static void hybrid_ad_remove(void *bf, const bf_key_t *k) { hybrid_delete((hybrid_t *)bf, k); }
 static size_t hybrid_ad_memory(const void *bf) { return hybrid_memory_bytes((const hybrid_t *)bf); }
@@ -76,10 +85,10 @@ HYBRID_VARIANT(b4096, 4096, 0)  /* 8 cache lines of bits (61 x 67)          */
 HYBRID_VARIANT(c512, 512, 1)    /* counters: 4 cache lines per shard        */
 HYBRID_VARIANT(c4096, 4096, 1)  /* counters: 32 cache lines per shard       */
 
-#define HYBRID_OPS(name, tag, del, rm)                                                  \
+#define HYBRID_OPS(name, tag, del, rm, conc)                                                \
     { name, 0, del, 0, hybrid_##tag##_create, hybrid_ad_destroy, hybrid_ad_insert,     \
       hybrid_ad_lookup, rm, hybrid_ad_memory, hybrid_ad_cells, hybrid_ad_fpr,           \
-      hybrid_ad_fill, hybrid_##tag##_params, hybrid_ad_insert_counted }
+      hybrid_ad_fill, hybrid_##tag##_params, hybrid_ad_insert_counted, conc }
 
 /* ---- baseline ---- */
 static void *baseline_ad_create(size_t m, unsigned k) { (void)m; (void)k; return baseline_create(); }
@@ -90,15 +99,15 @@ static void baseline_ad_remove(void *bf, const bf_key_t *k) { baseline_remove((b
 static size_t baseline_ad_memory(const void *bf) { return baseline_memory_bytes((const baseline_t *)bf); }
 
 static const bf_ops_t ops_table[] = {
-    { "sbf",      0, 0, 0, sbf_ad_create,      sbf_ad_destroy,      sbf_ad_insert,      sbf_ad_lookup,      NULL,            sbf_ad_memory, sbf_ad_cells, sbf_ad_fpr, sbf_ad_fill, sbf_params, sbf_ad_insert_counted },
-    { "cbf",      0, 1, 0, cbf_ad_create,      cbf_ad_destroy,      cbf_ad_insert,      cbf_ad_lookup,      cbf_ad_remove,   cbf_ad_memory, cbf_ad_cells, cbf_ad_fpr, cbf_ad_fill, cbf_params, cbf_ad_insert_counted },
-    { "pbf",      0, 0, 0, pbf_ad_create,      pbf_ad_destroy,      pbf_ad_insert,      pbf_ad_lookup,      NULL,            pbf_ad_memory, pbf_ad_cells, pbf_ad_fpr, pbf_ad_fill, pbf_params, pbf_ad_insert_counted },
-    { "rdbf",     0, 0, 1, rdbf_ad_create,     rdbf_ad_destroy,     rdbf_ad_insert,     rdbf_ad_lookup,     NULL,            rdbf_ad_memory, rdbf_ad_cells, rdbf_ad_fpr, rdbf_ad_fill, rdbf_params, rdbf_ad_insert_counted },
-    HYBRID_OPS("hybrid_512",    b512,  0, NULL),
-    HYBRID_OPS("hybrid_4096",   b4096, 0, NULL),
-    HYBRID_OPS("hybrid_c_512",  c512,  1, hybrid_ad_remove),
-    HYBRID_OPS("hybrid_c_4096", c4096, 1, hybrid_ad_remove),
-    { "baseline", 1, 1, 0, baseline_ad_create, baseline_ad_destroy, baseline_ad_insert, baseline_ad_lookup, baseline_ad_remove, baseline_ad_memory, NULL, NULL, NULL, NULL, NULL },
+    { "sbf",      0, 0, 0, sbf_ad_create,      sbf_ad_destroy,      sbf_ad_insert,      sbf_ad_lookup,      NULL,            sbf_ad_memory, sbf_ad_cells, sbf_ad_fpr, sbf_ad_fill, sbf_params, sbf_ad_insert_counted, NULL },
+    { "cbf",      0, 1, 0, cbf_ad_create,      cbf_ad_destroy,      cbf_ad_insert,      cbf_ad_lookup,      cbf_ad_remove,   cbf_ad_memory, cbf_ad_cells, cbf_ad_fpr, cbf_ad_fill, cbf_params, cbf_ad_insert_counted, NULL },
+    { "pbf",      0, 0, 0, pbf_ad_create,      pbf_ad_destroy,      pbf_ad_insert,      pbf_ad_lookup,      NULL,            pbf_ad_memory, pbf_ad_cells, pbf_ad_fpr, pbf_ad_fill, pbf_params, pbf_ad_insert_counted, &pbf_conc },
+    { "rdbf",     0, 0, 1, rdbf_ad_create,     rdbf_ad_destroy,     rdbf_ad_insert,     rdbf_ad_lookup,     NULL,            rdbf_ad_memory, rdbf_ad_cells, rdbf_ad_fpr, rdbf_ad_fill, rdbf_params, rdbf_ad_insert_counted, NULL },
+    HYBRID_OPS("hybrid_512",    b512,  0, NULL, &hybrid_bits_conc),
+    HYBRID_OPS("hybrid_4096",   b4096, 0, NULL, &hybrid_bits_conc),
+    HYBRID_OPS("hybrid_c_512",  c512,  1, hybrid_ad_remove, &hybrid_count_conc),
+    HYBRID_OPS("hybrid_c_4096", c4096, 1, hybrid_ad_remove, &hybrid_count_conc),
+    { "baseline", 1, 1, 0, baseline_ad_create, baseline_ad_destroy, baseline_ad_insert, baseline_ad_lookup, baseline_ad_remove, baseline_ad_memory, NULL, NULL, NULL, NULL, NULL, NULL },
 };
 
 #define OPS_COUNT (sizeof(ops_table) / sizeof(ops_table[0]))

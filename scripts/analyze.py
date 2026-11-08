@@ -5,6 +5,8 @@ Subcommands
   runs     list recorded runs (to pick labels/batches)
   bench    in-memory benchmark, grouped by type, N, sizing and filter
   io       I/O experiment, grouped by type, N, tables, neg_ratio and gatekeeper
+  threads  concurrency experiment, grouped by type, N, filter, strategy and threads;
+           speedup = serial mean / mean (same structure, campaign and machine)
   freeze   copy the database to results/frozen/ (snapshot for the document)
 
 Grouping rules: rows are only pooled when the runs share config_key (same
@@ -102,6 +104,27 @@ IO_METRICS = {
     "minflt": ("minflt", "page faults menores", 1, 0),
 }
 IO_DEFAULT = ["reads", "wasted", "mean_us", "p50_us", "p99_us", "gk_mem"]
+
+THREAD_METRICS = {
+    "insert": ("insert_ns_op", "insert (ns/op)", 1, 1),
+    "lookup_exist": ("lookup_exist_ns_op", "busca pos. (ns/op)", 1, 1),
+    "lookup_inexist": ("lookup_inexist_ns_op", "busca neg. (ns/op)", 1, 1),
+    "insert_mops": ("insert_mops", "insert (Mops/s)", 1, 1),
+    "lookup_mops": ("lookup_inexist_mops", "busca neg. (Mops/s)", 1, 1),
+    "speedup_insert": ("speedup_insert", "aceleração insert", 1, 2),
+    "speedup_lookup": ("speedup_lookup", "aceleração busca neg.", 1, 2),
+    "lock_waits": ("lock_waits", "esperas por trava", 1, 0),
+    "lock_bytes": ("lock_bytes", "memória das travas (B)", 1, 0),
+    "fp": ("fp", "falsos positivos", 1, 0),
+    "fn": ("fn", "falsos negativos", 1, 0),
+    "mem": ("mem_bytes", "memória (B)", 1, 0),
+}
+THREAD_DEFAULT = ["insert", "speedup_insert", "lookup_inexist", "speedup_lookup", "lock_waits"]
+# derived from the aggregates, not read from rows: mean of the serial run of the same
+# structure (same type, N, config and environment) divided by the mean of this one
+THREAD_DERIVED = {"speedup_insert": "insert_ns_op", "speedup_lookup": "lookup_inexist_ns_op"}
+STRATEGY_ORDER = {s: i for i, s in enumerate(["serial", "partition", "atomic", "lock_global",
+                                               "lock_shard"])}
 
 FILTER_ORDER = {name: i for i, name in enumerate(resultsdb.FILTER_INFO)}
 FILTER_ORDER["none"] = -1  # iobench: no gatekeeper first
@@ -304,6 +327,39 @@ def cmd_io(con, args):
     plot(args, "io", recs, metrics)
 
 
+def cmd_threads(con, args):
+    metrics = pick_metrics(THREAD_METRICS, args.metrics, THREAD_DEFAULT)
+    measured = [m for m in metrics if m[0] not in THREAD_DERIVED]
+    for base in {THREAD_DERIVED[m[0]] for m in metrics if m[0] in THREAD_DERIVED}:
+        if base not in [m[0] for m in measured]:
+            measured.append((base, base, 1, 1))  # needed for the ratio
+    group = ["type", "n", "filter", "strategy", "threads"]
+    try:
+        recs, nrows = aggregate(con, "v_thread", group, measured, args,
+                                extra=[("filter", args.filter), ("strategy", args.strategy),
+                                       ("threads", args.threads)])
+    except sqlite3.OperationalError:
+        raise SystemExit("este banco não tem o experimento de concorrência (schema anterior ao 6)")
+    if not recs:
+        raise SystemExit("nenhuma linha selecionada (use `analyze.py runs`; runs sujos "
+                         "precisam de --include-dirty)")
+    serial = {(r["type"], r["n"], r["filter"], r["config_key"], r["env_key"]): r
+              for r in recs if r["strategy"] == "serial"}
+    for r in recs:
+        ref = serial.get((r["type"], r["n"], r["filter"], r["config_key"], r["env_key"]))
+        for name, base in THREAD_DERIVED.items():
+            mean = None
+            if ref and ref[base]["mean"] and r[base]["mean"]:
+                mean = ref[base]["mean"] / r[base]["mean"]
+            r[name] = {"n": r[base]["n"], "mean": mean, "sd": None, "ci": None}
+    recs.sort(key=lambda r: (r["type"], r["n"], FILTER_ORDER.get(r["filter"], 99),
+                             STRATEGY_ORDER.get(r["strategy"], 99), r["threads"]))
+    print(f"protocolo {args.protocol}, {nrows} amostras; aceleração = média serial / média "
+          f"(sem IC)\n", file=sys.stderr)
+    emit(recs, group, ["tipo", "N", "filtro", "estratégia", "T"], metrics, args)
+    plot(args, "threads", recs, metrics)
+
+
 def plot(args, kind, recs, metrics):
     if not args.plot:
         return
@@ -357,6 +413,9 @@ def main():
     io = sub.add_parser("io", parents=[sel], help="I/O table")
     io.add_argument("--tables", nargs="+", type=int)
     io.add_argument("--neg", nargs="+", type=float)
+    th = sub.add_parser("threads", parents=[sel], help="concurrency table (threadbench)")
+    th.add_argument("--strategy", nargs="+")
+    th.add_argument("--threads", nargs="+", type=int)
 
     f = sub.add_parser("freeze", help="snapshot the database")
     f.add_argument("--out")
@@ -365,7 +424,8 @@ def main():
     if not Path(args.db).exists():
         raise SystemExit(f"{args.db} não existe; rode scripts/run.py primeiro")
     con = resultsdb.connect_readonly(args.db)  # analysis never writes, not even a migration
-    {"runs": cmd_runs, "bench": cmd_bench, "io": cmd_io, "freeze": cmd_freeze}[args.cmd](con, args)
+    {"runs": cmd_runs, "bench": cmd_bench, "io": cmd_io, "threads": cmd_threads,
+     "freeze": cmd_freeze}[args.cmd](con, args)
     return 0
 
 

@@ -9,7 +9,7 @@ TARGET = bloom_app
 
 # Filters
 FILTERS = sbf cbf pbf rdbf hybrid
-MODULES = murmurhash2 bf baseline keyset store benchmark iobench $(FILTERS) main
+MODULES = murmurhash2 bf baseline keyset store benchmark iobench threadbench $(FILTERS) main
 OBJS = $(MODULES:%=$(BUILD_DIR)/%.o)
 TESTS = murmurhash2 $(FILTERS) baseline store keyset
 
