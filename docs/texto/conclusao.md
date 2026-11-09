@@ -75,7 +75,10 @@ na variante com contadores e escala com uma trava por bloco. O custo: FPR acima 
 própria fórmula, constante (~1,06% no bloco de 512 bits e ~1,02% no de 4096, para
 alvo de 1%). Responde ao "mapeamento dos limites de viabilidade" esperado na proposta
 (seção 5.1): ganho real de desempenho, com uma pequena perda de precisão no bloco
-menor. (resultados 2.2, 2.3 e 4)
+menor. A causa desse desvio foi identificada: o hash duplo dentro de um bloco pequeno
+(as posições de uma chave formam uma progressão aritmética em 511 células); com
+posições independentes a FPR volta à fórmula, e o hash duplo "melhorado" reduz o
+desvio de 6,7% para ~2,5% sem nenhuma chamada de hash a mais. (resultados 2.2, 2.3, 2.7 e 4)
 
 **C6. A dispersão do MurmurHash2 é adequada mesmo para chaves de baixa entropia.**
 CPF, CNPJ e URL dão a mesma FPR e a mesma taxa de colisões que o UUID, e ambas batem
@@ -129,7 +132,7 @@ rápido que o PBF em tempo absoluto. (resultados 4.2 e 4.3)
 - Baseline paginando com 3 repetições de uma rodada; I/O em 10M e 20M só para UUID.
 - Concorrência só para PBF e híbrido, em UUID, com inserção e busca em fases
   separadas.
-- Desvio da FPR do híbrido medido, mas com a causa não verificada.
+- Desvio da FPR do híbrido explicado, mas não corrigido no filtro avaliado.
 
 ---
 
@@ -142,8 +145,10 @@ Do que ficou de fora da proposta:
   falta de página custa ~10 ms em vez de ~80 µs e o ganho do filtro deve ser maior.
 
 Do que os resultados levantaram:
-- **FPR do híbrido:** testar as hipóteses (k hashes independentes dentro do bloco em
-  vez de hash duplo; tamanho de bloco primo) e corrigir a fórmula ou o desenho.
+- **FPR do híbrido:** adotar o hash duplo "melhorado" (desvio de 6,7% para ~2,5% sem
+  custo de hash) ou posições independentes com uma segunda chamada de hash, e medir o
+  efeito no tempo; alternativamente, uma fórmula de FPR específica para hash duplo em
+  blocos pequenos.
 - **rDBF com hash de 64 bits**, para tirar o desvio da FPR em N grandes.
 - **Cargas mais realistas:** consultas concentradas em chaves "quentes", leitura e
   escrita simultâneas, dados reais.

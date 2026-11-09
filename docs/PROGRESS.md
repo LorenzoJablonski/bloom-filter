@@ -333,6 +333,18 @@ Aceleração na inserção (média serial ÷ média com T threads):
 - O sistema convidado mostra L3 de "96 MiB (6 instances)": é a topologia virtual do
   QEMU. O processador real tem 18 MB de L3 compartilhado, que é o que vale para 1M × 20M.
 
+## FPR do híbrido acima da fórmula: causa (2026-11-08, `feature/hybrid-fpr`)
+
+`tools/fprlab.c` reconstrói o híbrido e troca uma peça de cada vez (mesmos S, C e k;
+a versão atual reproduz exatamente os falsos positivos da biblioteca). Com 20M chaves
+e 20M consultas (UUID e CPF): hash duplo atual +6,7% (512) e +1,5% (4096) acima da
+fórmula; com k hashes independentes, +0,7% e +0,1%; passo de outro hash e C primo não
+mudam; hash duplo "melhorado" (+(i³−i)/6) +2,5% e +0,6%; a carga real dos blocos dá o
+mesmo que Poisson. Causa: hash duplo num bloco pequeno (posições sempre distintas, ~1/3
+do excesso, e progressões aritméticas correlacionadas, ~2/3). Saída em
+`results/campaigns/fprlab/fprlab.txt`. O filtro não foi alterado: mudar exigiria
+protocolo novo e refazer as medições do híbrido.
+
 ## Ressalvas para o texto (anotar, não escrever agora)
 
 - Proporções: baseline ÷ RAM de 0,1× (1M) a 2,3× (20M); tabelas em disco ÷ RAM de

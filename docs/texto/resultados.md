@@ -152,12 +152,8 @@ Leitura:
   +2,8% em 20M. A causa é o hash de 32 bits: o espaço endereçado (X·Y·61 ≈ 2·10⁹ bits
   em 20M) se aproxima de 2³² ≈ 4,3·10⁹. Com N maiores o desvio cresceria.
 - **Híbrido: FPR acima da própria fórmula, de forma constante** (+6,6% relativo no
-  hybrid_512, +1,4% no hybrid_4096), em todos os N e tipos. Como não varia com N nem
-  com a chave, aponta para o modelo e não para os dados. Hipóteses, **não
-  verificadas**: as k posições de uma chave vêm de hash duplo dentro de um bloco
-  pequeno e não são independentes como a fórmula supõe; e a aproximação de Poisson
-  para a carga de cada bloco. Em números absolutos, o hybrid_512 entrega 1,06% em vez
-  de 1%.
+  hybrid_512, +1,4% no hybrid_4096), em todos os N e tipos. Em números absolutos, o
+  hybrid_512 entrega 1,06% em vez de 1%. A causa foi investigada (seção 2.7).
 
 **Mesma memória (`same_m`)**, todos com o m e o k do SBF (FPR %, 10M): SBF 1,002;
 PBF 0,998; hybrid_4096 1,034; hybrid_512 1,254; **rDBF 9,885**. Com o orçamento de
@@ -220,6 +216,54 @@ Percentual das posições escritas que já estavam ocupadas (`same_fpr`):
   chave não causa agrupamento.
 - Colisão não é erro: é o que faz a ocupação ficar abaixo de k·n/m. O que importa
   para o erro é a FPR (seção 2.3).
+
+### 2.7 Por que a FPR do híbrido fica acima da fórmula
+
+Investigação com `tools/fprlab.c`, que reconstrói o híbrido e troca uma peça de cada
+vez, com os mesmos blocos, células e k. A versão "atual" reproduz exatamente os falsos
+positivos do filtro real (conferido nos 6 casos). Medido com 20M chaves e 20M
+consultas negativas (erro de medida ~±0,45% relativo); saída completa em
+`results/campaigns/fprlab/fprlab.txt`.
+
+FPR medida acima da fórmula (relativo):
+
+| variante | bloco de 512 bits (UUID / CPF) | bloco de 4096 bits (UUID / CPF) |
+|---|---|---|
+| atual: hash duplo `g_i = h1 + i·h2` | **+6,7% / +6,1%** | **+1,5% / +1,3%** |
+| k hashes independentes por chave | **+0,7% / +0,8%** | **+0,1% / −0,2%** |
+| passo h2 vindo de outra chamada de hash | +6,6% / +7,0% | +1,5% / +1,3% |
+| bloco com número primo de células (509, 4079) | +6,5% / +5,9% | +1,1% / +0,9% |
+| hash duplo "melhorado" (Kirsch e Mitzenmacher, `+ (i³−i)/6`) | +2,6% / +2,3% | +0,6% / +0,6% |
+
+E a fórmula com a carga **real** de cada bloco dá o mesmo que a de Poisson (1,0002%
+contra 1,0000%).
+
+Leitura:
+- **A causa é o hash duplo dentro de um bloco pequeno.** Com k posições
+  independentes, a FPR volta à fórmula; nenhuma das outras hipóteses explica o
+  desvio: a aproximação de Poisson para a carga dos blocos é boa, trocar a origem do
+  passo não ajuda (não é correlação entre o bloco e as posições), e um número primo de
+  células também não (não é o 511 = 7 × 73 ser composto).
+- **Mecanismo, em duas partes** (pela estimativa a partir da ocupação real de cada
+  bloco):
+  - cerca de **1/3** do excesso: o hash duplo nunca repete uma posição dentro de uma
+    chave, enquanto posições independentes repetiriam em ~2,9% das chaves; cada chave
+    liga um pouco mais de bits do que a fórmula supõe;
+  - cerca de **2/3**: as k posições de uma chave formam uma progressão aritmética
+    dentro de 511 células, e as progressões das consultas se sobrepõem às gravadas mais
+    do que sorteios independentes se sobreporiam.
+- **Por que o bloco de 4096 sofre menos:** com 8× mais células, há muito mais
+  progressões possíveis e a sobreposição cai (+1,5% contra +6,7%).
+- Isso é conhecido na literatura: o hash duplo tem a mesma FPR assintótica que hashes
+  independentes (Kirsch e Mitzenmacher, 2006), mas o desvio aparece em tabelas
+  pequenas — e o bloco do híbrido é pequeno de propósito.
+- **Correções possíveis** (não aplicadas; decisão do autor): o hash duplo "melhorado"
+  reduz o desvio a ~2,5% (512) e ~0,6% (4096) sem nenhuma chamada de hash a mais;
+  posições independentes eliminam o desvio, mas exigem mais bits de hash por chave do
+  que uma chamada de 64 bits fornece (uma segunda chamada); ou recalibrar o
+  dimensionamento para absorver o excesso medido, o que custa pouca memória: ~1,6% no
+  bloco de 512 bits e ~0,3% no de 4096 (calculado pela fórmula, supondo o mesmo excesso
+  relativo no novo tamanho).
 
 ---
 
@@ -357,7 +401,7 @@ atômico **10,8 ns**; hybrid_c_512 com trava por bloco 30,6 ns; com trava global
 |---|---|---|
 | Redução substancial do tempo de acesso a dados inexistentes (filtro como *gatekeeper*) | latência 2× a 43× menor, conforme T e a fração de negativas; ~99% das leituras inúteis evitadas; em 20M, 27× mais rápido que a estrutura exata | **confirmado** |
 | Complexidade O(k) constante na verificação, mesmo em larga escala | o **número de hashes** é constante (2,05 e 1,00 por busca negativa); o **tempo** não: cresce com N porque o filtro sai do cache (SBF: 49 → 83 ns na busca negativa de 1M a 20M). O híbrido, com 1 linha de cache por chave, cresce menos | **confirmado em operações, não em tempo** |
-| Convergência entre FPR prática e teórica | SBF, CBF e PBF dentro de ±0,6%; rDBF +2,8% em 20M (hash de 32 bits); híbrido +1,4% a +6,6% acima da própria fórmula, constante | **confirmado nos clássicos; desvios explicados ou a investigar no rDBF e no híbrido** |
+| Convergência entre FPR prática e teórica | SBF, CBF e PBF dentro de ±0,6%; rDBF +2,8% em 20M (hash de 32 bits); híbrido +1,4% a +6,6% acima da própria fórmula, constante, causado pelo hash duplo dentro do bloco (seção 2.7) | **confirmado nos clássicos; desvios do rDBF e do híbrido explicados** |
 | Limites de viabilidade do modelo híbrido | o mais rápido para inserir (4,5× o SBF em 20M) com memória ~igual à do SBF; FPR um pouco acima do alvo (1,06% no bloco de 512 bits); com contadores, deleção 3,7× mais rápida que o CBF; na concorrência, a trava por bloco escala e a global inviabiliza | **viável; o preço é uma FPR ~6% maior no bloco pequeno** |
 
 Objetivos específicos (seção 1.3 da proposta):
@@ -379,9 +423,9 @@ Objetivos específicos (seção 1.3 da proposta):
   configuração de produção; com consultas concentradas em chaves "quentes" ela
   paginaria menos (as consultas aqui são uniformes).
 - Latência absoluta de I/O: comparar só dentro do mesmo N (idade das tabelas no SSD).
-- O desvio de FPR do híbrido é o principal ponto aberto da proposta do trabalho;
-  vale citar as hipóteses e, se houver tempo, testar (por exemplo, comparando com k
-  hashes independentes dentro do bloco).
+- O desvio de FPR do híbrido tem causa identificada (hash duplo dentro de um bloco
+  pequeno, seção 2.7). É um custo do desenho escolhido para ter uma só chamada de
+  hash, e há correções baratas para discutir (hash duplo melhorado).
 - A concorrência cobre PBF e híbrido em UUID, com inserção e busca em fases separadas.
 
 ## 7. Figuras sugeridas para o documento
