@@ -283,8 +283,9 @@ def cmd_runs(con, args):
         "SELECT run_id, batch_id, label, experiment, dataset_type, filter, status, protocol, "
         "substr(git_commit, 1, 8) AS commit_, git_dirty, host, store_model, swap_kind, "
         "config_key, env_key, duration_s, maxrss_kb / 1024, majflt "
-        "FROM runs ORDER BY run_id DESC LIMIT ?",
-        (args.limit,)).fetchall()
+        f"FROM runs{' WHERE label IN (' + ', '.join('?' * len(args.label)) + ')' if args.label else ''} "
+        "ORDER BY run_id DESC LIMIT ?",
+        (*(args.label or []), args.limit)).fetchall()
     headers = ["id", "batch", "label", "exp", "type", "filter", "status", "proto", "commit", "dirty",
                "host", "device", "swap", "config", "env", "s", "rss MiB", "majflt"]
     table = [[("-" if v is None else str(v)) for v in r] for r in rows]
@@ -389,6 +390,7 @@ def main():
 
     r = sub.add_parser("runs", help="list recorded runs")
     r.add_argument("--limit", type=int, default=50)
+    r.add_argument("--label", nargs="+", help="only these campaign labels")
 
     sel = argparse.ArgumentParser(add_help=False)
     sel.add_argument("--label", nargs="+")

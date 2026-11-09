@@ -3,8 +3,10 @@
 Documento de passagem entre sessões/máquinas. Quem retomar o trabalho (pessoa
 ou agente) deve ler isto e o `AGENTS.md` antes de mexer no código.
 
-Última atualização: 2026-11-07, desktop Pop!_OS. Tudo mergeado em `develop`
-(inclusive `rusage`, `isolation`, `vm` e `results`); campanha oficial concluída.
+Última atualização: 2026-11-09, desktop Pop!_OS. **Desenvolvimento encerrado; foco na
+escrita.** Tudo mergeado em `develop`: código, as três campanhas congeladas em
+`results/campaigns/`, a investigação da FPR do híbrido e os conteúdos-base dos
+capítulos em `docs/texto/` (métodos, resultados, conclusão).
 
 ## Como retomar em outra máquina
 
@@ -45,7 +47,7 @@ este arquivo ao começar.
 - Nome do modelo: **rDBF**, com o robustBF (Patgiri, 2021) como implementação
   de referência.
 
-## Em andamento (retomar aqui)
+## Estado (retomar aqui)
 
 Feito: campanha oficial na VM (2026-11-06/07, commit c2c52ec, 1786 execuções, 0
 falhas, ~8,5 h), resultados em `results/campaigns/vm-nvme/` (rótulo `oficial`).
@@ -102,12 +104,14 @@ Ressalva: as 6 vCPUs ocupam uma CPU de cada núcleo, e o host fica com as irmãs
 dividem os mesmos núcleos; mais ruído que na VM de 2 vCPUs.
 
 Próximos passos:
-- Capítulo de materiais e métodos: a base feita no notebook não está no GitHub
-  (conferido em 2026-11-07). Quando chegar, revisar e atualizar conforme o código
-  atual e as ressalvas abaixo.
-- Texto dos resultados, com as figuras de `results/campaigns/vm-nvme/plots/`.
-- Threads (`feature/threads`), só depois do resto.
-- HD: só com um disco vazio. Ver o alerta "HD Seagate do autor".
+- **Escrita**, a partir de `docs/texto/materiais-e-metodos.md`, `resultados.md` e
+  `conclusao.md` (conteúdo-base, números tirados dos bancos congelados).
+- Opcionais, só se houver tempo e pedido do autor: a figura "tempo de inserção × N"
+  (sugerida em `resultados.md`); corrigir a FPR do híbrido (hash duplo melhorado,
+  exigiria refazer as medições dele); experimento em HD (só com disco vazio).
+- Git: `main` ainda tem só o commit inicial (Git Flow: levar `develop` para `main` na
+  entrega, com pedido do autor); `feature/results-test` está supersedida por
+  `results/campaigns/vm-nvme/` e pode ser apagada.
 
 ## HD Seagate do autor: tem arquivos que não podem ser perdidos
 
@@ -122,8 +126,8 @@ Montar com escrita já grava: ao abri-lo pelo gerenciador de arquivos, o driver
 confirmação). Para só ler: `sudo blockdev --setro /dev/sdX /dev/sdX1` e
 `udisksctl mount -b /dev/sdX1 -o ro`; o bloqueio se perde ao reconectar.
 
-Decisão do experimento em HD ainda em aberto. Recomendado: usar um disco vazio, ou
-este somente depois de existir outra cópia dos arquivos. Além do risco, ele não
+Decidido em 2026-11-06: o experimento em HD **não será feito** nesta etapa (não há
+disco vazio, e este não tem cópia dos arquivos); fica como trabalho futuro. Além do risco, ele não
 serve bem: USB, sem FUA, e esse modelo costuma ser SMR (não confirmado).
 
 ## Lista de prioridades
@@ -397,11 +401,11 @@ Piloto na VM (1 GB, swap no NVMe, commit 0afd600, ns/op em 2 repetições):
 | 10M | baseline | 16 400 | 43 700 | 29 000 | ~7 milhões |
 
 Cada fault custa ~80 µs. O baseline de 10M levou 28 min (~9 min por repetição,
-aquecimento incluído) e o de 20M ainda não foi rodado; a estimativa é de ~35 min por
-repetição. Num HD (~10 ms por fault) o de 10M passaria de ~19 h por repetição: lá o baseline precisa de um N
+aquecimento incluído); a estimativa para 20M era de ~35 min por repetição, e na campanha
+oficial ele levou ~54 min por passada. Num HD (~10 ms por fault) o de 10M passaria de ~19 h por repetição: lá o baseline precisa de um N
 logo acima da RAM ou de um limite de operações. Ver também o alerta "HD Seagate do autor".
 
-### Campanha oficial (decidida em 2026-11-05, no NVMe; ainda não executada)
+### Campanha oficial (decidida em 2026-11-05, no NVMe; executada em 2026-11-06/07)
 
 | tipo | N | o que roda | repetições × rodadas |
 |---|---|---|---|
@@ -411,8 +415,8 @@ logo acima da RAM ou de um limite de operações. Ver também o alerta "HD Seaga
 | CPF, CNPJ, URL | 1 e 5M | tudo, com baseline e I/O | 5 × 3 |
 | CPF, CNPJ, URL | 10 e 20M | só filtros, só benchmark | 2 × 1 |
 
-Estimativa total: ~7 h (o baseline de 20M, ~35 min por repetição, ainda não foi
-medido). A VM já tem os dados de 5M e 10M; faltam 1M, 20M e os outros tipos.
+A estimativa era de ~7 h; levou ~8,5 h, porque o baseline de 20M levou ~54 min por
+passada, e não ~35.
 O plano está em `scripts/vm/official.sh`, que confere todos os dados antes de começar:
 `scripts/vm/vm.sh push-code && scripts/vm/vm.sh official`. Dados: `vm.sh data N TIPO`;
 para CPF, CNPJ e URL em 10M e 20M, `vm.sh data N TIPO none` (sem tabelas).

@@ -4,7 +4,7 @@ Material de apoio para redigir o capítulo. Não é o texto final: cada seção
 explica **o que** foi usado ou feito, **como** e **por quê**, para ser reescrito
 em prosa acadêmica. Os detalhes vêm do código, que é a fonte da verdade.
 
-Base: branch `develop` (commit `586c450`, de 08/11/2026), **protocolo
+Base: branch `develop` de 09/11/2026 (desenvolvimento encerrado), **protocolo
 experimental 5** e schema 6 do banco.
 
 Os resultados vêm de três campanhas, todas concluídas e congeladas em
@@ -425,7 +425,9 @@ FPR teórica: fórmula de filtro em blocos. O número de chaves por bloco segue 
 Poisson com λ = n/S, e
 `FPR = Σ_j P(j; λ) · (1 − (1 − 1/C)^(jk))^k`.
 Ela é um pouco maior que a de um SBF do mesmo tamanho, porque alguns blocos
-recebem mais chaves que a média; é o preço da localidade.
+recebem mais chaves que a média; é o preço da localidade. A FPR **medida** fica acima
+desta fórmula (+6,7% no bloco de 512 bits, +1,5% no de 4096): a causa é o hash duplo
+dentro de um bloco pequeno, investigada com `tools/fprlab.c` (resultados, seção 2.7).
 
 #### Linha de base determinística (`src/baseline.c`)
 - HashSet com a biblioteca uthash, como na proposta.
@@ -996,6 +998,9 @@ o código de schema 5, o arquivo versionado era migrado no próprio lugar.
     continua sendo encontrada;
   - apagar metade das chaves não gera falso negativo nas restantes, e na
     baseline as apagadas somem.
+- **FPR do híbrido** (`tools/fprlab.c`): reconstrói o híbrido fora da biblioteca e
+  reproduz exatamente os seus falsos positivos antes de trocar cada peça (resultados,
+  seção 2.7).
 - **Concorrência** (`make test`): cada estratégia, com 3 threads, responde a 40 mil
   consultas exatamente como a inserção serial; na campanha, falsos positivos iguais
   ao serial nas 1140 amostras.
