@@ -33,6 +33,7 @@ Compiler: GCC with `-std=c99 -Wall -Wextra -O3`. Links pthreads (`-lpthread`).
 - `src/` — C sources (murmurhash2.c, each filter, baseline.c, main.c)
 - `scripts/` — Python: dataset generation, partitioning, analysis
 - `tests/` — C test files per filter
+- `tools/` — standalone investigation programs, not part of bloom_app (fprlab.c: why the hybrid's FPR exceeds its formula; build line in its header)
 - `data/` and `results/` — generated artifacts (not source)
 
 ## Branch Strategy

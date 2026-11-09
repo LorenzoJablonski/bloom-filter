@@ -1,0 +1,37 @@
+# build/fprlab — commit base 5d365d3, 2026-11-08T19:18:25-03:00
+uuid, n=1000000, consultas negativas=1000000, bloco de 512 bits
+A atual (hash duplo)           C= 511 S=  19367 k=6  medida 1.0756%  poisson 1.0000%  cargas 1.0003%  ocupacao 1.0309%  medida/poisson +7.56%  consultas com posicoes repetidas 0.000%  [biblioteca: 10756 FP, aqui 10756: igual]
+B k hashes independentes       C= 511 S=  19367 k=6  medida 1.0018%  poisson 1.0000%  cargas 1.0003%  ocupacao 1.0097%  medida/poisson +0.18%  consultas com posicoes repetidas 2.881%
+C passo de outro hash          C= 511 S=  19367 k=6  medida 1.0543%  poisson 1.0000%  cargas 1.0003%  ocupacao 1.0283%  medida/poisson +5.43%  consultas com posicoes repetidas 0.000%
+D C primo, hash duplo          C= 509 S=  19444 k=6  medida 1.0584%  poisson 1.0002%  cargas 1.0016%  ocupacao 1.0294%  medida/poisson +5.82%  consultas com posicoes repetidas 0.000%
+E hash duplo melhorado         C= 511 S=  19367 k=6  medida 1.0403%  poisson 1.0000%  cargas 1.0003%  ocupacao 1.0117%  medida/poisson +4.03%  consultas com posicoes repetidas 2.725%
+uuid, n=1000000, consultas negativas=1000000, bloco de 4096 bits
+A atual (hash duplo)           C=4087 S=   2357 k=7  medida 1.0231%  poisson 0.9994%  cargas 0.9996%  ocupacao 1.0034%  medida/poisson +2.37%  consultas com posicoes repetidas 0.000%  [biblioteca: 10231 FP, aqui 10231: igual]
+B k hashes independentes       C=4087 S=   2357 k=7  medida 1.0206%  poisson 0.9994%  cargas 0.9996%  ocupacao 1.0019%  medida/poisson +2.12%  consultas com posicoes repetidas 0.515%
+C passo de outro hash          C=4087 S=   2357 k=7  medida 1.0022%  poisson 0.9994%  cargas 0.9996%  ocupacao 1.0063%  medida/poisson +0.28%  consultas com posicoes repetidas 0.000%
+D C primo, hash duplo          C=4079 S=   2362 k=7  medida 1.0235%  poisson 0.9987%  cargas 0.9986%  ocupacao 1.0040%  medida/poisson +2.49%  consultas com posicoes repetidas 0.000%
+E hash duplo melhorado         C=4087 S=   2357 k=7  medida 1.0179%  poisson 0.9994%  cargas 0.9996%  ocupacao 1.0002%  medida/poisson +1.85%  consultas com posicoes repetidas 0.490%
+uuid, n=20000000, consultas negativas=20000000, bloco de 512 bits
+A atual (hash duplo)           C= 511 S= 387337 k=6  medida 1.0673%  poisson 1.0000%  cargas 1.0002%  ocupacao 1.0311%  medida/poisson +6.73%  consultas com posicoes repetidas 0.000%  [biblioteca: 213458 FP, aqui 213458: igual]
+B k hashes independentes       C= 511 S= 387337 k=6  medida 1.0071%  poisson 1.0000%  cargas 1.0002%  ocupacao 1.0096%  medida/poisson +0.71%  consultas com posicoes repetidas 2.904%
+C passo de outro hash          C= 511 S= 387337 k=6  medida 1.0663%  poisson 1.0000%  cargas 1.0002%  ocupacao 1.0299%  medida/poisson +6.63%  consultas com posicoes repetidas 0.000%
+D C primo, hash duplo          C= 509 S= 388859 k=6  medida 1.0658%  poisson 1.0005%  cargas 1.0006%  ocupacao 1.0316%  medida/poisson +6.53%  consultas com posicoes repetidas 0.000%
+E hash duplo melhorado         C= 511 S= 387337 k=6  medida 1.0258%  poisson 1.0000%  cargas 1.0002%  ocupacao 1.0110%  medida/poisson +2.58%  consultas com posicoes repetidas 2.739%
+uuid, n=20000000, consultas negativas=20000000, bloco de 4096 bits
+A atual (hash duplo)           C=4087 S=  47134 k=7  medida 1.0151%  poisson 1.0000%  cargas 0.9999%  ocupacao 1.0051%  medida/poisson +1.51%  consultas com posicoes repetidas 0.000%  [biblioteca: 203014 FP, aqui 203014: igual]
+B k hashes independentes       C=4087 S=  47134 k=7  medida 1.0007%  poisson 1.0000%  cargas 0.9999%  ocupacao 1.0011%  medida/poisson +0.08%  consultas com posicoes repetidas 0.512%
+C passo de outro hash          C=4087 S=  47134 k=7  medida 1.0150%  poisson 1.0000%  cargas 0.9999%  ocupacao 1.0049%  medida/poisson +1.50%  consultas com posicoes repetidas 0.000%
+D C primo, hash duplo          C=4079 S=  47227 k=7  medida 1.0106%  poisson 1.0000%  cargas 1.0000%  ocupacao 1.0048%  medida/poisson +1.07%  consultas com posicoes repetidas 0.000%
+E hash duplo melhorado         C=4087 S=  47134 k=7  medida 1.0057%  poisson 1.0000%  cargas 0.9999%  ocupacao 1.0018%  medida/poisson +0.57%  consultas com posicoes repetidas 0.489%
+cpf, n=20000000, consultas negativas=20000000, bloco de 512 bits
+A atual (hash duplo)           C= 511 S= 387337 k=6  medida 1.0608%  poisson 1.0000%  cargas 1.0003%  ocupacao 1.0312%  medida/poisson +6.08%  consultas com posicoes repetidas 0.000%  [biblioteca: 212154 FP, aqui 212154: igual]
+B k hashes independentes       C= 511 S= 387337 k=6  medida 1.0081%  poisson 1.0000%  cargas 1.0003%  ocupacao 1.0094%  medida/poisson +0.81%  consultas com posicoes repetidas 2.901%
+C passo de outro hash          C= 511 S= 387337 k=6  medida 1.0694%  poisson 1.0000%  cargas 1.0003%  ocupacao 1.0310%  medida/poisson +6.95%  consultas com posicoes repetidas 0.000%
+D C primo, hash duplo          C= 509 S= 388859 k=6  medida 1.0591%  poisson 1.0005%  cargas 1.0007%  ocupacao 1.0313%  medida/poisson +5.86%  consultas com posicoes repetidas 0.000%
+E hash duplo melhorado         C= 511 S= 387337 k=6  medida 1.0232%  poisson 1.0000%  cargas 1.0003%  ocupacao 1.0110%  medida/poisson +2.32%  consultas com posicoes repetidas 2.740%
+cpf, n=20000000, consultas negativas=20000000, bloco de 4096 bits
+A atual (hash duplo)           C=4087 S=  47134 k=7  medida 1.0134%  poisson 1.0000%  cargas 1.0000%  ocupacao 1.0043%  medida/poisson +1.34%  consultas com posicoes repetidas 0.000%  [biblioteca: 202683 FP, aqui 202683: igual]
+B k hashes independentes       C=4087 S=  47134 k=7  medida 0.9982%  poisson 1.0000%  cargas 1.0000%  ocupacao 1.0014%  medida/poisson -0.18%  consultas com posicoes repetidas 0.515%
+C passo de outro hash          C=4087 S=  47134 k=7  medida 1.0133%  poisson 1.0000%  cargas 1.0000%  ocupacao 1.0049%  medida/poisson +1.33%  consultas com posicoes repetidas 0.000%
+D C primo, hash duplo          C=4079 S=  47227 k=7  medida 1.0088%  poisson 1.0000%  cargas 0.9999%  ocupacao 1.0052%  medida/poisson +0.88%  consultas com posicoes repetidas 0.000%
+E hash duplo melhorado         C=4087 S=  47134 k=7  medida 1.0059%  poisson 1.0000%  cargas 1.0000%  ocupacao 1.0019%  medida/poisson +0.59%  consultas com posicoes repetidas 0.488%
