@@ -113,8 +113,10 @@ Leitura:
   10M** (seção 2.4).
 
 [FIGURA] `vm-nvme/plots/bench-uuid-n{1000000,5000000,10000000,20000000}-same-fpr.pdf`.
-[FIGURA A GERAR] tempo de inserção × N, uma linha por estrutura (escala log): mostra
-de uma vez o crescimento suave dos filtros e o salto da baseline.
+[FIGURA] `vm-nvme/plots/scaling-uuid-same-fpr-08e7cf3e.pdf`: tempo por operação × N,
+uma linha por estrutura, escala log (inserção, busca existente e busca negativa). Mostra
+de uma vez o crescimento suave dos filtros e o salto da baseline em 10M; há a mesma
+figura para CPF, CNPJ e URL (baseline só até 5M) e para `same_m`.
 
 **Por tipo de chave** (inserção, ns/op, 1M): chaves curtas são mais rápidas onde há
 muitos hashes por chave.
@@ -431,7 +433,7 @@ Objetivos específicos (seção 1.3 da proposta):
 ## 7. Figuras sugeridas para o documento
 
 1. Memória × FPR (`vm-nvme/plots/tradeoff-uuid-n20000000-same-fpr.pdf`).
-2. Tempo de inserção × N com a baseline (**a gerar**; escala log).
+2. Tempo por operação × N com a baseline (`vm-nvme/plots/scaling-uuid-same-fpr-08e7cf3e.pdf`).
 3. Tempos por estrutura em 20M (`vm-nvme/plots/bench-uuid-n20000000-same-fpr.pdf`).
 4. I/O com T = 8 em 20M (`vm-nvme/plots/io-uuid-n20000000-HOST-NVME-direct-T8.pdf`).
 5. Aceleração × threads em 20M (`vm6-nvme/plots/threads-uuid-n20000000-04919c3b.pdf`).

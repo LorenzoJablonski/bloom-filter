@@ -200,6 +200,64 @@ def bench(records, metrics, outdir, formats):
             approx = [r for r in recs if r["sizing"] != "none"]  # exact baseline: FPR 0
             paths += _tradeoff(approx, outdir, _slug("tradeoff", typ, f"n{n}", sizing, tag),
                                f"{typ} · N = {n:,} · {sizing}".replace(",", "."), formats)
+    paths += _scaling(records, metrics, outdir, formats)
+    return paths
+
+
+SCALING_COLS = [("insert_ns_op", "inserção"), ("lookup_exist_ns_op", "busca existente"),
+                ("lookup_inexist_ns_op", "busca negativa")]
+
+
+def _scaling(records, metrics, outdir, formats):
+    """Time per operation against N, one line per structure (the exact baseline
+    included), log y: how each structure scales and where the baseline breaks.
+    One figure per (type, sizing, machine); only when the data has several N."""
+    cols = [c for c in SCALING_COLS if c[0] in {m[0] for m in metrics}]
+    if not cols:
+        return []
+    paths = []
+    refs = [r for r in records if r["sizing"] == "none"]
+    groups = {}
+    for r in records:
+        if r["sizing"] != "none":
+            groups.setdefault((r["type"], r["sizing"], r["env_key"]), []).append(r)
+    for (typ, sizing, env), recs in sorted(groups.items()):
+        recs = recs + [r for r in refs if r["type"] == typ and r["env_key"] == env]
+        ns = sorted({r["n"] for r in recs})
+        if len(ns) < 2:
+            continue
+        lines = {}
+        for r in recs:  # one record per (structure, N): the one with the most samples
+            key = (r["filter"], r["n"])
+            if key not in lines or r["samples"] > lines[key]["samples"]:
+                lines[key] = r
+        filters = list(dict.fromkeys(r["filter"] for r in recs))
+        fig, axes = plt.subplots(1, len(cols), squeeze=False, figsize=(3.4 * len(cols), 3.4))
+        for ax, (col, title) in zip(axes.flat, cols):
+            for i, flt in enumerate(filters):
+                pts = [(n, lines[(flt, n)][col]) for n in ns if (flt, n) in lines]
+                pts = [(n, st) for n, st in pts if st["mean"] is not None]
+                if not pts:
+                    continue
+                xs = [n / 1e6 for n, _ in pts]
+                ys = [st["mean"] for _, st in pts]
+                err = [st["ci"] or 0.0 for _, st in pts]
+                exact = flt == "baseline"
+                ax.errorbar(xs, ys, yerr=err, marker="s" if exact else "o", markersize=3,
+                            linewidth=1.8 if exact else 1.1, capsize=2,
+                            color=INK if exact else SERIES[i % len(SERIES)], label=flt)
+            ax.set_yscale("log")
+            ax.set_xticks([n / 1e6 for n in ns])
+            ax.set_xticklabels([f"{n / 1e6:g}" for n in ns])
+            ax.set_xlabel("N (milhões de chaves)")
+            ax.set_title(f"{title} (ns/op, log)", loc="left", color=INK)
+        handles, labels = axes.flat[0].get_legend_handles_labels()
+        fig.legend(handles, labels, loc="lower center", ncol=5, fontsize=7,
+                   bbox_to_anchor=(0.5, -0.1))
+        fig.suptitle(f"{typ} · {sizing} · tempo por operação × N · média e IC 95%",
+                     x=0.01, ha="left", color=INK)
+        fig.tight_layout(rect=(0, 0, 1, 0.94))
+        paths += _save(fig, outdir, _slug("scaling", typ, sizing, env[:8]), formats)
     return paths
 
 
