@@ -10,6 +10,7 @@ uma campanha só entra aqui depois de terminada.
 | `vm-nvme/` | VM Debian 13, 1 GB de RAM, 2 vCPUs fixas, swap e tabelas no NVMe do host | rótulos `oficial` (campanha oficial, 2026-11-06/07, commit c2c52ec, protocolo 4), `teste-vm-nov05` (teste, commit 59a907d) e `pilot` (protocolo 3) |
 | `vm-nvme-extra/` | mesma VM | rótulos `colisoes` e `delecao` (2026-11-07, commit 30fc9a0, protocolo 5): taxa de colisões estruturais e deleção, medidas depois da campanha oficial |
 | `vm6-nvme/` | a mesma VM com 6 vCPUs (`scripts/vm/vm6.sh`) | rótulos `threads` (experimento 3, concorrência, 2026-11-08, commit 002a50c, schema 6) e `ponte` (trecho da campanha oficial com 1 thread, para comparar as duas VMs) |
+| `fprlab/` | host, fora da VM (`tools/fprlab.c`) | investigação da FPR do híbrido acima da fórmula: variantes do hash dentro do bloco, 1M e 20M chaves, UUID e CPF (determinístico; sem tempos) |
 | `host-preliminar/` | desktop, sem VM | sondagem de 03/11 com 1M UUIDs (protocolo 1), só indicativa |
 
 ## Como consultar
