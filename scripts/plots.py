@@ -51,6 +51,45 @@ STYLE = {
 # a metric gets a log axis when its positive values span more than this factor
 LOG_SPAN = 30
 
+# names shown in the figures, in Portuguese as in the text (the file names keep the
+# code names); anything missing here is shown as it is
+NAMES = {"sbf": "SBF", "cbf": "CBF", "pbf": "PBF", "rdbf": "rDBF",
+         "hybrid_512": "híbrido 512", "hybrid_4096": "híbrido 4096",
+         "hybrid_c_512": "híbrido c 512", "hybrid_c_4096": "híbrido c 4096",
+         "baseline": "linha de base", "none": "sem filtro"}
+STRATEGIES = {"serial": "serial", "partition": "por partição", "atomic": "OR atômico",
+              "lock_global": "trava global", "lock_shard": "trava por bloco"}
+SIZINGS = {"same_fpr": "mesma FPR", "same_m": "mesma memória", "none": "sem dimensionamento"}
+TYPES = {"uuid": "UUID", "cpf": "CPF", "cnpj": "CNPJ", "url": "URL"}
+# panel titles by column (the table headers of analyze.py stay as they are)
+PANELS = {"bits_per_key": "bits por chave", "insert_ns_op": "inserção (ns/op)",
+          "lookup_exist_ns_op": "busca existente (ns/op)",
+          "lookup_inexist_ns_op": "busca negativa (ns/op)",
+          "hash_lookup_inexist": "hashes por busca negativa", "fill_ratio": "ocupação",
+          "collision_rate": "taxa de colisões (%)", "delete_ns_op": "deleção (ns/op)",
+          "del_still_present": "apagadas que ainda respondem presente",
+          "fn_after_delete": "falsos negativos após a deleção", "mem_bytes": "memória (B)",
+          "majflt": "faltas de página maiores", "minflt": "faltas de página menores",
+          "p50_us": "mediana (µs)", "p99_us": "percentil 99 (µs)",
+          "gk_mem_bytes": "memória do porteiro (B)"}
+
+
+def _name(flt):
+    return NAMES.get(flt, flt)
+
+
+def _panel(col, header):
+    return PANELS.get(col, header)
+
+
+def _ident(typ, n=None, sizing=None):
+    parts = [TYPES.get(typ, typ)]
+    if n is not None:
+        parts.append(f"N = {n:,}".replace(",", "."))
+    if sizing is not None:
+        parts.append(SIZINGS.get(sizing, sizing))
+    return " · ".join(parts)
+
 
 def _slug(*parts):
     s = "_".join(str(p) for p in parts if p is not None and p != "")
@@ -163,7 +202,7 @@ def bench(records, metrics, outdir, formats):
     refs = [r for r in records if r["sizing"] == "none"]
     sized = [r for r in records if r["sizing"] != "none"] or refs
     for (typ, n, sizing), tag, recs in _figures(sized, ["type", "n", "sizing"], ["filter"]):
-        labels = [r["filter"] for r in recs]
+        labels = [_name(r["filter"]) for r in recs]
         if sizing != "none":
             keys = {(r["config_key"], r["env_key"]) for r in recs}
             same = [r for r in refs if r["type"] == typ and r["n"] == n and r["env_key"]
@@ -173,7 +212,8 @@ def bench(records, metrics, outdir, formats):
             # own config_key: still drawn, with its sample count in the label
             extra = exact or same
             recs = recs + extra
-            labels += [r["filter"] if r in exact else f'{r["filter"]} ({r["samples"]} amostras)'
+            labels += [_name(r["filter"]) if r in exact
+                       else f'{_name(r["filter"])} ({r["samples"]} amostras)'
                        for r in extra]
         panels = [m for m in metrics if m[0] != "fpr_theory"]
         ncol = min(3, len(panels))
@@ -182,7 +222,7 @@ def bench(records, metrics, outdir, formats):
                                  figsize=(3.0 * ncol, (0.22 * len(labels) + 0.9) * nrow))
         for ax, (col, header, scale, dec) in zip(axes.flat, panels):
             means, cis = _values(recs, col, scale)
-            title = header
+            title = _panel(col, header)
             if col == "fpr" and "fpr_theory" in cols:
                 theo, _ = _values(recs, "fpr_theory", 100)
                 ax.scatter([math.nan if t is None else t for t in theo], range(len(labels)),
@@ -191,7 +231,7 @@ def bench(records, metrics, outdir, formats):
             _hbars(ax, labels, [(header, SERIES[0], means, cis)], title, dec)
         for ax in list(axes.flat)[len(panels):]:
             ax.set_visible(False)
-        fig.suptitle(f"{typ} · N = {n:,} · {sizing} · média e IC 95%".replace(",", "."),
+        fig.suptitle(f"{_ident(typ, n, sizing)} · média e IC 95%",
                      x=0.01, ha="left", color=INK)
         fig.tight_layout()
         paths += _save(fig, outdir, _slug("bench", typ, f"n{n}", sizing, tag), formats)
@@ -199,7 +239,7 @@ def bench(records, metrics, outdir, formats):
         if {"bits_per_key", "fpr"} <= set(cols) and sizing != "none":
             approx = [r for r in recs if r["sizing"] != "none"]  # exact baseline: FPR 0
             paths += _tradeoff(approx, outdir, _slug("tradeoff", typ, f"n{n}", sizing, tag),
-                               f"{typ} · N = {n:,} · {sizing}".replace(",", "."), formats)
+                               _ident(typ, n, sizing), formats)
     paths += _scaling(records, metrics, outdir, formats)
     return paths
 
@@ -245,7 +285,7 @@ def _scaling(records, metrics, outdir, formats):
                 exact = flt == "baseline"
                 ax.errorbar(xs, ys, yerr=err, marker="s" if exact else "o", markersize=3,
                             linewidth=1.8 if exact else 1.1, capsize=2,
-                            color=INK if exact else SERIES[i % len(SERIES)], label=flt)
+                            color=INK if exact else SERIES[i % len(SERIES)], label=_name(flt))
             ax.set_yscale("log")
             ax.set_xticks([n / 1e6 for n in ns])
             ax.set_xticklabels([f"{n / 1e6:g}" for n in ns])
@@ -254,7 +294,7 @@ def _scaling(records, metrics, outdir, formats):
         handles, labels = axes.flat[0].get_legend_handles_labels()
         fig.legend(handles, labels, loc="lower center", ncol=5, fontsize=7,
                    bbox_to_anchor=(0.5, -0.1))
-        fig.suptitle(f"{typ} · {sizing} · tempo por operação × N · média e IC 95%",
+        fig.suptitle(f"{_ident(typ, sizing=sizing)} · tempo por operação × N · média e IC 95%",
                      x=0.01, ha="left", color=INK)
         fig.tight_layout(rect=(0, 0, 1, 0.94))
         paths += _save(fig, outdir, _slug("scaling", typ, sizing, env[:8]), formats)
@@ -262,20 +302,39 @@ def _scaling(records, metrics, outdir, formats):
 
 
 def _tradeoff(recs, outdir, name, title, formats):
-    """Memory against measured FPR: where each model sits on the trade-off."""
+    """Memory against measured FPR: where each model sits on the trade-off.
+
+    Structures with nearly the same memory (SBF, PBF and the bit hybrids; CBF and
+    the counting hybrids) sit on top of each other, so each group gets one label
+    below it, a line per structure with its FPR, instead of a label per point."""
     fig, ax = plt.subplots(figsize=(5.0, 3.4))
-    xs = [r["bits_per_key"]["mean"] for r in recs]
-    ys = [None if r["fpr"]["mean"] is None else r["fpr"]["mean"] * 100 for r in recs]
-    ax.scatter(xs, ys, s=28, color=SERIES[0], edgecolors="white", linewidths=1.5, zorder=3)
-    for r, x, y in zip(recs, xs, ys):
-        if x is not None and y is not None:
-            ax.annotate(r["filter"], (x, y), xytext=(4, 3), textcoords="offset points",
-                        fontsize=7, color=INK_2)
-    if _use_log(xs):
+    pts = sorted((r["bits_per_key"]["mean"], r["fpr"]["mean"] * 100, _name(r["filter"]))
+                 for r in recs if r["bits_per_key"]["mean"] is not None
+                 and r["fpr"]["mean"] is not None)
+    xs = [p[0] for p in pts]
+    ax.scatter(xs, [p[1] for p in pts], s=28, color=SERIES[0], edgecolors="white",
+               linewidths=1.5, zorder=3)
+    log = _use_log(xs)
+    if log:
         ax.set_xscale("log")
-    ax.set_xlabel("bits por chave" + (" (log)" if _use_log(xs) else ""))
+    groups = []
+    for p in pts:  # points within 15% of memory of the group's first one
+        if groups and p[0] <= groups[-1][0][0] * 1.15:
+            groups[-1].append(p)
+        else:
+            groups.append([p])
+    lo, hi = (min(xs), max(xs)) if xs else (0, 1)
+    for g in groups:
+        gx = sum(p[0] for p in g) / len(g)
+        text = "\n".join(f"{p[2]}: {_fmt(p[1], 3)}%" for p in sorted(g, key=lambda p: -p[1]))
+        right = hi > lo and (gx - lo) / (hi - lo) > 0.7
+        ax.annotate(text, (gx, min(p[1] for p in g)), xytext=(0, -16),
+                    textcoords="offset points", va="top", ha="right" if right else "left",
+                    fontsize=7, color=INK_2, linespacing=1.3,
+                    arrowprops=dict(arrowstyle="-", color=GRID, linewidth=0.8))
+    ax.set_xlabel("bits por chave" + (" (log)" if log else ""))
     ax.set_ylabel("FPR medida (%)")
-    ax.set_ylim(bottom=0)
+    ax.set_ylim(0, max([p[1] for p in pts] + [0.0]) * 1.1 or 1.0)  # room for the top points
     ax.set_title(f"{title} · memória × FPR", loc="left", color=INK)
     fig.tight_layout()
     return _save(fig, outdir, name, formats)
@@ -307,15 +366,15 @@ def io(records, metrics, outdir, formats):
                          for r in rs]
                 cis = [0.0 if r is None or not r[col]["ci"] else r[col]["ci"] * scale for r in rs]
                 series.append((f"{neg:.0%} negativas", SERIES[i % len(SERIES)], means, cis))
-            _hbars(ax, gks, series, header, dec)
+            _hbars(ax, [_name(g) for g in gks], series, _panel(col, header), dec)
         for ax in list(axes.flat)[len(metrics):]:
             ax.set_visible(False)
         handles, labels = axes.flat[0].get_legend_handles_labels()
         if len(negs) > 1:
             fig.legend(handles, labels, loc="upper right", ncol=len(negs), fontsize=8)
         mode = "O_DIRECT" if direct else "page cache"
-        title = f"{typ} · N = {n:,}".replace(",", ".")
-        fig.suptitle(f"{title} · {model or 'disco ?'} · {mode} · T = {tables} · média e IC 95%",
+        fig.suptitle(f"{_ident(typ, n)} · {model or 'disco ?'} · {mode} · T = {tables} tabelas"
+                     " · média e IC 95%",
                      x=0.01, ha="left", color=INK)
         fig.tight_layout(rect=(0, 0, 1, 0.97))
         paths += _save(fig, outdir, _slug("io", typ, f"n{n}", model, "direct" if direct else "cached",
@@ -353,15 +412,16 @@ def threads(records, metrics, outdir, formats):
                 xs = [r["threads"] for r in rs if r[col]["mean"] is not None]
                 ys = [r[col]["mean"] for r in rs if r[col]["mean"] is not None]
                 ax.plot(xs, ys, marker="o", markersize=3, linewidth=1.2,
-                        color=SERIES[i % len(SERIES)], label=f"{flt} · {strat}")
+                        color=SERIES[i % len(SERIES)],
+                        label=f"{_name(flt)} · {STRATEGIES.get(strat, strat)}")
             ax.axhline(1.0, color=GRID, linewidth=0.8)
             ax.set_xticks(sorted({r["threads"] for r in recs}))
-            ax.set_xlabel("threads")
+            ax.set_xlabel("threads (t)")
             ax.set_title(title, loc="left", color=INK)
         handles, labels = axes.flat[0].get_legend_handles_labels()
         fig.legend(handles, labels, loc="lower center", ncol=3, fontsize=7,
                    bbox_to_anchor=(0.5, -0.12))
-        fig.suptitle(f"{typ} · N = {n:,} · média serial ÷ média com T threads".replace(",", "."),
+        fig.suptitle(f"{_ident(typ, n)} · aceleração = média serial ÷ média com t threads",
                      x=0.01, ha="left", color=INK)
         fig.tight_layout(rect=(0, 0, 1, 0.95))
         paths += _save(fig, outdir, _slug("threads", typ, f"n{n}", env[:8]), formats)

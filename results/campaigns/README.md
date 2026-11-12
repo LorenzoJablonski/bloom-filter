@@ -76,7 +76,7 @@ benchmark (lotes de 8 MiB em vez de 1 MiB, outro laço); a comparação entre as
 ## Ressalvas
 
 - Baseline de UUID em 10M e 20M: 3 repetições × 1 rodada (ele pagina e leva horas);
-  nos gráficos aparece como "baseline (3 amostras)". O resto: 5 × 3; CPF, CNPJ e URL
+  nos gráficos aparece como "linha de base (3 amostras)". O resto: 5 × 3; CPF, CNPJ e URL
   em 10M e 20M, só filtros e só benchmark, 2 × 1.
 - A latência absoluta de leitura depende da idade das tabelas no SSD: compare
   estruturas no mesmo tipo e N, não N ou tipos entre si. Contagens de leitura e FPR
