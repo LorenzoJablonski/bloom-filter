@@ -55,7 +55,7 @@ fica até 181× mais lenta, e no I/O ela fica 27× mais lenta que o filtro. (res
 - **Custo de múltiplos hashes:** rDBF e híbrido fazem uma única chamada de hash por
   operação. O híbrido insere 4,5× mais rápido que o SBF com 20M chaves, com a mesma
   memória (~10 bits/chave). O rDBF é tão rápido, mas exige ~11× a memória e, com hash
-  de 32 bits, tem a FPR subindo com N (+2,8% em 20M). (resultados 2.1–2.3)
+  de 32 bits, tem a FPR subindo com N (+2,9% em 20M). (resultados 2.1–2.3)
 - **Deleção:** CBF e híbrido com contadores apagam sem gerar nenhum falso negativo,
   ao custo de 4× a memória. O híbrido com contadores apaga 3,7× mais rápido que o CBF.
   (resultados 2.5)
@@ -90,7 +90,7 @@ causado pela chave, que era a preocupação da seção 4.3.1 da proposta. (resul
 global deixa a inserção mais lenta com mais threads (0,24–0,41×); uma trava por bloco
 escala (até 3,2× com 6 threads). A divisão por partição do PBF, prevista na proposta,
 dispensa sincronização, mas tem um teto de k/⌈k/T⌉ (3,5× com k = 7), enquanto
-dividir por chave chega a 5,2×. As buscas escalam quase linearmente (até 5,5×).
+dividir por chave chega a 5,2×. As buscas escalam quase linearmente (até 5,5× em 1M e 5,4× em 20M).
 E escalar mais não é ser mais rápido: com 6 threads, o híbrido segue 3,4× mais
 rápido que o PBF em tempo absoluto. (resultados 4.2 e 4.3)
 

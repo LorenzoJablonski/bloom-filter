@@ -70,7 +70,7 @@ Leitura:
 - Um filtro de ~10 bits por chave guarda 20 milhões de chaves em ~24 MB; a tabela
   exata, que guarda as chaves, precisa de ~2,3 GB.
 - A contagem (para permitir deleção) custa exatamente 4× a memória.
-- O híbrido custa só 1–3% a mais que o SBF; o preço da localidade é pequeno.
+- O híbrido custa só 0,6% (hybrid_4096) a 3,4% (hybrid_512) a mais que o SBF; o preço da localidade é pequeno.
 - O rDBF troca memória por velocidade: com 1 bit por chave, precisa de ~n/p bits
   para FPR p (seção 3.2 do método).
 
@@ -136,25 +136,27 @@ FPR medida (%), alvo de 1%, `same_fpr`:
 
 | estrutura | UUID 1M | UUID 20M | CPF 20M | CNPJ 20M | URL 20M | medida ÷ teórica − 1 (média dos tipos, 20M) |
 |---|---|---|---|---|---|---|
-| SBF | 0,993 | 1,004 | 1,000 | 1,004 | 1,005 | +0,4% |
-| PBF | 0,984 | 1,000 | 1,001 | 1,002 | 0,999 | +0,0% |
+| SBF | 0,993 | 1,004 | 1,000 | 1,004 | 1,005 | +0,3% |
+| PBF | 0,984 | 1,000 | 1,001 | 1,002 | 0,999 | +0,1% |
 | CBF | 0,993 | 1,004 | — | — | — | igual ao SBF |
-| rDBF | 0,993 | 1,027 | 1,030 | 1,028 | 1,032 | **+2,8%** |
-| hybrid_4096 | 1,023 | 1,015 | 1,013 | 1,012 | 1,012 | +1,4% |
-| hybrid_512 | 1,076 | 1,067 | 1,061 | 1,065 | 1,062 | **+6,6%** |
+| rDBF | 0,993 | 1,027 | 1,030 | 1,028 | 1,032 | **+2,9%** |
+| hybrid_4096 | 1,023 | 1,015 | 1,013 | 1,012 | 1,012 | +1,3% |
+| hybrid_512 | 1,076 | 1,067 | 1,061 | 1,065 | 1,062 | **+6,4%** |
 
 Leitura:
 - **A dispersão do MurmurHash2 é boa para todos os tipos de chave.** CPF e CNPJ, de
   baixa entropia, e URL, com prefixos comuns, dão a mesma FPR do UUID (diferenças na
   terceira casa). Não há agrupamento causado pela chave — é a pergunta da seção 4.3.1
   da proposta.
-- **SBF, CBF e PBF batem com a fórmula** (dentro de ±0,6%). O CBF tem a mesma FPR do
+- **SBF, CBF e PBF batem com a fórmula** (dentro de ±0,6% em 10M e 20M; até ±1,8% em
+  1M, dentro do ruído de amostragem: ~10 mil falsos positivos dão ~1% de desvio-padrão). O CBF tem a mesma FPR do
   SBF, como esperado (mesmas posições).
 - **rDBF: o desvio cresce com N**, igual em todos os tipos: +0,0% em 5M, +1,2% em 10M,
-  +2,8% em 20M. A causa é o hash de 32 bits: o espaço endereçado (X·Y·61 ≈ 2·10⁹ bits
+  +2,9% em 20M (médias dos tipos; de +2,7% a +3,2%). A causa é o hash de 32 bits: o espaço endereçado (X·Y·61 ≈ 2·10⁹ bits
   em 20M) se aproxima de 2³² ≈ 4,3·10⁹. Com N maiores o desvio cresceria.
-- **Híbrido: FPR acima da própria fórmula, de forma constante** (+6,6% relativo no
-  hybrid_512, +1,4% no hybrid_4096), em todos os N e tipos. Em números absolutos, o
+- **Híbrido: FPR acima da própria fórmula, de forma constante** (+6,3% relativo no
+  hybrid_512, +1,3% no hybrid_4096, médias de todos os N e tipos; faixas de +5,6% a
+  +7,6% e de +0,7% a +2,4%). Em números absolutos, o
   hybrid_512 entrega 1,06% em vez de 1%. A causa foi investigada (seção 2.7).
 
 **Mesma memória (`same_m`)**, todos com o m e o k do SBF (FPR %, 10M): SBF 1,002;
@@ -379,7 +381,7 @@ atômico **10,8 ns**; hybrid_c_512 com trava por bloco 30,6 ns; com trava global
    20 milhões de inserções). A trava por bloco tem pouquíssimas esperas (~200 no
    hybrid_c_512 com 6 threads; ~2 mil no hybrid_c_4096, que tem 8× menos blocos), ao
    custo de ~40 bytes de mutex por bloco (15,5 MB em 20M para o hybrid_c_512, ~16% da
-   memória do filtro).
+   memória do filtro; no hybrid_c_4096, 1,9 MB, ~2%).
 2. **A divisão por partição do PBF funciona, mas tem um teto.** Sem nenhuma
    sincronização, ela é a melhor estratégia em 1M (3,63×). Mas com k = 7 partições, a
    thread mais carregada fica com ⌈7/T⌉ delas, e a aceleração máxima é 7/⌈7/T⌉ = 3,5
@@ -392,7 +394,7 @@ atômico **10,8 ns**; hybrid_c_512 com trava por bloco 30,6 ns; com trava global
 4. **Aceleração não é velocidade.** O PBF escala mais (5,19×), mas o hybrid_512 continua
    **3,4× mais rápido** em tempo absoluto com 6 threads (10,8 contra 36,9 ns), porque
    parte de 43,7 ns contra 191 ns. No texto, apresentar as duas medidas juntas.
-5. **Buscas escalam quase linearmente** (até 5,5× com 6 threads): só leem e não
+5. **Buscas escalam quase linearmente** (até 5,5× com 6 threads em 1M e 5,4× em 20M): só leem e não
    precisam de sincronização.
 
 ---
@@ -403,7 +405,7 @@ atômico **10,8 ns**; hybrid_c_512 com trava por bloco 30,6 ns; com trava global
 |---|---|---|
 | Redução substancial do tempo de acesso a dados inexistentes (filtro como *gatekeeper*) | latência 2× a 43× menor, conforme T e a fração de negativas; ~99% das leituras inúteis evitadas; em 20M, 27× mais rápido que a estrutura exata | **confirmado** |
 | Complexidade O(k) constante na verificação, mesmo em larga escala | o **número de hashes** é constante (2,05 e 1,00 por busca negativa); o **tempo** não: cresce com N porque o filtro sai do cache (SBF: 49 → 83 ns na busca negativa de 1M a 20M). O híbrido, com 1 linha de cache por chave, cresce menos | **confirmado em operações, não em tempo** |
-| Convergência entre FPR prática e teórica | SBF, CBF e PBF dentro de ±0,6%; rDBF +2,8% em 20M (hash de 32 bits); híbrido +1,4% a +6,6% acima da própria fórmula, constante, causado pelo hash duplo dentro do bloco (seção 2.7) | **confirmado nos clássicos; desvios do rDBF e do híbrido explicados** |
+| Convergência entre FPR prática e teórica | SBF, CBF e PBF dentro de ±0,6% em 10M e 20M (±1,8% em 1M, ruído de amostragem); rDBF +2,9% em 20M (hash de 32 bits); híbrido +1,3% a +6,3% acima da própria fórmula, constante, causado pelo hash duplo dentro do bloco (seção 2.7) | **confirmado nos clássicos; desvios do rDBF e do híbrido explicados** |
 | Limites de viabilidade do modelo híbrido | o mais rápido para inserir (4,5× o SBF em 20M) com memória ~igual à do SBF; FPR um pouco acima do alvo (1,06% no bloco de 512 bits); com contadores, deleção 3,7× mais rápida que o CBF; na concorrência, a trava por bloco escala e a global inviabiliza | **viável; o preço é uma FPR ~6% maior no bloco pequeno** |
 
 Objetivos específicos (seção 1.3 da proposta):
